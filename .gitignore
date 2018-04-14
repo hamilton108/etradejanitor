@@ -1,0 +1,17 @@
+*.swp
+tmp/
+src/demo
+demo
+dist
+stearnswharf-*
+*.ods#
+dump.py
+dumpengi.sh
+sw2
+sw1
+div/
+src/examples
+src/ghci-sandbox
+.cabal-sandbox
+cabal.sandbox.config
+src/stearnswharf_xml
