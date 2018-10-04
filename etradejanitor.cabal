@@ -6,7 +6,7 @@ version:             1.0
 -- synopsis:            
 -- description:         
 -- license:             
-license-file:        LICENSE
+-- license-file:        LICENSE
 author:              Hamilton108
 maintainer:          hamilton108@gmail.com
 -- copyright:           
@@ -24,5 +24,6 @@ executable etradejanitor-1.0
                        ,utf8-string >= 1.0.1.1
                        ,cmdargs >= 0.10.20
                        ,tagsoup >= 0.14.6
+                       ,http-streams >= 0.8.6
   hs-source-dirs: src
   ghc-options: -Wall -fno-warn-unused-do-bind
