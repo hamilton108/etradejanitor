@@ -10,6 +10,6 @@ cabal build
 
 cd src
 
-ln -s /home/"$1"/opt/myhaskell/cabalutil/ghci-sandbox
+ln -s /home/rcs/opt/haskell/myhaskell/cabalutil/ghci-sandbox
 
 exit 0
