@@ -1,6 +1,28 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
+module Main (main) where
+
+import Control.Monad
+import Control.Monad.IO.Class
+import Data.Aeson
+import Data.Default.Class
+import Data.Maybe (fromJust)
+import Data.Monoid ((<>))
+import Data.Text (Text)
+import GHC.Generics
+import Network.HTTP.Req as R -- (runReq,GET(GET),req,https,NoReqBody,bsResponse,responseBody)
+import qualified Data.ByteString.Char8 as B
+
+main :: IO ()
+main = 
+    R.runReq def 
+    $ do
+        let n :: Int
+            n = 5
+        bs <- R.req R.GET (R.https "httpbin.org" /: "bytes" /~ n) R.NoReqBody R.bsResponse mempty
+        liftIO $ B.putStrLn (R.responseBody bs)
+{-
 import System.IO.Streams (InputStream, OutputStream, stdout)
 import qualified System.IO.Streams as Streams
 import qualified Data.ByteString as S
@@ -53,6 +75,7 @@ builder =
     C.http C.GET "/" >>
     C.setAccept "text/html"
 
+responseHandler2 :: C.Response -> Streams.InputStream S.ByteString -> IO ()
 responseHandler2 p i = 
     Streams.read i >>= \xm -> 
         case xm of
@@ -61,9 +84,10 @@ responseHandler2 p i =
 
 main :: IO ()
 main = 
-    C.openConnection "www.example.com" 80 >>= \c ->
+    C.openConnection "www.netfonds.no" 443 >>= \c ->
     let q = C.buildRequest1 builder in 
         C.sendRequest c q C.emptyBody >>
         C.receiveResponse c responseHandler2 >> 
         C.closeConnection c 
 
+-}

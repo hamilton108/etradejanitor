@@ -8,8 +8,8 @@ cabal install --only-dependencies
 
 cabal build 
 
-cd src
+# cd src
 
-ln -s /home/rcs/opt/haskell/myhaskell/cabalutil/ghci-sandbox
+# ln -s /home/rcs/opt/haskell/myhaskell/cabalutil/ghci-sandbox
 
 exit 0
