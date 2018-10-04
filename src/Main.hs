@@ -20,7 +20,8 @@ main =
     $ do
         let n :: Int
             n = 5
-        bs <- R.req R.GET (R.https "httpbin.org" /: "bytes" /~ n) R.NoReqBody R.bsResponse mempty
+        bs <- R.req R.GET (R.https "netfonds.no") R.NoReqBody R.bsResponse mempty
+        -- bs <- R.req R.GET (R.https "httpbin.org" /: "bytes" /~ n) R.NoReqBody R.bsResponse mempty
         liftIO $ B.putStrLn (R.responseBody bs)
 {-
 import System.IO.Streams (InputStream, OutputStream, stdout)
