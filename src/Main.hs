@@ -17,6 +17,24 @@ import qualified Data.ByteString.Char8 as B
 
 import qualified Data.List as L
 -- import qualified System.IO.Encoding as IO
+import Control.Monad (forM_)
+import Data.List.Split (splitOn)
+
+
+import System.IO
+
+main2 = do
+    -- text <- getLine
+    inputHandle <- openFile "NHY.csv" ReadMode 
+    hSetEncoding inputHandle latin1 -- utf8
+    theInput <- hGetContents inputHandle
+    let lx = L.lines theInput
+    forM_ lx $ \s -> do
+        let lxx = splitOn "," s
+        putStrLn (head lxx) 
+    putStrLn "OK"
+
+
 {-|
     downloadPaperHistory returns a response BsResponse from the url like (f.ex NHY):
     
