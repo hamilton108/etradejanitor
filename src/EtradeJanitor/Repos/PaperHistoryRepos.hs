@@ -9,6 +9,7 @@ import qualified Hasql.Session as Session
 import Hasql.Encoders (Params(..),Value(..),text,int8,param) 
 import Hasql.Decoders (Row)
 import Data.Functor.Contravariant (contramap)
+import qualified Data.ByteString.Char8 as B
 
     
 import Data.Text (Text,pack)
@@ -18,7 +19,10 @@ demo :: IO ()
 demo = Connection.acquire conn >>= \c ->
     let msg = case c of 
             Right cx -> "YES" 
-            Left err -> "Nope" 
+            Left err -> case err of 
+                            Just xxx -> B.unpack xxx
+                            Nothing -> "??????"
+
     in  
     putStrLn msg
 
