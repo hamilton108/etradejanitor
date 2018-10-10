@@ -19,7 +19,7 @@ import qualified Data.List as L
 import Control.Monad (forM_)
 import Data.List.Split (splitOn)
 import EtradeJanitor.Netfonds as NP
-
+import EtradeJanitor.Common.Types (Ticker(..))
 
 import System.IO
 
@@ -53,4 +53,4 @@ main2 = do
 
 main :: IO ()
 main =
-    NP.savePaperHistory "NHY"
+    NP.savePaperHistory (Ticker "NHY")
