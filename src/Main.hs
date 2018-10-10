@@ -16,41 +16,73 @@ import Data.Aeson (Value)
 import qualified Data.ByteString.Char8 as B
 
 import qualified Data.List as L
-import Control.Monad (forM_)
+import Control.Monad (forM,forM_)
 import Data.List.Split (splitOn)
 import EtradeJanitor.Netfonds as NP
 import EtradeJanitor.Common.Types (Ticker(..))
 
-import System.IO
+import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
 
-processLine :: String -> IO ()
+data StockPrice =
+  StockPrice {
+     dx :: String
+    ,opn:: String
+    ,hi :: String
+    ,lo :: String
+    ,cls :: String
+    ,vol :: String
+    } deriving (Show)
+
+asDateString :: String -> String
+asDateString v =
+  let
+    year :: String
+    year = take 4 v
+
+    month :: String
+    month = take 2 $ drop 4 v
+
+    day :: String
+    day = take 2 $ drop 6 v
+  in
+    printf "%s-%s-%s" year month day
+
+asSql :: StockPrice -> String -- B.ByteString
+asSql sp =
+    -- B.pack $
+    printf
+      "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values (3,'%s',%s,%s,%s,%s,%s)"
+      (dx sp)
+      (opn sp)
+      (hi sp)
+      (lo sp)
+      (cls sp)
+      (vol sp)
+
+
+
+processLine :: String -> IO StockPrice
 processLine line =
-        let lxx = splitOn "," line
+        let
+          [dx',_,_,opn',hi',lo',cls',vol',_] = splitOn "," line
+          dxx = asDateString dx'
         in
-        putStrLn (head lxx)
+          -- forM_ lxx putStrLn >>
+          return (StockPrice dxx opn' hi' lo' cls' vol')
 
-main3 =
+
+main2 =
     -- text <- getLine
     openFile "NHY.csv" ReadMode >>= \inputHandle ->
     hSetEncoding inputHandle latin1 >> -- utf8
     hGetContents inputHandle >>= \theInput ->
-    let lx = L.lines theInput
+    let
+      lx = L.lines theInput
     in
-    forM_ lx processLine >>
-    putStrLn "OK"
-
-main2 = do
-    -- text <- getLine
-    inputHandle <- openFile "NHY.csv" ReadMode
-    hSetEncoding inputHandle latin1 -- utf8
-    theInput <- hGetContents inputHandle
-    let lx = L.lines theInput
-    forM_ lx $ \s -> do
-        let lxx = splitOn "," s
-        putStrLn (head lxx)
-    putStrLn "OK"
-
+      forM lx processLine >>= \stockPrices ->
+      forM_ stockPrices (putStrLn . asSql) >>
+      putStrLn "Done!"
 
 main :: IO ()
 main =
-    NP.savePaperHistory (Ticker "NHY")
+    NP.savePaperHistory $ Ticker "NHY"

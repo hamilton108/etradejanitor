@@ -31,7 +31,6 @@ downloadPaperHistory (Ticker ticker) =
 
         NHY.csv
 -}
-
 savePaperHistory :: Ticker -> IO ()
 savePaperHistory ticker =
     R.runReq def $

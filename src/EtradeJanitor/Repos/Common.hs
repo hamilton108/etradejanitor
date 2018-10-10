@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module EtradeJanitor.Repos.Common (conn,plain,SessionError(..)) where
+module EtradeJanitor.Repos.Common (conn,plain,session,SessionError(..)) where
 
 import Control.Monad.Except (lift,runExceptT,ExceptT(..))
 import Data.Either.Combinators (mapLeft)
