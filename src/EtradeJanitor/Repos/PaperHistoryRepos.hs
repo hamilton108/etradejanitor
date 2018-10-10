@@ -3,19 +3,8 @@
 module EtradeJanitor.Repos.PaperHistoryRepos where
 
 
-import Control.Monad.Except (lift,runExceptT,ExceptT(..))
-import Data.Text (Text,pack)
-import Data.Functor.Contravariant (contramap)
-import qualified Data.ByteString.Char8 as B
-import Data.Either.Combinators (mapLeft)
-
 -- Hasql
-import qualified Hasql.Connection as HC
 import qualified Hasql.Session as HS
-import qualified Hasql.Statement as HQ
-import qualified Hasql.Decoders as HD
-import Hasql.Encoders (Params(..),Value(..),text,int8,param)
-import Hasql.Decoders (Row)
 
 -- Local
 import qualified EtradeJanitor.Repos.Common as C
