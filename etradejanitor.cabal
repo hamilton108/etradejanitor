@@ -17,7 +17,12 @@ cabal-version:       >=1.9
 executable etradejanitor-1.0
   main-is: Main.hs
   -- main-is:
-  -- other-modules:
+
+  other-modules: EtradeJanitor.Common.Types
+                EtradeJanitor.Netfonds
+                EtradeJanitor.Repos.Common
+                EtradeJanitor.Repos.PaperHistory
+
   build-depends:       base >=4.9
                        ,mtl >= 2.2.2
                        ,HUnit >= 1.6.0

@@ -15,7 +15,7 @@ import qualified Hasql.Decoders as HD
 -- Local
 
 conn :: HC.Settings
-conn = HC.settings "172.17.0.3" 5432 "trader" "ok" "trader"
+conn = HC.settings "172.17.0.2" 5432 "trader" "ok" "trader"
 
 data SessionError =
   ConnErr (HC.ConnectionError) |
@@ -28,7 +28,7 @@ plain sql =
   HQ.Statement sql mempty HD.unit False
 
 session :: HS.Session a -> IO (Either SessionError a)
-session session =
+session sess =
   runExceptT $ acquire >>= \connection -> use connection <* release connection
   where
     acquire =
@@ -36,6 +36,6 @@ session session =
     use connection =
       ExceptT $
       fmap (mapLeft SessionError) $
-      HS.run session connection
+      HS.run sess connection
     release connection =
       lift $ HC.release connection
