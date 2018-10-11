@@ -19,7 +19,7 @@ s :: Int -> String
 s v =
     printf "insert into stockmarket.ax (ar) values (%d)" v
 
-insertRow :: Int -> HS.Session ()
+insertRowDemo :: Int -> HS.Session ()
 insertRow v =
   let
     stmt = B.pack $ printf "insert into stockmarket.ax (ar) values (%d)" v
@@ -29,6 +29,9 @@ insertRow v =
 demo :: IO (Either C.SessionError ())
 demo =
   C.session $ insertRow 2 >> insertRow 3
+
+insertRows :: IO (Either C.SessionError ())
+insertRows rows = undefined
 
 -- data Person =
 --     Person { name :: Text, gender :: Gender, age :: Int }

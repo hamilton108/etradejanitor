@@ -23,16 +23,6 @@ import EtradeJanitor.Common.Types (Ticker(..))
 
 import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
 
-data StockPrice =
-  StockPrice {
-     dx :: String
-    ,opn:: String
-    ,hi :: String
-    ,lo :: String
-    ,cls :: String
-    ,vol :: String
-    } deriving (Show)
-
 asDateString :: String -> String
 asDateString v =
   let
@@ -80,7 +70,7 @@ main2 =
       lx = L.lines theInput
     in
       forM lx processLine >>= \stockPrices ->
-      forM_ stockPrices (putStrLn . asSql) >>
+      --forM_ stockPrices (putStrLn . asSql) >>
       putStrLn "Done!"
 
 main :: IO ()
