@@ -57,11 +57,11 @@ asDateString v =
   in
     printf "%s-%s-%s" year month day
 
-asSql :: T.StockPrice -> String -- B.ByteString
-asSql sp =
+asSql :: T.Ticker -> T.StockPrice -> String -- B.ByteString
+asSql (T.Ticker oid _) sp =
     -- B.pack $
     printf
-      "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values (1,'%s',%s,%s,%s,%s,%s)"
+      "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values (oid,'%s',%s,%s,%s,%s,%s)"
       (T.dx sp)
       (T.opn sp)
       (T.hi sp)
@@ -69,25 +69,26 @@ asSql sp =
       (T.cls sp)
       (T.vol sp)
 
-insertRow :: T.StockPrice -> HS.Session ()
-insertRow sp =
+insertRow :: T.Ticker -> T.StockPrice -> HS.Session ()
+insertRow tickr sp =
   let
     -- stmt = B.pack $ printf "insert into stockmarket.ax (ar) values (%d)" 20
-    stmt = B.pack $ asSql sp
+    stmt = B.pack $ asSql tickr sp
   in
     HS.statement () $ C.plain $ stmt
 
-insertRows :: [T.StockPrice] -> IO (Either C.SessionError ())
-insertRows stockPrices =
+insertRows :: T.Ticker -> [T.StockPrice] -> IO (Either C.SessionError ())
+insertRows tickr stockPrices =
   C.session $
-  forM_ stockPrices insertRow
+  forM_ stockPrices (insertRow tickr)
 
 
 updateStockPrices :: T.Ticker -> IO ()
-updateStockPrices ticker =
+updateStockPrices tickr =
     let
         tickerCsv :: String
-        tickerCsv = printf "%s.csv" ticker
+        tickerCsv = printf "%s.csv" tickr
+
     in
       openFile tickerCsv ReadMode >>= \inputHandle ->
       hSetEncoding inputHandle latin1 >> -- utf8
@@ -98,7 +99,7 @@ updateStockPrices ticker =
       in
         -- forM lx processLine >>= \stockPrices ->
         --forM_ stockPrices (putStrLn . asSql) >>
-        insertRows stockPrices >>
+        insertRows tickr stockPrices >>
         putStrLn "Done!"
 
 -- data Person =

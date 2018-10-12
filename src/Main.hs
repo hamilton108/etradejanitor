@@ -31,7 +31,7 @@ import EtradeJanitor.Repos.PaperHistory as RP
 main :: IO ()
 main =
     let
-      ticker = Ticker "NHY"
+      ticker = Ticker 1 "NHY"
     in
       -- NP.savePaperHistory ticker >>
       RP.updateStockPrices ticker

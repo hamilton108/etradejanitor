@@ -18,7 +18,7 @@ import EtradeJanitor.Common.Types (Ticker(..))
         http://www.netfonds.no/quotes/paperhistory.php?paper=NHY.OSE&csv_format=csv
 -}
 downloadPaperHistory :: Ticker -> R.Req R.BsResponse
-downloadPaperHistory (Ticker ticker) =
+downloadPaperHistory (Ticker _ ticker) =
     let
         tickerParam = printf "%s.OSE" ticker
         params = "paper" =: (pack tickerParam) <> "csv_format" =: ("csv" :: Text)
