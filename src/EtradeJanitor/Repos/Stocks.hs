@@ -4,7 +4,6 @@ module EtradeJanitor.Repos.Stocks where
 
 import Data.Int (Int64)
 import Data.Functor.Contravariant (contramap)
-import Data.Text (Text,pack)
 
 -- Hasql
 import qualified Hasql.Session as HS
@@ -23,28 +22,24 @@ tickers =
   C.session $
     HS.statement () selectStockTickers
 
+stockTickerDecoder :: HD.Row T.Ticker
+stockTickerDecoder = T.Ticker <$> HD.column HD.int8 <*> HD.column HD.text <*> HD.column HD.date
 
-
-stockTickerDecoder :: HD.Row T.Ticker -- (Int64, Text)
-stockTickerDecoder = T.Ticker <$> HD.column HD.int8 <*> HD.column HD.text
-
-selectStockTickers :: HST.Statement () (DV.Vector T.Ticker)  -- (DV.Vector (Int64,Text))
+selectStockTickers :: HST.Statement () T.Tickers
 selectStockTickers =
   HST.Statement sql encoder decoder False
   where
     sql =
-      "select oid,ticker from stockmarket.stocktickers order by ticker"
+      -- "select oid,ticker from stockmarket.stocktickers where status=1 order by ticker"
+      "select t.oid,t.ticker,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 group by t.oid,t.ticker order by t.ticker"
     encoder =
       HE.unit
     decoder =
-      -- HD.rowList (HD.column HD.int8)
-      -- HD.rowVector (HD.column HD.int8)
       HD.rowVector stockTickerDecoder
 
 -- demo =
 --   C.session $
 --         HS.statement () selectStockTickers
-
 -- selectSum :: HST.Statement (Int64, Int64) Int64
 -- selectSum =
 --   HST.Statement sql encoder decoder True
@@ -78,7 +73,6 @@ selectStockTickers =
 --       HE.unit
 --     decoder =
 --       HD.rowList (HD.column HD.int8)
-
 -- data Person =
 --     Person { name :: Text, gender :: Gender, age :: Int }
 --     deriving (Show)

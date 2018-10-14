@@ -40,5 +40,6 @@ executable etradejanitor-1.0
                        ,contravariant >= 1.5
                        ,either >= 5.0.1
                        ,vector >= 0.12.0
+                       ,time >= 1.8.0
   hs-source-dirs: src
   ghc-options: -Wall -fno-warn-unused-do-bind

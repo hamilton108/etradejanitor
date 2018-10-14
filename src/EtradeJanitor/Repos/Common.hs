@@ -28,14 +28,14 @@ plain sql =
   HQ.Statement sql mempty HD.unit False
 
 session :: HS.Session a -> IO (Either SessionError a)
-session session =
-  runExceptT $ acquire >>= \conn -> use conn <* release conn
+session sess =
+  runExceptT $ acquire >>= \c -> use c <* release c
   where
     acquire =
       ExceptT $ fmap (mapLeft ConnErr) $ HC.acquire conn
     use connection =
       ExceptT $
       fmap (mapLeft SessionError) $
-      HS.run session connection
+      HS.run sess connection
     release connection =
       lift $ HC.release connection
