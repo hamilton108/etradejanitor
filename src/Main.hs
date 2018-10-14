@@ -34,4 +34,15 @@ main =
       ticker = Ticker 1 "NHY"
     in
       -- NP.savePaperHistory ticker >>
-      RP.updateStockPrices ticker
+      RP.updateStockPrices ticker >>= \e ->
+      case e of
+        Right () -> putStrLn "Done!"
+        Left err -> putStrLn (show err)
+
+main2 :: IO ()
+main2 =
+    let
+      ticker = Ticker 1 "NHY"
+    in
+      -- NP.savePaperHistory ticker >>
+      RP.updateStockPricesTickers [ticker]

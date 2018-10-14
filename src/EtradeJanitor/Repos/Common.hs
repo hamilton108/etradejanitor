@@ -29,7 +29,7 @@ plain sql =
 
 session :: HS.Session a -> IO (Either SessionError a)
 session session =
-  runExceptT $ acquire >>= \connection -> use connection <* release connection
+  runExceptT $ acquire >>= \conn -> use conn <* release conn
   where
     acquire =
       ExceptT $ fmap (mapLeft ConnErr) $ HC.acquire conn

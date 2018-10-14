@@ -6,6 +6,7 @@ module EtradeJanitor.Repos.PaperHistory where
 -- Hasql
 import qualified Hasql.Session as HS
 
+import Control.Monad.IO.Class (liftIO)
 import Text.Printf (printf)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.List as L
@@ -19,20 +20,20 @@ import qualified EtradeJanitor.Common.Types as T
 
 -- oid | ticker_id |     dx     |  opn  |  hi   |  lo   |  cls  |   vol
 
-s :: Int -> String
-s v =
-    printf "insert into stockmarket.ax (ar) values (%d)" v
-
-insertRowDemo :: Int -> HS.Session ()
-insertRowDemo v =
-  let
-    stmt = B.pack $ printf "insert into stockmarket.ax (ar) values (%d)" v
-  in
-    HS.statement () $ C.plain $ stmt
-
-demo :: IO (Either C.SessionError ())
-demo =
-  C.session $ insertRowDemo 2 >> insertRowDemo 3
+-- s :: Int -> String
+-- s v =
+--     printf "insert into stockmarket.ax (ar) values (%d)" v
+--
+-- insertRowDemo :: Int -> HS.Session ()
+-- insertRowDemo v =
+--   let
+--     stmt = B.pack $ printf "insert into stockmarket.ax (ar) values (%d)" v
+--   in
+--     HS.statement () $ C.plain $ stmt
+--
+-- demo :: IO (Either C.SessionError ())
+-- demo =
+--   C.session $ insertRowDemo 2 >> insertRowDemo 3
 
 processLine :: String -> T.StockPrice
 processLine line =
@@ -42,6 +43,25 @@ processLine line =
         in
           -- forM_ lxx putStrLn >>
           T.StockPrice dxx opn' hi' lo' cls' vol'
+
+fetchCsv :: T.Ticker -> IO [String]
+fetchCsv tickr =
+    let
+        tickerCsv :: String
+        tickerCsv = printf "%s.csv" tickr
+    in
+      openFile tickerCsv ReadMode >>= \inputHandle ->
+      hSetEncoding inputHandle latin1 >> -- utf8
+      hGetContents inputHandle >>= \theInput ->
+      return $ tail $ L.lines theInput
+
+fetchStockPrices :: T.Ticker -> IO [T.StockPrice]
+fetchStockPrices tickr =
+  fetchCsv tickr >>= \lx ->
+  return $ map processLine lx
+
+--one tickr = fetchStockPrices tickr >>= \t ->
+--return $ head t
 
 asDateString :: String -> String
 asDateString v =
@@ -83,24 +103,19 @@ insertRows tickr stockPrices =
   forM_ stockPrices (insertRow tickr)
 
 
-updateStockPrices :: T.Ticker -> IO ()
+updateStockPrices :: T.Ticker -> IO (Either C.SessionError ())
 updateStockPrices tickr =
-    let
-        tickerCsv :: String
-        tickerCsv = printf "%s.csv" tickr
+  fetchStockPrices tickr >>= \stockPrices ->
+  insertRows tickr stockPrices
+  -- insertRows tickr stockPrices >>= \e ->
+  -- case e of
+  --   Right () -> putStrLn "Done!"
+  --   Left err -> putStrLn (show err)
 
-    in
-      openFile tickerCsv ReadMode >>= \inputHandle ->
-      hSetEncoding inputHandle latin1 >> -- utf8
-      hGetContents inputHandle >>= \theInput ->
-      let
-        lx = L.lines theInput
-        stockPrices = map processLine lx
-      in
-        -- forM lx processLine >>= \stockPrices ->
-        --forM_ stockPrices (putStrLn . asSql) >>
-        insertRows tickr stockPrices >>
-        putStrLn "Done!"
+
+updateStockPricesTickers :: [T.Ticker] -> IO ()
+updateStockPricesTickers tix =
+  forM_ tix updateStockPrices
 
 -- data Person =
 --     Person { name :: Text, gender :: Gender, age :: Int }
