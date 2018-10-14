@@ -22,6 +22,7 @@ executable etradejanitor-1.0
                 EtradeJanitor.Netfonds
                 EtradeJanitor.Repos.Common
                 EtradeJanitor.Repos.PaperHistory
+                EtradeJanitor.Repos.Stocks
 
   build-depends:       base >=4.9
                        ,mtl >= 2.2.2

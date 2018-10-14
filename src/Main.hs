@@ -24,14 +24,17 @@ module Main (main) where
 --
 -- import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
 
-import EtradeJanitor.Common.Types (Ticker(..))
-import EtradeJanitor.Netfonds as NP
-import EtradeJanitor.Repos.PaperHistory as RP
+import qualified Data.Time.Calendar as Cal
+import qualified EtradeJanitor.Common.Types as T
+import qualified EtradeJanitor.Netfonds as NF
+import qualified EtradeJanitor.Repos.Stocks as RS
+import qualified EtradeJanitor.Repos.PaperHistory as RP
 
-main :: IO ()
-main =
+
+main2 :: IO ()
+main2 =
     let
-      ticker = Ticker 1 "NHY"
+      ticker = T.Ticker 1 "NHY" $ Cal.fromGregorian 2018 10 1
     in
       -- NP.savePaperHistory ticker >>
       RP.updateStockPrices ticker >>= \e ->
@@ -39,10 +42,14 @@ main =
         Right () -> putStrLn "Done!"
         Left err -> putStrLn (show err)
 
-main2 :: IO ()
-main2 =
-    let
-      ticker = Ticker 1 "NHY"
-    in
-      -- NP.savePaperHistory ticker >>
-      RP.updateStockPricesTickers [ticker]
+processTickers :: T.Tickers -> IO ()
+processTickers tix =
+  NF.savePaperHistoryTickers tix >>
+  RP.updateStockPricesTickers tix
+
+main :: IO ()
+main =
+  RS.tickers >>= \tix ->
+      case tix of
+        Right result -> processTickers result
+        Left err -> putStrLn (show err)

@@ -10,7 +10,8 @@ import Data.Default.Class (def)
 import Network.HTTP.Req ((=:), (/:))
 import qualified Network.HTTP.Req as R
 import qualified Data.ByteString.Char8 as B
-import EtradeJanitor.Common.Types (Ticker(..))
+import qualified EtradeJanitor.Common.Types as T
+--import EtradeJanitor.Common.Types (Ticker(..))
 
 
 {-|
@@ -18,8 +19,8 @@ import EtradeJanitor.Common.Types (Ticker(..))
 
         http://www.netfonds.no/quotes/paperhistory.php?paper=NHY.OSE&csv_format=csv
 -}
-downloadPaperHistory :: Ticker -> R.Req R.BsResponse
-downloadPaperHistory (Ticker _ ticker _) =
+downloadPaperHistory :: T.Ticker -> R.Req R.BsResponse
+downloadPaperHistory (T.Ticker _ ticker _) =
   let
     tickerParam = printf "%s.OSE" ticker
     params = "paper" =: (pack tickerParam) <> "csv_format" =: ("csv" :: Text)
@@ -32,12 +33,12 @@ downloadPaperHistory (Ticker _ ticker _) =
 
         NHY.csv
 -}
-savePaperHistory :: Ticker -> IO ()
+savePaperHistory :: T.Ticker -> IO ()
 savePaperHistory ticker =
   R.runReq def $
   downloadPaperHistory ticker >>= \bs ->
   liftIO $ B.writeFile (printf "%s.csv" ticker) (R.responseBody bs)
 
-savePaperHistoryTickers :: [Ticker] -> IO ()
+savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
   forM_ tix savePaperHistory

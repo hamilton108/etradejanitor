@@ -2,15 +2,11 @@
 
 module EtradeJanitor.Repos.Stocks where
 
-import Data.Int (Int64)
-import Data.Functor.Contravariant (contramap)
-
 -- Hasql
 import qualified Hasql.Session as HS
 import qualified Hasql.Statement as HST
 import qualified Hasql.Encoders as HE
 import qualified Hasql.Decoders as HD
-import qualified Data.Vector as DV
 
 -- Local
 import qualified EtradeJanitor.Repos.Common as C

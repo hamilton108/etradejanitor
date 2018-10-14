@@ -85,6 +85,6 @@ updateStockPrices tickr =
   fetchStockPrices tickr >>= \stockPrices ->
   insertRows tickr stockPrices
 
-updateStockPricesTickers :: [T.Ticker] -> IO ()
+updateStockPricesTickers :: T.Tickers -> IO ()
 updateStockPricesTickers tix =
   forM_ tix updateStockPrices
