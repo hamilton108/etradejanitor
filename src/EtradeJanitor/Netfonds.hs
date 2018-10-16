@@ -8,10 +8,27 @@ import Text.Printf (printf)
 import Control.Monad.IO.Class (liftIO)
 import Data.Default.Class (def)
 import Network.HTTP.Req ((=:), (/:))
+import qualified System.IO as IO
+import System.IO (IOMode(..))
+import qualified Text.HTML.TagSoup as TS
 import qualified Network.HTTP.Req as R
 import qualified Data.ByteString.Char8 as B
 import qualified EtradeJanitor.Common.Types as T
 --import EtradeJanitor.Common.Types (Ticker(..))
+
+
+
+fetchHtml (T.Ticker _ s _) =
+    let
+        tickerHtml :: String
+        tickerHtml = printf "%s.html" s
+
+    in
+      IO.openFile tickerHtml ReadMode >>= \inputHandle ->
+      IO.hSetEncoding inputHandle IO.latin1 >> -- utf8
+      IO.hGetContents inputHandle >>= \theInput ->
+      return theInput
+
 
 {-
 private String paperHistoryUrl(String ticker) {

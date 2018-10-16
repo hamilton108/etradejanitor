@@ -1,4 +1,7 @@
 *.swp
+*.csv
+*.html
+Sample.hs
 tmp/
 src/demo
 demo

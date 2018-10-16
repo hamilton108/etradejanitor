@@ -36,6 +36,7 @@ fetchCsv (T.Ticker _ s dx) =
         tickerCsv :: String
         tickerCsv = printf "%s.csv" s
 
+        netfondsDx :: String
         netfondsDx = netfondsDateFormat dx
     in
       openFile tickerCsv ReadMode >>= \inputHandle ->
