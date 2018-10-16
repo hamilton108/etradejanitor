@@ -30,6 +30,18 @@ import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.Repos.Stocks as RS
 import qualified EtradeJanitor.Repos.PaperHistory as RP
 
+-- dx = Cal.fromGregorian 2018 10 1
+--
+-- tikr = T.Ticker 1 "NHY" dx
+--
+-- csv  =
+--   RP.fetchCsv tikr
+--
+-- demo =
+--   let
+--       t = T.Ticker 1 "NHY" $ Cal.fromGregorian 2018 10 1
+--   in
+--     NF.saveDerivatives t
 
 main2 :: IO ()
 main2 =

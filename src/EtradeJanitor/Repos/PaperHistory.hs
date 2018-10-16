@@ -8,6 +8,7 @@ import qualified Hasql.Session as HS
 
 import Text.Printf (printf)
 import qualified Data.ByteString.Char8 as B
+import qualified Data.Time.Calendar as Cal
 import qualified Data.List as L
 import Data.List.Split (splitOn)
 import Control.Monad (forM_)
@@ -26,16 +27,25 @@ processLine line =
           -- forM_ lxx putStrLn >>
           T.StockPrice dxx opn' hi' lo' cls' vol'
 
+netfondsDateFormat :: Cal.Day -> String
+netfondsDateFormat = concat . splitOn "-" . Cal.showGregorian
+
 fetchCsv :: T.Ticker -> IO [String]
-fetchCsv tickr =
+fetchCsv (T.Ticker _ s dx) =
     let
         tickerCsv :: String
-        tickerCsv = printf "%s.csv" tickr
+        tickerCsv = printf "%s.csv" s
+
+        netfondsDx = netfondsDateFormat dx
     in
       openFile tickerCsv ReadMode >>= \inputHandle ->
       hSetEncoding inputHandle latin1 >> -- utf8
       hGetContents inputHandle >>= \theInput ->
-      return $ tail $ L.lines theInput
+      let
+        lxx = tail $ L.lines theInput
+        result = (init . takeWhile (\x -> x > netfondsDx)) lxx
+      in
+      return result
 
 fetchStockPrices :: T.Ticker -> IO [T.StockPrice]
 fetchStockPrices tickr =
