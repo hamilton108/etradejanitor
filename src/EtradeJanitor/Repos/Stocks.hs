@@ -19,7 +19,7 @@ tickers =
     HS.statement () selectStockTickers
 
 stockTickerDecoder :: HD.Row T.Ticker
-stockTickerDecoder = T.Ticker <$> HD.column HD.int8 <*> HD.column HD.text <*> HD.column HD.date
+stockTickerDecoder = T.Ticker <$> HD.column HD.int8 <*> HD.column HD.text <*> HD.column HD.int8 <*> HD.column HD.date
 
 selectStockTickers :: HST.Statement () T.Tickers
 selectStockTickers =
@@ -27,7 +27,7 @@ selectStockTickers =
   where
     sql =
       -- "select t.oid,t.ticker,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 and t.oid = 1 group by t.oid,t.ticker order by t.ticker"
-      "select t.oid,t.ticker,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 group by t.oid,t.ticker order by t.ticker"
+      "select t.oid,t.ticker,t.ticker_category,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 group by t.oid,t.ticker order by t.ticker"
     encoder =
       HE.unit
     decoder =

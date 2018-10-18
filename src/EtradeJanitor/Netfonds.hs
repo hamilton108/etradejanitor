@@ -18,7 +18,7 @@ import qualified EtradeJanitor.Common.Types as T
 
 
 
-fetchHtml (T.Ticker _ s _) =
+fetchHtml (T.Ticker _ s _ _) =
     let
         tickerHtml :: String
         tickerHtml = printf "%s.html" s
@@ -58,7 +58,7 @@ private String purchasesUrl(String ticker) {
         http://hopey.netfonds.no/derivative.php?underlying_paper=NHY&underlying_exchange=OSE&type=&exchange=OMFE
 -}
 downloadDerivatives :: T.Ticker -> R.Req R.BsResponse
-downloadDerivatives (T.Ticker _ ticker _) =
+downloadDerivatives (T.Ticker _ ticker _ _) =
   let
     params = "underlying_paper" =: ticker <> "underlying_exchange" =: ("OSE" :: Text) <> "exchange" =: ("OMFE" :: Text )
   in
@@ -76,7 +76,7 @@ saveDerivatives ticker =
         http://www.netfonds.no/quotes/paperhistory.php?paper=NHY.OSE&csv_format=csv
 -}
 downloadPaperHistory :: T.Ticker -> R.Req R.BsResponse
-downloadPaperHistory (T.Ticker _ ticker _) =
+downloadPaperHistory (T.Ticker _ ticker _ _) =
   let
     tickerParam = printf "%s.OSE" ticker
     params = "paper" =: (pack tickerParam) <> "csv_format" =: ("csv" :: Text)

@@ -31,7 +31,7 @@ netfondsDateFormat :: Cal.Day -> String
 netfondsDateFormat = concat . splitOn "-" . Cal.showGregorian
 
 fetchCsv :: T.Ticker -> IO [String]
-fetchCsv (T.Ticker _ s dx) =
+fetchCsv (T.Ticker _ s _ dx) =
     let
         tickerCsv :: String
         tickerCsv = printf "%s.csv" s
@@ -68,7 +68,7 @@ asDateString v =
     printf "%s-%s-%s" year month day
 
 asSql :: T.Ticker -> T.StockPrice -> String -- B.ByteString
-asSql (T.Ticker oid _ _) sp =
+asSql (T.Ticker oid _ _ _) sp =
     printf
       "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values (%d,'%s',%s,%s,%s,%s,%s)"
       oid

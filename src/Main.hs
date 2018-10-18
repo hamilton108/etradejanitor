@@ -35,7 +35,7 @@ import qualified EtradeJanitor.Repos.PaperHistory as RP
 
 dx = Cal.fromGregorian 2018 10 1
 
-tikr = T.Ticker 1 "NHY" dx
+tikr = T.Ticker 1 "NHY" 1 dx 
 
 html :: IO String
 html =
@@ -126,7 +126,7 @@ currentTime = do
 main2 :: IO ()
 main2 =
     let
-      ticker = T.Ticker 1 "NHY" $ Cal.fromGregorian 2018 10 1
+      ticker = T.Ticker 1 "NHY" 1 $ Cal.fromGregorian 2018 10 1
     in
       NF.saveDerivatives ticker >>
       putStrLn "Done!"
