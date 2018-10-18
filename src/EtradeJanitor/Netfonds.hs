@@ -70,6 +70,10 @@ saveDerivatives ticker =
   downloadDerivatives ticker >>= \bs ->
   liftIO $ B.writeFile (printf "%s.html" ticker) (R.responseBody bs)
 
+saveDerivativesTickers :: T.Tickers -> IO ()
+saveDerivativesTickers tix = 
+  forM_ tix saveDerivatives 
+
 {-|
     downloadPaperHistory returns a response BsResponse from the url like (f.ex NHY):
 

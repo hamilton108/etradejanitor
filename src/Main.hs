@@ -24,6 +24,8 @@ module Main (main) where
 --
 -- import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
 
+import qualified Data.Text as Tx
+import qualified Data.Vector as V
 import Data.Maybe (fromMaybe)
 import qualified Text.HTML.TagSoup as TS
 import Text.HTML.TagSoup ((~==),(~/=))
@@ -133,8 +135,17 @@ main2 =
 
 processTickers :: T.Tickers -> IO ()
 processTickers tix =
-  NF.savePaperHistoryTickers tix >>
-  RP.updateStockPricesTickers tix
+    let 
+        cat1 = V.filter (\t -> (T.category t) == 1) tix
+        cat3 = V.filter (\t -> (T.category t) == 3) tix
+    in
+        V.mapM_ (\t -> putStrLn (Tx.unpack $ T.ticker t)) cat1 >>
+        putStrLn "Done 1!" >> 
+        V.mapM_ (\t -> putStrLn (Tx.unpack $ T.ticker t)) cat3 >>
+        putStrLn "Done 3!"  >>
+        NF.savePaperHistoryTickers cat3 >>
+        NF.saveDerivativesTickers tix >>
+        RP.updateStockPricesTickers tix
 
 main :: IO ()
 main =
