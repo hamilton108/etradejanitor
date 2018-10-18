@@ -6,7 +6,10 @@ import qualified Data.Text as Tx
 import qualified Data.Vector as DV
 import qualified Data.Time.Calendar as Cal
 
-data Ticker = Ticker DI.Int64 Tx.Text DI.Int64 Cal.Day deriving (Show)
+data Ticker = Ticker { getOid :: DI.Int64 
+                     , getTicker :: Tx.Text 
+                     , getCategory :: DI.Int64 
+                     , getDate :: Cal.Day } deriving (Show)
 
 type Tickers = DV.Vector Ticker
 
