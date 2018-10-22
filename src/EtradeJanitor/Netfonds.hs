@@ -10,24 +10,65 @@ import Data.Default.Class (def)
 import Network.HTTP.Req ((=:), (/:))
 import qualified System.IO as IO
 import System.IO (IOMode(..))
+import Text.HTML.TagSoup ((~/=))
+import qualified Data.List.Split as SPLIT
 import qualified Text.HTML.TagSoup as TS
 import qualified Network.HTTP.Req as R
 import qualified Data.ByteString.Char8 as B
 import qualified EtradeJanitor.Common.Types as T
 --import EtradeJanitor.Common.Types (Ticker(..))
 
+type StringSoup = [TS.Tag String]
 
-
-fetchHtml (T.Ticker _ s _ _) =
+html :: T.Ticker -> IO String
+html t =
     let
-        tickerHtml :: String
-        tickerHtml = printf "%s.html" s
+        tickerHtml = printf "%s.html" (T.ticker t)
 
     in
       IO.openFile tickerHtml ReadMode >>= \inputHandle ->
       IO.hSetEncoding inputHandle IO.latin1 >> -- utf8
       IO.hGetContents inputHandle >>= \theInput ->
       return theInput
+
+soup :: T.Ticker -> IO StringSoup
+soup t =
+  html t >>= \htmlx ->
+  return $ TS.parseTags htmlx
+
+stockPriceVal :: StringSoup -> TS.Attribute String -> String
+stockPriceVal curSoup attr  =
+    let
+        -- tag = TS.TagOpen ("td" :: String) [("name","ju.op")]
+        tag = TS.TagOpen ("td" :: String) [attr]
+        findFn =  take 2 . dropWhile (~/= tag)
+        extractFn = TS.fromTagText . head . drop 1
+    in
+        (extractFn . findFn) curSoup
+
+stockPriceDx curSoup =
+    let
+        tag = TS.TagOpen ("span" :: String) [("id","toptime")]
+        findFn =  take 2 . dropWhile (~/= tag)
+        extractFn = TS.fromTagText . head . drop 1
+        rawValue = (extractFn . findFn) curSoup
+        -- splitVal = SPLIT.splitOn rawValue
+    in
+      rawValue
+
+
+
+
+-- stockPriceFor :: T.Ticker ->
+createStockPrice t =
+  soup t >>= \soupx ->
+  let opn = stockPriceVal soupx ("name", "ju.op")
+      hi = stockPriceVal soupx ("name", "ju.h")
+      lo = stockPriceVal soupx ("name", "ju.lo")
+      cls = stockPriceVal soupx ("id", "ju.l")
+      vol = stockPriceVal soupx ("name", "ju.vo")
+  in
+    return $ (opn,hi,lo,cls,vol)
 
 
 {-
@@ -71,8 +112,8 @@ saveDerivatives ticker =
   liftIO $ B.writeFile (printf "%s.html" ticker) (R.responseBody bs)
 
 saveDerivativesTickers :: T.Tickers -> IO ()
-saveDerivativesTickers tix = 
-  forM_ tix saveDerivatives 
+saveDerivativesTickers tix =
+  forM_ tix saveDerivatives
 
 {-|
     downloadPaperHistory returns a response BsResponse from the url like (f.ex NHY):

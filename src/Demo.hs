@@ -39,10 +39,18 @@ dx = Cal.fromGregorian 2018 10 1
 
 tikr = T.Ticker 1 "NHY" 1 dx
 
+price = NF.createStockPrice tikr
+
+sdx = NF.soup tikr >>= \soupx ->
+      return $ NF.stockPriceDx soupx
+
 html :: IO String
 html =
-  NF.fetchHtml tikr
+  NF.html tikr
 
+xx =
+  html >>= \htmlx ->
+  return $ TS.parseTags htmlx
 
 -- ts :: IO (TS.Tag String)
 ts f =

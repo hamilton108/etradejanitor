@@ -19,13 +19,13 @@ processTickers tix =
         RP.updateStockPricesTickers cat3
 
 
-vol =
-    let
-        tag = TS.TagOpen ("td" :: String) [("name","ju.vo")]
-        findFn =  take 2 . dropWhile (~/= tag)
-        extractFn = TS.fromTagText . head . drop 1
-    in
-        ts $ extractFn . findFn
+-- vol =
+--     let
+--         tag = TS.TagOpen ("td" :: String) [("name","ju.vo")]
+--         findFn =  take 2 . dropWhile (~/= tag)
+--         extractFn = TS.fromTagText . head . drop 1
+--     in
+--         ts $ extractFn . findFn
 
 main :: IO ()
 main =
