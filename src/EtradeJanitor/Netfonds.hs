@@ -11,7 +11,8 @@ import Network.HTTP.Req ((=:), (/:))
 import qualified System.IO as IO
 import System.IO (IOMode(..))
 import Text.HTML.TagSoup ((~/=))
-import qualified Data.List.Split as SPLIT
+import Text.Regex.TDFA ((=~))
+import qualified Text.Regex.TDFA as RE
 import qualified Text.HTML.TagSoup as TS
 import qualified Network.HTTP.Req as R
 import qualified Data.ByteString.Char8 as B
@@ -33,8 +34,7 @@ html t =
 
 soup :: T.Ticker -> IO StringSoup
 soup t =
-  html t >>= \htmlx ->
-  return $ TS.parseTags htmlx
+  html t >>= return . TS.parseTags
 
 stockPriceVal :: StringSoup -> TS.Attribute String -> String
 stockPriceVal curSoup attr  =
@@ -46,29 +46,35 @@ stockPriceVal curSoup attr  =
     in
         (extractFn . findFn) curSoup
 
+dateRe :: String
+dateRe = "[0-9][0-9]/[0-9][0-9]-[0-9][0-9][0-9][0-9]"
+
+stockPriceDx :: StringSoup -> String
 stockPriceDx curSoup =
     let
         tag = TS.TagOpen ("span" :: String) [("id","toptime")]
         findFn =  take 2 . dropWhile (~/= tag)
         extractFn = TS.fromTagText . head . drop 1
         rawValue = (extractFn . findFn) curSoup
-        -- splitVal = SPLIT.splitOn rawValue
+        match = rawValue =~ dateRe :: RE.AllTextMatches [] String
+        dx = (head . RE.getAllTextMatches) match
+        day = take 2 dx
+        month = take 2 . drop 3 $ dx
+        year = take 4 . drop 6 $ dx
     in
-      rawValue
+      year ++ "-" ++ month ++ "-" ++ day
 
-
-
-
--- stockPriceFor :: T.Ticker ->
+createStockPrice :: T.Ticker -> IO T.StockPrice
 createStockPrice t =
   soup t >>= \soupx ->
   let opn = stockPriceVal soupx ("name", "ju.op")
       hi = stockPriceVal soupx ("name", "ju.h")
       lo = stockPriceVal soupx ("name", "ju.lo")
       cls = stockPriceVal soupx ("id", "ju.l")
-      vol = stockPriceVal soupx ("name", "ju.vo")
+      vol = filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")
+      dx = stockPriceDx soupx
   in
-    return $ (opn,hi,lo,cls,vol)
+    return $ T.StockPrice dx opn hi lo cls vol
 
 
 {-
@@ -105,11 +111,17 @@ downloadDerivatives (T.Ticker _ ticker _ _) =
   in
   R.req R.GET (R.http "hopey.netfonds.no" /: "derivative.php") R.NoReqBody R.bsResponse params
 
-saveDerivatives :: T.Ticker -> IO ()
-saveDerivatives ticker =
+derivativesResponseBody :: T.Ticker -> IO B.ByteString
+derivativesResponseBody ticker =
   R.runReq def $
   downloadDerivatives ticker >>= \bs ->
-  liftIO $ B.writeFile (printf "%s.html" ticker) (R.responseBody bs)
+  return $ R.responseBody bs
+  -- liftIO $ B.writeFile (printf "%s.html" ticker) (R.responseBody bs)
+
+saveDerivatives :: T.Ticker -> IO ()
+saveDerivatives ticker =
+  derivativesResponseBody ticker >>= \bs ->
+  B.writeFile (printf "%s.html" ticker) bs -- (R.responseBody bs)
 
 saveDerivativesTickers :: T.Tickers -> IO ()
 saveDerivativesTickers tix =
@@ -127,7 +139,6 @@ downloadPaperHistory (T.Ticker _ ticker _ _) =
     params = "paper" =: (pack tickerParam) <> "csv_format" =: ("csv" :: Text)
   in
   R.req R.GET (R.http "netfonds.no" /: "quotes" /: "paperhistory.php") R.NoReqBody R.bsResponse params
-
 
 {-|
     savePaperHistory gets a http response from downloadPaperHistory

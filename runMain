@@ -1,0 +1,15 @@
+#!/bin/bash
+
+HASKELL_VER="8.4"
+
+HOME="/home/rcs/opt/haskell/etradejanitor"
+
+EXE="$HOME/etradejanitor-1.0"
+
+# docker run -it --rm -v $HOME:/home/rcs/opt/haskell/etradejanitor rcs/haskell:$HASKELL_VER "-c" $EXE
+
+docker run -it --rm -v $HOME:$HOME rcs/haskell:$HASKELL_VER "-c" $EXE
+
+exit 0
+
+

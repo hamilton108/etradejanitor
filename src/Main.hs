@@ -28,7 +28,10 @@ processTickers tix =
 --         ts $ extractFn . findFn
 
 main :: IO ()
-main =
+main = putStrLn "Hi"
+
+xmain :: IO ()
+xmain =
   RS.tickers >>= \tix ->
       case tix of
         Right result -> processTickers result
