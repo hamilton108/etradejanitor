@@ -4,13 +4,14 @@
 module Main (main) where
 
 import qualified Data.Vector as V
+import qualified Data.Text as Tx
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.Repos.Stocks as RS
 import qualified EtradeJanitor.Repos.PaperHistory as RP
 
-processTickers :: T.Tickers -> IO ()
-processTickers tix =
+xprocessTickers :: T.Tickers -> IO ()
+xprocessTickers tix =
     let
         cat3 = V.filter (\t -> (T.category t) == 3) tix
     in
@@ -18,20 +19,23 @@ processTickers tix =
         NF.saveDerivativesTickers tix >>
         RP.updateStockPricesTickers cat3
 
+processTickers :: T.Tickers -> IO ()
+processTickers tix =
+  let
+    putStrLn_ = putStrLn . Tx.unpack . T.ticker
+    one = V.head tix
+    rest = V.tail tix
+  in
+    V.mapM_ putStrLn_ rest >>
+    putStrLn "Here I come! " >>
+    putStrLn_ one >>
+    pure ()
 
--- vol =
---     let
---         tag = TS.TagOpen ("td" :: String) [("name","ju.vo")]
---         findFn =  take 2 . dropWhile (~/= tag)
---         extractFn = TS.fromTagText . head . drop 1
---     in
---         ts $ extractFn . findFn
+
+
 
 main :: IO ()
-main = putStrLn "Hi"
-
-xmain :: IO ()
-xmain =
+main =
   RS.tickers >>= \tix ->
       case tix of
         Right result -> processTickers result

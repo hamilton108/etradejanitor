@@ -6,15 +6,22 @@ import qualified Data.Text as Tx
 import qualified Data.Vector as DV
 import qualified Data.Time.Calendar as Cal
 
-data Ticker = Ticker { oid :: DI.Int64 
-                     , ticker :: Tx.Text 
-                     , category :: DI.Int64 
+data Ticker = Ticker { oid :: DI.Int64
+                     , ticker :: Tx.Text
+                     , category :: DI.Int64
                      , date :: Cal.Day } deriving (Show)
 
 type Tickers = DV.Vector Ticker
 
 instance TP.PrintfArg Ticker where
   formatArg (Ticker _ t _ _) fmt = TP.formatString (Tx.unpack t) fmt
+
+data IsoDate = IsoDate { year :: String
+                       , month :: String
+                       , day :: String} deriving (Show)
+
+isoDateStr :: IsoDate -> String
+isoDateStr (IsoDate y m d) = y ++ "-" ++ m ++ "-" ++ d
 
 data StockPrice =
   StockPrice {

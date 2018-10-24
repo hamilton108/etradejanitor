@@ -49,7 +49,7 @@ stockPriceVal curSoup attr  =
 dateRe :: String
 dateRe = "[0-9][0-9]/[0-9][0-9]-[0-9][0-9][0-9][0-9]"
 
-stockPriceDx :: StringSoup -> String
+stockPriceDx :: StringSoup -> T.IsoDate
 stockPriceDx curSoup =
     let
         tag = TS.TagOpen ("span" :: String) [("id","toptime")]
@@ -62,17 +62,16 @@ stockPriceDx curSoup =
         month = take 2 . drop 3 $ dx
         year = take 4 . drop 6 $ dx
     in
-      year ++ "-" ++ month ++ "-" ++ day
+      T.IsoDate year month day
 
 createStockPrice :: StringSoup -> T.StockPrice
 createStockPrice soupx =
-  -- soup t >>= \soupx ->
   let opn = stockPriceVal soupx ("name", "ju.op")
       hi = stockPriceVal soupx ("name", "ju.h")
       lo = stockPriceVal soupx ("name", "ju.lo")
       cls = stockPriceVal soupx ("id", "ju.l")
       vol = filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")
-      dx = stockPriceDx soupx
+      dx = (T.isoDateStr . stockPriceDx) soupx
   in
     T.StockPrice dx opn hi lo cls vol
 
