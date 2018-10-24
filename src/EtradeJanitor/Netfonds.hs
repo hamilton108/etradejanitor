@@ -34,7 +34,7 @@ html t =
 
 soup :: T.Ticker -> IO StringSoup
 soup t =
-  html t >>= return . TS.parseTags
+  html t >>= pure . TS.parseTags
 
 stockPriceVal :: StringSoup -> TS.Attribute String -> String
 stockPriceVal curSoup attr  =
@@ -113,9 +113,9 @@ downloadDerivatives (T.Ticker _ ticker _ _) =
 derivativesResponseBody :: T.Ticker -> IO B.ByteString
 derivativesResponseBody ticker =
   R.runReq def $
-  downloadDerivatives ticker >>= \bs ->
-  return $ R.responseBody bs
-  -- liftIO $ B.writeFile (printf "%s.html" ticker) (R.responseBody bs)
+  downloadDerivatives ticker >>= pure . R.responseBody
+
+  --liftIO $ B.writeFile (printf "%s.html" ticker) (R.responseBody bs)
 
 saveDerivatives :: T.Ticker -> IO ()
 saveDerivatives ticker =
