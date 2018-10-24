@@ -41,7 +41,9 @@ dx = Cal.fromGregorian 2018 10 1
 
 tikr = T.Ticker 1 "NHY" 1 dx
 
-dr = NF.derivativesResponseBody tikr >>= return . NF.stockPriceDx . TS.parseTags . B.unpack 
+dr = NF.derivativesResponseBody tikr >>= pure . NF.stockPriceDx . TS.parseTags . B.unpack
+
+price = NF.derivativesResponseBody tikr >>= pure . NF.createStockPrice . TS.parseTags . B.unpack 
 
 {-
 price = NF.createStockPrice tikr

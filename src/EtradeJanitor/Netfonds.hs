@@ -64,9 +64,9 @@ stockPriceDx curSoup =
     in
       year ++ "-" ++ month ++ "-" ++ day
 
-createStockPrice :: T.Ticker -> IO T.StockPrice
-createStockPrice t =
-  soup t >>= \soupx ->
+createStockPrice :: StringSoup -> T.StockPrice
+createStockPrice soupx =
+  -- soup t >>= \soupx ->
   let opn = stockPriceVal soupx ("name", "ju.op")
       hi = stockPriceVal soupx ("name", "ju.h")
       lo = stockPriceVal soupx ("name", "ju.lo")
@@ -74,7 +74,7 @@ createStockPrice t =
       vol = filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")
       dx = stockPriceDx soupx
   in
-    return $ T.StockPrice dx opn hi lo cls vol
+    T.StockPrice dx opn hi lo cls vol
 
 
 {-
