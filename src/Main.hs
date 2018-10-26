@@ -9,20 +9,24 @@ import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.Repos.Stocks as RS
 import qualified EtradeJanitor.Repos.PaperHistory as RP
+import Control.Monad.Reader (ReaderT,runReaderT,ask)
+import Control.Monad.IO.Class (liftIO)
 
-xprocessTickers :: T.Tickers -> IO ()
+-- processTickers :: T.Tickers -> IO ()
+-- processTickers tix =
+--     let
+--         cat3 = V.filter (\t -> (T.category t) == 3) tix
+--     in
+--         NF.savePaperHistoryTickers cat3 >>
+--         NF.saveDerivativesTickers tix >>
+--         RP.updateStockPricesTickers cat3
+
+xprocessTickers :: T.Tickers -> ReaderT T.Env IO ()
 xprocessTickers tix =
-    let
-        cat3 = V.filter (\t -> (T.category t) == 3) tix
-    in
-        NF.savePaperHistoryTickers cat3 >>
-        NF.saveDerivativesTickers tix >>
-        RP.updateStockPricesTickers cat3
-
-processTickers :: T.Tickers -> IO ()
-processTickers tix =
+  ask >>= \env ->
+  liftIO $
   let
-    putStrLn_ = putStrLn . Tx.unpack . T.ticker
+    putStrLn_ = putStrLn . (++(T.getFilePath env)) . Tx.unpack . T.ticker
     one = V.head tix
     rest = V.tail tix
   in
@@ -32,11 +36,18 @@ processTickers tix =
     pure ()
 
 
+processTickers :: T.Tickers -> ReaderT T.Env IO ()
+processTickers tix =
+  NF.saveDerivativesTickers tix
 
+currentFilePath :: FilePath
+currentFilePath = "/home"
 
 main :: IO ()
 main =
   RS.tickers >>= \tix ->
       case tix of
-        Right result -> processTickers result
-        Left err -> putStrLn (show err)
+        Right result ->
+          runReaderT (processTickers result) $ T.Env currentFilePath
+        Left err ->
+          putStrLn (show err)

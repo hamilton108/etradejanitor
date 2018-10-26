@@ -6,6 +6,7 @@ import Control.Monad (forM_)
 import Data.Text (Text,pack)
 import Text.Printf (printf)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (ReaderT,runReaderT,ask)
 import Data.Default.Class (def)
 import Network.HTTP.Req ((=:), (/:))
 import qualified System.IO as IO
@@ -117,12 +118,13 @@ derivativesResponseBody ticker =
 
   --liftIO $ B.writeFile (printf "%s.html" ticker) (R.responseBody bs)
 
-saveDerivatives :: T.Ticker -> IO ()
+saveDerivatives :: T.Ticker -> ReaderT T.Env IO ()
 saveDerivatives ticker =
+  liftIO $
   derivativesResponseBody ticker >>= \bs ->
   B.writeFile (printf "%s.html" ticker) bs -- (R.responseBody bs)
 
-saveDerivativesTickers :: T.Tickers -> IO ()
+saveDerivativesTickers :: T.Tickers -> ReaderT T.Env IO ()
 saveDerivativesTickers tix =
   forM_ tix saveDerivatives
 
