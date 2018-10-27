@@ -162,15 +162,15 @@ saveTradingDeptTickers tix =
 --------------------------------------------------------------------------
 -- private String purchasesUrl(String ticker) {
 --     return String.format("http://www.netfonds.no/quotes/tradedump.php?paper=%s.OSE&csv_format=csv", ticker);
-downloadByersSellers :: T.Ticker -> R.Req R.BsResponse
-downloadByersSellers t =
+downloadBuyersSellers :: T.Ticker -> R.Req R.BsResponse
+downloadBuyersSellers t =
     let
       myUrl = R.http "netfonds.no" /: "quotes" /: "tradedump.php"
     in
     download_ t myUrl
 
-saveByersSellers :: T.Ticker -> IO ()
-saveByersSellers t =
+saveBuyersSellers :: T.Ticker -> IO ()
+saveBuyersSellers t =
   R.runReq def $
   downloadByersSellers t >>= \bs ->
   liftIO $ B.writeFile (printf "%s/%s_hndl.csv" T.feed t) (R.responseBody bs)
