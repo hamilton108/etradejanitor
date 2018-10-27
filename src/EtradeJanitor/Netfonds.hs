@@ -9,38 +9,38 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT,runReaderT,ask)
 import Data.Default.Class (def)
 import Network.HTTP.Req ((=:), (/:))
-import qualified System.IO as IO
 import System.IO (IOMode(..))
 import Text.HTML.TagSoup ((~/=))
 import Text.Regex.TDFA ((=~))
+-- import qualified Data.Vector as V
+import qualified System.IO as IO
 import qualified Text.Regex.TDFA as RE
 import qualified Text.HTML.TagSoup as TS
 import qualified Network.HTTP.Req as R
 import qualified Data.ByteString.Char8 as B
 import qualified EtradeJanitor.Common.Types as T
---import EtradeJanitor.Common.Types (Ticker(..))
 
 type StringSoup = [TS.Tag String]
 
-html :: T.Ticker -> IO String
+html :: T.Ticker -> ReaderT T.Env IO String
 html t =
+    ask >>= \env ->
+    liftIO $
     let
-        tickerHtml = printf "%s.html" (T.ticker t)
-
+        tickerHtml = printf "%s/%s.html" (T.getHtmlPath env) (T.ticker t)
     in
-      IO.openFile tickerHtml ReadMode >>= \inputHandle ->
-      IO.hSetEncoding inputHandle IO.latin1 >> -- utf8
-      IO.hGetContents inputHandle >>= \theInput ->
-      return theInput
+    IO.openFile tickerHtml ReadMode >>= \inputHandle ->
+    IO.hSetEncoding inputHandle IO.latin1 >> -- utf8
+    IO.hGetContents inputHandle >>= \theInput ->
+    return theInput
 
-soup :: T.Ticker -> IO StringSoup
+soup :: T.Ticker -> ReaderT T.Env IO StringSoup
 soup t =
   html t >>= pure . TS.parseTags
 
 stockPriceVal :: StringSoup -> TS.Attribute String -> String
 stockPriceVal curSoup attr  =
     let
-        -- tag = TS.TagOpen ("td" :: String) [("name","ju.op")]
         tag = TS.TagOpen ("td" :: String) [attr]
         findFn =  take 2 . dropWhile (~/= tag)
         extractFn = TS.fromTagText . head . drop 1
@@ -127,6 +127,7 @@ saveDerivatives ticker =
 
 saveDerivativesTickers :: T.Tickers -> ReaderT T.Env IO ()
 saveDerivativesTickers tix =
+  --saveDerivatives $ V.head tix
   forM_ tix saveDerivatives
 
 {-|
@@ -152,7 +153,7 @@ savePaperHistory :: T.Ticker -> IO ()
 savePaperHistory ticker =
   R.runReq def $
   downloadPaperHistory ticker >>= \bs ->
-  liftIO $ B.writeFile (printf "%s.csv" ticker) (R.responseBody bs)
+  liftIO $ B.writeFile (printf "%s/%s.csv" T.feed ticker) (R.responseBody bs)
 
 savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =

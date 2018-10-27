@@ -6,6 +6,9 @@ import qualified Data.Text as Tx
 import qualified Data.Vector as DV
 import qualified Data.Time.Calendar as Cal
 
+feed :: FilePath
+feed = "/home/rcs/opt/haskell/etradejanitor/feed"
+
 newtype Env = Env { getHtmlPath :: FilePath } deriving (Show)
 
 data Ticker = Ticker { oid :: DI.Int64

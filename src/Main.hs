@@ -3,6 +3,7 @@
 
 module Main (main) where
 
+import qualified System.Directory as Dir
 import qualified Data.Vector as V
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Netfonds as NF
@@ -47,8 +48,9 @@ currentFilePath =
   DT.getCurrentDateTime >>= \cdt ->
   let today = DT.dateTimeToDay cdt
       (y,m,d) = Cal.toGregorian today
-      filePath = printf "/home/rcs/opt/haskell/etradejanitor/feed/%d/%d/%d" y m d :: FilePath
+      filePath = printf "%s/%d/%d/%d" T.feed y m d :: FilePath
   in
+  Dir.createDirectoryIfMissing True filePath >>
   pure filePath
 
 
