@@ -42,6 +42,14 @@ import Control.Monad.IO.Class (liftIO)
 processTickers :: T.Tickers -> ReaderT T.Env IO ()
 processTickers tix =
   NF.saveDerivativesTickers tix
+--         NF.savePaperHistoryTickers cat3 >>
+
+processTickers2 :: T.Tickers -> IO ()
+processTickers2 tix =
+  let
+    cat3 = V.filter (\t -> (T.category t) == 3) tix
+  in
+  NF.savePaperHistoryTickers cat3
 
 currentFilePath :: IO FilePath
 currentFilePath =
@@ -52,8 +60,6 @@ currentFilePath =
   in
   Dir.createDirectoryIfMissing True filePath >>
   pure filePath
-
-
 
 main :: IO ()
 main =

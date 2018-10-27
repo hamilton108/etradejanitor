@@ -76,34 +76,9 @@ createStockPrice soupx =
   in
     T.StockPrice dx opn hi lo cls vol
 
-
-{-
-private String paperHistoryUrl(String ticker) {
-    return String.format("http://www.netfonds.no/quotes/paperhistory.php?paper=%s.OSE&csv_format=csv", ticker);
-}
-
-private String tickerUrl(String ticker) { <<<===
-    return String.format("http://hopey.netfonds.no/derivative.php?underlying_paper=%s&underlying_exchange=OSE&exchange=OMFE", ticker);
-}
-
-private String indexUrl(String ticker) {
-    return String.format("http://hopey.netfonds.no/peers.php?paper=%s&exchange=OSE", ticker);
-}
-
-private String depthUrl(String ticker) {
-    return String.format("http://www.netfonds.no/quotes/posdump.php?paper=%s.OSE&csv_format=csv", ticker);
-}
-
-private String purchasesUrl(String ticker) {
-    return String.format("http://www.netfonds.no/quotes/tradedump.php?paper=%s.OSE&csv_format=csv", ticker);
-}
--}
-
-{-|
-    downloadDerivatives returns a response BsResponse from the url like (f.ex NHY):
-
-        http://hopey.netfonds.no/derivative.php?underlying_paper=NHY&underlying_exchange=OSE&type=&exchange=OMFE
--}
+--------------------------------------------------------------------------
+------------------------------ Derivatives -------------------------------
+--------------------------------------------------------------------------
 downloadDerivatives :: T.Ticker -> R.Req R.BsResponse
 downloadDerivatives (T.Ticker _ ticker _ _) =
   let
@@ -116,8 +91,6 @@ derivativesResponseBody ticker =
   R.runReq def $
   downloadDerivatives ticker >>= pure . R.responseBody
 
-  --liftIO $ B.writeFile (printf "%s.html" ticker) (R.responseBody bs)
-
 saveDerivatives :: T.Ticker -> ReaderT T.Env IO ()
 saveDerivatives ticker =
   ask >>= \env ->
@@ -127,28 +100,32 @@ saveDerivatives ticker =
 
 saveDerivativesTickers :: T.Tickers -> ReaderT T.Env IO ()
 saveDerivativesTickers tix =
-  --saveDerivatives $ V.head tix
   forM_ tix saveDerivatives
 
-{-|
-    downloadPaperHistory returns a response BsResponse from the url like (f.ex NHY):
-
-        http://www.netfonds.no/quotes/paperhistory.php?paper=NHY.OSE&csv_format=csv
--}
-downloadPaperHistory :: T.Ticker -> R.Req R.BsResponse
-downloadPaperHistory (T.Ticker _ ticker _ _) =
+--------------------------------------------------------------------------
+--------------------------------- Common ---------------------------------
+--------------------------------------------------------------------------
+download_ :: T.Ticker -> R.Url a -> R.Req R.BsResponse
+download_ t myHttp =
   let
+    ticker = (T.ticker t)
     tickerParam = printf "%s.OSE" ticker
     params = "paper" =: (pack tickerParam) <> "csv_format" =: ("csv" :: Text)
   in
-  R.req R.GET (R.http "netfonds.no" /: "quotes" /: "paperhistory.php") R.NoReqBody R.bsResponse params
+  R.req R.GET myHttp R.NoReqBody R.bsResponse params
 
-{-|
-    savePaperHistory gets a http response from downloadPaperHistory
-    and writes it to a csv file (f.ex NHY):
+--------------------------------------------------------------------------
+-------------------------- Paper History ---------------------------------
+--------------------------------------------------------------------------
+-- private String paperHistoryUrl(String ticker) {
+--     return String.format("http://www.netfonds.no/quotes/paperhistory.php?paper=%s.OSE&csv_format=csv", ticker);
+downloadPaperHistory :: T.Ticker -> R.Req R.BsResponse
+downloadPaperHistory t =
+    let
+      myUrl = R.http "netfonds.no" /: "quotes" /: "paperhistory.php"
+    in
+    download_ t myUrl
 
-        NHY.csv
--}
 savePaperHistory :: T.Ticker -> IO ()
 savePaperHistory ticker =
   R.runReq def $
@@ -158,3 +135,42 @@ savePaperHistory ticker =
 savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
   forM_ tix savePaperHistory
+
+--------------------------------------------------------------------------
+------------------------------- Trading Depth-----------------------------
+--------------------------------------------------------------------------
+-- private String depthUrl(String ticker) {
+--     return String.format("http://www.netfonds.no/quotes/posdump.php?paper=%s.OSE&csv_format=csv", ticker);
+downloadTradingDepth :: T.Ticker -> R.Req R.BsResponse
+downloadTradingDepth t =
+    let
+      myUrl = R.http "netfonds.no" /: "quotes" /: "posdump.php"
+    in
+    download_ t myUrl
+
+saveTradingDepth:: T.Ticker -> IO ()
+saveTradingDepth t =
+  R.runReq def $
+  downloadTradingDepth t >>= \bs ->
+  liftIO $ B.writeFile (printf "%s/%s_dy.csv" T.feed t) (R.responseBody bs)
+
+saveTradingDeptTickers :: T.Tickers -> IO ()
+saveTradingDeptTickers tix =
+  forM_ tix savePaperHistory
+--------------------------------------------------------------------------
+------------------------------- Byers and Sellers ------------------------
+--------------------------------------------------------------------------
+-- private String purchasesUrl(String ticker) {
+--     return String.format("http://www.netfonds.no/quotes/tradedump.php?paper=%s.OSE&csv_format=csv", ticker);
+downloadByersSellers :: T.Ticker -> R.Req R.BsResponse
+downloadByersSellers t =
+    let
+      myUrl = R.http "netfonds.no" /: "quotes" /: "tradedump.php"
+    in
+    download_ t myUrl
+
+saveByersSellers :: T.Ticker -> IO ()
+saveByersSellers t =
+  R.runReq def $
+  downloadByersSellers t >>= \bs ->
+  liftIO $ B.writeFile (printf "%s/%s_hndl.csv" T.feed t) (R.responseBody bs)
