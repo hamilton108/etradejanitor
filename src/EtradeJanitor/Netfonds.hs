@@ -139,11 +139,7 @@ downloadPaperHistory t =
 
 savePaperHistory :: T.Ticker -> IO ()
 savePaperHistory t =
-  save_ t Nothing downloadTradingDepth
-  -- R.runReq def $
-  -- downloadPaperHistory ticker >>= \bs ->
-  -- liftIO $ B.writeFile (printf "%s/%s.csv" T.feed ticker) (R.responseBody bs)
-
+  save_ t Nothing downloadPaperHistory 
 
 savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
@@ -164,9 +160,6 @@ downloadTradingDepth t =
 saveTradingDepth:: T.Ticker -> IO ()
 saveTradingDepth t =
   save_ t (Just "dy") downloadTradingDepth
-  -- R.runReq def $
-  -- downloadTradingDepth t >>= \bs ->
-  -- liftIO $ B.writeFile (printf "%s/%s_dy.csv" T.feed t) (R.responseBody bs)
 
 saveTradingDeptTickers :: T.Tickers -> IO ()
 saveTradingDeptTickers tix =
@@ -189,10 +182,6 @@ downloadBuyersSellers t =
 saveBuyersSellers :: T.Ticker -> IO ()
 saveBuyersSellers t =
   save_ t (Just "hndl") downloadBuyersSellers
-  -- R.runReq def $
-  -- downloadBuyersSellers t >>= \bs ->
-  -- liftIO $ B.writeFile (printf "%s/%s_hndl.csv" T.feed t) (R.responseBody bs)
-
 
 saveBuyersSellersTickers :: T.Tickers -> IO ()
 saveBuyersSellersTickers tix =
