@@ -6,7 +6,7 @@ import Control.Monad (forM_)
 import Data.Text (Text,pack)
 import Text.Printf (printf)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Reader (ReaderT,runReaderT,ask)
+import Control.Monad.Reader (ReaderT,ask)
 import Data.Default.Class (def)
 import Network.HTTP.Req ((=:), (/:))
 import System.IO (IOMode(..))
@@ -147,6 +147,7 @@ savePaperHistory t =
   let
     fileName = printf "%s/%s.csv" T.feed (T.ticker t)
   in
+  putStrLn fileName >>
   save_ fileName t downloadPaperHistory
 
 savePaperHistoryTickers :: T.Tickers -> IO ()

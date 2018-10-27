@@ -12,8 +12,7 @@ import qualified EtradeJanitor.Repos.PaperHistory as RP
 import qualified Data.Dates as DT
 import qualified Data.Time.Calendar as Cal
 import Text.Printf (printf)
-import Control.Monad.Reader (ReaderT,runReaderT,ask)
-import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (ReaderT,runReaderT)
 
 -- processTickers :: T.Tickers -> IO ()
 -- processTickers tix =
@@ -41,7 +40,7 @@ import Control.Monad.IO.Class (liftIO)
 
 processTickers :: T.Tickers -> ReaderT T.Env IO ()
 processTickers tix =
-  NF.saveDerivativesTickers tix >>
+  -- NF.saveDerivativesTickers tix >>
   NF.saveTradingDepthTickers tix >>
   NF.saveBuyersSellersTickers tix
 
@@ -51,6 +50,16 @@ processTickers2 tix =
     cat3 = V.filter (\t -> (T.category t) == 3) tix
   in
   NF.savePaperHistoryTickers cat3
+
+-- xx =
+--   RS.tickers >>= \tix ->
+--   case tix of
+--     Right result ->
+--       pure $ V.filter (\t -> (T.category t) == 3) result
+--     Left err ->
+--       putStrLn (show err) >>
+--       pure V.empty
+
 
 
 currentFilePath :: IO FilePath
@@ -68,6 +77,7 @@ main =
   RS.tickers >>= \tix ->
       case tix of
         Right result ->
+          processTickers2 result >>
           currentFilePath >>= \cfp ->
           runReaderT (processTickers result) $ T.Env cfp
         Left err ->
