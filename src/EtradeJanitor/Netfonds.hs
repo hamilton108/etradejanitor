@@ -114,17 +114,22 @@ download_ t myHttp =
   in
   R.req R.GET myHttp R.NoReqBody R.bsResponse params
 
-save_ :: T.Ticker -> Maybe String -> (T.Ticker -> R.Req R.BsResponse) -> IO ()
-save_ t postFix myDownload =
-  R.runReq def $
-  myDownload t >>= \bs ->
-  let
-    fileName = case postFix of
-                Nothing -> printf "%s/%s.csv" T.feed t
-                Just pf -> printf "%s/%s_%s.csv" T.feed t pf
-  in
-  liftIO $ B.writeFile fileName (R.responseBody bs)
+-- save_ :: T.Ticker -> Maybe String -> (T.Ticker -> R.Req R.BsResponse) -> IO ()
+-- save_ t postFix myDownload =
+--   R.runReq def $
+--   myDownload t >>= \bs ->
+--   let
+--     fileName = case postFix of
+--                 Nothing -> printf "%s/%s.csv" T.feed t
+--                 Just pf -> printf "%s/%s_%s.csv" T.feed t pf
+--   in
+--   liftIO $ B.writeFile fileName (R.responseBody bs)
 
+save_ :: String -> T.Ticker -> (T.Ticker -> R.Req R.BsResponse) -> IO ()
+save_ fileName t myDownload =
+  R.runReq def $
+  myDownload  t >>= \bs ->
+  liftIO $ B.writeFile fileName (R.responseBody bs)
 --------------------------------------------------------------------------
 -------------------------- Paper History ---------------------------------
 --------------------------------------------------------------------------
@@ -139,7 +144,10 @@ downloadPaperHistory t =
 
 savePaperHistory :: T.Ticker -> IO ()
 savePaperHistory t =
-  save_ t Nothing downloadPaperHistory 
+  let
+    fileName = printf "%s/%s.csv" T.feed (T.ticker t)
+  in
+  save_ fileName t downloadPaperHistory
 
 savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
@@ -157,13 +165,17 @@ downloadTradingDepth t =
     in
     download_ t myUrl
 
-saveTradingDepth:: T.Ticker -> IO ()
+saveTradingDepth:: T.Ticker -> ReaderT T.Env IO ()
 saveTradingDepth t =
-  save_ t (Just "dy") downloadTradingDepth
+  ask >>= \env ->
+  let
+    fileName = printf "%s/%s_dy.csv" (T.getHtmlPath env) t
+  in
+  liftIO $ save_ fileName t downloadTradingDepth
 
-saveTradingDeptTickers :: T.Tickers -> IO ()
-saveTradingDeptTickers tix =
-  forM_ tix savePaperHistory
+saveTradingDepthTickers :: T.Tickers -> ReaderT T.Env IO ()
+saveTradingDepthTickers tix =
+  forM_ tix saveTradingDepth
 --------------------------------------------------------------------------
 ------------------------------- Byers and Sellers ------------------------
 --------------------------------------------------------------------------
@@ -179,10 +191,14 @@ downloadBuyersSellers t =
     download_ t myUrl
 
 
-saveBuyersSellers :: T.Ticker -> IO ()
+saveBuyersSellers :: T.Ticker -> ReaderT T.Env IO ()
 saveBuyersSellers t =
-  save_ t (Just "hndl") downloadBuyersSellers
+  ask >>= \env ->
+  let
+    fileName = printf "%s/%s_hndl.csv" (T.getHtmlPath env) t
+  in
+  liftIO $ save_ fileName t downloadBuyersSellers
 
-saveBuyersSellersTickers :: T.Tickers -> IO ()
+saveBuyersSellersTickers :: T.Tickers -> ReaderT T.Env IO ()
 saveBuyersSellersTickers tix =
-  forM_ tix savePaperHistory
+  forM_ tix saveBuyersSellers

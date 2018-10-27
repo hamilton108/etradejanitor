@@ -41,9 +41,9 @@ import Control.Monad.IO.Class (liftIO)
 
 processTickers :: T.Tickers -> ReaderT T.Env IO ()
 processTickers tix =
-  NF.saveDerivativesTickers tix
-  --NF.saveTradingDepthTickers tix >>
-  --NF.saveBuyersSellersTickers tix
+  NF.saveDerivativesTickers tix >>
+  NF.saveTradingDepthTickers tix >>
+  NF.saveBuyersSellersTickers tix
 
 processTickers2 :: T.Tickers -> IO ()
 processTickers2 tix =
@@ -51,6 +51,7 @@ processTickers2 tix =
     cat3 = V.filter (\t -> (T.category t) == 3) tix
   in
   NF.savePaperHistoryTickers cat3
+
 
 currentFilePath :: IO FilePath
 currentFilePath =
