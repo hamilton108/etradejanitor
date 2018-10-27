@@ -6,7 +6,7 @@ import qualified Data.Text as Tx
 import qualified Data.Vector as DV
 import qualified Data.Time.Calendar as Cal
 
-newtype Env = Env { getFilePath :: FilePath } deriving (Show)
+newtype Env = Env { getHtmlPath :: FilePath } deriving (Show)
 
 data Ticker = Ticker { oid :: DI.Int64
                      , ticker :: Tx.Text

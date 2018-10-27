@@ -4,11 +4,13 @@
 module Main (main) where
 
 import qualified Data.Vector as V
-import qualified Data.Text as Tx
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.Repos.Stocks as RS
 import qualified EtradeJanitor.Repos.PaperHistory as RP
+import qualified Data.Dates as DT
+import qualified Data.Time.Calendar as Cal
+import Text.Printf (printf)
 import Control.Monad.Reader (ReaderT,runReaderT,ask)
 import Control.Monad.IO.Class (liftIO)
 
@@ -21,33 +23,42 @@ import Control.Monad.IO.Class (liftIO)
 --         NF.saveDerivativesTickers tix >>
 --         RP.updateStockPricesTickers cat3
 
-xprocessTickers :: T.Tickers -> ReaderT T.Env IO ()
-xprocessTickers tix =
-  ask >>= \env ->
-  liftIO $
-  let
-    putStrLn_ = putStrLn . (++(T.getFilePath env)) . Tx.unpack . T.ticker
-    one = V.head tix
-    rest = V.tail tix
-  in
-    V.mapM_ putStrLn_ rest >>
-    putStrLn "Here I come! " >>
-    putStrLn_ one >>
-    pure ()
+-- xprocessTickers :: T.Tickers -> ReaderT T.Env IO ()
+-- xprocessTickers tix =
+--   ask >>= \env ->
+--   liftIO $
+--   let
+--     putStrLn_ = putStrLn . (++(T.getHtmlPath env)) . Tx.unpack . T.ticker
+--     one = V.head tix
+--     rest = V.tail tix
+--   in
+--     V.mapM_ putStrLn_ rest >>
+--     putStrLn "Here I come! " >>
+--     putStrLn_ one >>
+--     pure ()
 
 
 processTickers :: T.Tickers -> ReaderT T.Env IO ()
 processTickers tix =
   NF.saveDerivativesTickers tix
 
-currentFilePath :: FilePath
-currentFilePath = "/home"
+currentFilePath :: IO FilePath
+currentFilePath =
+  DT.getCurrentDateTime >>= \cdt ->
+  let today = DT.dateTimeToDay cdt
+      (y,m,d) = Cal.toGregorian today
+      filePath = printf "/home/rcs/opt/haskell/etradejanitor/feed/%d/%d/%d" y m d :: FilePath
+  in
+  pure filePath
+
+
 
 main :: IO ()
 main =
   RS.tickers >>= \tix ->
       case tix of
         Right result ->
-          runReaderT (processTickers result) $ T.Env currentFilePath
+          currentFilePath >>= \cfp ->
+          runReaderT (processTickers result) $ T.Env cfp
         Left err ->
           putStrLn (show err)

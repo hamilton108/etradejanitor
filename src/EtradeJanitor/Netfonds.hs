@@ -120,9 +120,10 @@ derivativesResponseBody ticker =
 
 saveDerivatives :: T.Ticker -> ReaderT T.Env IO ()
 saveDerivatives ticker =
+  ask >>= \env ->
   liftIO $
   derivativesResponseBody ticker >>= \bs ->
-  B.writeFile (printf "%s.html" ticker) bs -- (R.responseBody bs)
+  B.writeFile (printf "%s/%s.html" (T.getHtmlPath env) ticker) bs -- (R.responseBody bs)
 
 saveDerivativesTickers :: T.Tickers -> ReaderT T.Env IO ()
 saveDerivativesTickers tix =
