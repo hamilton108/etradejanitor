@@ -114,6 +114,17 @@ download_ t myHttp =
   in
   R.req R.GET myHttp R.NoReqBody R.bsResponse params
 
+save_ :: T.Ticker -> Maybe String -> (T.Ticker -> R.Req R.BsResponse) -> IO ()
+save_ t postFix myDownload =
+  R.runReq def $
+  myDownload t >>= \bs ->
+  let
+    fileName = case postFix of
+                Nothing -> printf "%s/%s.csv" T.feed t
+                Just pf -> printf "%s/%s_%s.csv" T.feed t pf
+  in
+  liftIO $ B.writeFile fileName (R.responseBody bs)
+
 --------------------------------------------------------------------------
 -------------------------- Paper History ---------------------------------
 --------------------------------------------------------------------------
@@ -127,10 +138,12 @@ downloadPaperHistory t =
     download_ t myUrl
 
 savePaperHistory :: T.Ticker -> IO ()
-savePaperHistory ticker =
-  R.runReq def $
-  downloadPaperHistory ticker >>= \bs ->
-  liftIO $ B.writeFile (printf "%s/%s.csv" T.feed ticker) (R.responseBody bs)
+savePaperHistory t =
+  save_ t Nothing downloadTradingDepth
+  -- R.runReq def $
+  -- downloadPaperHistory ticker >>= \bs ->
+  -- liftIO $ B.writeFile (printf "%s/%s.csv" T.feed ticker) (R.responseBody bs)
+
 
 savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
@@ -150,9 +163,10 @@ downloadTradingDepth t =
 
 saveTradingDepth:: T.Ticker -> IO ()
 saveTradingDepth t =
-  R.runReq def $
-  downloadTradingDepth t >>= \bs ->
-  liftIO $ B.writeFile (printf "%s/%s_dy.csv" T.feed t) (R.responseBody bs)
+  save_ t (Just "dy") downloadTradingDepth
+  -- R.runReq def $
+  -- downloadTradingDepth t >>= \bs ->
+  -- liftIO $ B.writeFile (printf "%s/%s_dy.csv" T.feed t) (R.responseBody bs)
 
 saveTradingDeptTickers :: T.Tickers -> IO ()
 saveTradingDeptTickers tix =
@@ -162,6 +176,8 @@ saveTradingDeptTickers tix =
 --------------------------------------------------------------------------
 -- private String purchasesUrl(String ticker) {
 --     return String.format("http://www.netfonds.no/quotes/tradedump.php?paper=%s.OSE&csv_format=csv", ticker);
+
+
 downloadBuyersSellers :: T.Ticker -> R.Req R.BsResponse
 downloadBuyersSellers t =
     let
@@ -169,8 +185,15 @@ downloadBuyersSellers t =
     in
     download_ t myUrl
 
+
 saveBuyersSellers :: T.Ticker -> IO ()
 saveBuyersSellers t =
-  R.runReq def $
-  downloadByersSellers t >>= \bs ->
-  liftIO $ B.writeFile (printf "%s/%s_hndl.csv" T.feed t) (R.responseBody bs)
+  save_ t (Just "hndl") downloadBuyersSellers
+  -- R.runReq def $
+  -- downloadBuyersSellers t >>= \bs ->
+  -- liftIO $ B.writeFile (printf "%s/%s_hndl.csv" T.feed t) (R.responseBody bs)
+
+
+saveBuyersSellersTickers :: T.Tickers -> IO ()
+saveBuyersSellersTickers tix =
+  forM_ tix savePaperHistory

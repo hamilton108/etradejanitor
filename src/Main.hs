@@ -42,7 +42,8 @@ import Control.Monad.IO.Class (liftIO)
 processTickers :: T.Tickers -> ReaderT T.Env IO ()
 processTickers tix =
   NF.saveDerivativesTickers tix
---         NF.savePaperHistoryTickers cat3 >>
+  --NF.saveTradingDepthTickers tix >>
+  --NF.saveBuyersSellersTickers tix
 
 processTickers2 :: T.Tickers -> IO ()
 processTickers2 tix =
