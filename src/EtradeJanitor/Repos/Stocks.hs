@@ -2,6 +2,10 @@
 
 module EtradeJanitor.Repos.Stocks where
 
+import qualified Data.ByteString.Char8 as B
+import Text.Printf (printf)
+import Control.Monad (forM_)
+
 -- Hasql
 import qualified Hasql.Session as HS
 import qualified Hasql.Statement as HST
@@ -32,6 +36,30 @@ selectStockTickers =
       HE.unit
     decoder =
       HD.rowVector stockTickerDecoder
+
+asSql :: T.Ticker -> T.StockPrice -> String -- B.ByteString
+asSql (T.Ticker oid _ _ _) sp =
+    printf
+      "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values (%d,'%s',%s,%s,%s,%s,%s)"
+      oid
+      (T.dx sp)
+      (T.opn sp)
+      (T.hi sp)
+      (T.lo sp)
+      (T.cls sp)
+      (T.vol sp)
+
+insertRow :: T.Ticker -> T.StockPrice -> HS.Session ()
+insertRow tickr sp =
+  let
+    stmt = B.pack $ asSql tickr sp
+  in
+    HS.statement () $ C.plain $ stmt
+
+insertRows :: T.Ticker -> [T.StockPrice] -> IO (Either C.SessionError ())
+insertRows tickr stockPrices =
+  C.session $
+  forM_ stockPrices (insertRow tickr)
 
 -- demo =
 --   C.session $

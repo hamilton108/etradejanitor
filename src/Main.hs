@@ -49,7 +49,8 @@ processTickers2 tix =
   let
     cat3 = V.filter (\t -> (T.category t) == 3) tix
   in
-  NF.savePaperHistoryTickers cat3
+  NF.savePaperHistoryTickers cat3 >>
+  RP.updateStockPricesTickers cat3
 
 -- xx =
 --   RS.tickers >>= \tix ->
