@@ -43,7 +43,7 @@ data StockPrice2 =
     ar :: DI.Int64
     , pp :: Float
     , tt :: Tx.Text
-    , dx2 :: Cal.Day
+    , dx3 :: Cal.Day
     --   dx2  :: String
     -- , opn2 :: String
     -- , hi2  :: String
@@ -52,5 +52,10 @@ data StockPrice2 =
     -- , vol2 :: String
     } deriving (Show)
 
-data TickerPrice = TickerPrice { t :: Ticker
-                               , p :: StockPrice2 }
+data TickerPrice = TickerPrice { tick :: Ticker
+                               , dx2 :: Cal.Day
+                               , opn2 :: Float
+                               , hi2 :: Float
+                               , lo2 :: Float
+                               , cls2 :: Float
+                               , vol2 :: DI.Int64 }

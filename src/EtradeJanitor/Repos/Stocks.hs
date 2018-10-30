@@ -74,18 +74,24 @@ insertTickerPrice prices =
 
 tickerPriceEncoder :: HE.Params T.TickerPrice
 tickerPriceEncoder =
-  undefined
+  contramap T.tick (HE.param tickerEncoder) <>
+  contramap T.dx2 (HE.param HE.date)  <>
+  contramap T.opn2 (HE.param HE.float4) <>
+  contramap T.hi2 (HE.param HE.float4) <>
+  contramap T.lo2 (HE.param HE.float4) <>
+  contramap T.cls2 (HE.param HE.float4) <>
+  contramap T.vol2 (HE.param HE.int8)
 
 tickerEncoder :: HE.Value T.Ticker
 tickerEncoder =
-  undefined
+  contramap T.oid HE.int8
 
 stockPriceEncoder :: HE.Params T.StockPrice2
 stockPriceEncoder =
   contramap T.ar (HE.param HE.int8) <>
   contramap T.pp (HE.param HE.float4) <>
   contramap T.tt (HE.param HE.text) <>
-  contramap T.dx2  (HE.param HE.date)
+  contramap T.dx3 (HE.param HE.date)
 
 qq =
   HST.Statement "insert into stockmarket.ax (ar,p,t,dx) values ($1,$2,$3,$4)" stockPriceEncoder HD.unit True
