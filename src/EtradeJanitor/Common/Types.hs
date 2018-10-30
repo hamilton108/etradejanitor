@@ -30,10 +30,27 @@ isoDateStr (IsoDate y m d) = y ++ "-" ++ m ++ "-" ++ d
 
 data StockPrice =
   StockPrice {
-     dx :: String
-    ,opn:: String
-    ,hi :: String
-    ,lo :: String
-    ,cls :: String
-    ,vol :: String
+      dx :: String
+    , opn:: String
+    , hi :: String
+    , lo :: String
+    , cls :: String
+    , vol :: String
     } deriving (Show)
+
+data StockPrice2 =
+  StockPrice2 {
+    ar :: DI.Int64
+    , pp :: Float
+    , tt :: Tx.Text
+    , dx2 :: Cal.Day
+    --   dx2  :: String
+    -- , opn2 :: String
+    -- , hi2  :: String
+    -- , lo2  :: String
+    -- , cls2 :: String
+    -- , vol2 :: String
+    } deriving (Show)
+
+data TickerPrice = TickerPrice { t :: Ticker
+                               , p :: StockPrice2 }

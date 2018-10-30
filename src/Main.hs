@@ -40,9 +40,12 @@ import Control.Monad.Reader (ReaderT,runReaderT)
 
 processTickers :: T.Tickers -> ReaderT T.Env IO ()
 processTickers tix =
-  -- NF.saveDerivativesTickers tix >>
-  NF.saveTradingDepthTickers tix >>
-  NF.saveBuyersSellersTickers tix
+  let
+    catNot3 = V.filter (\t -> (T.category t) /= 3) tix
+  in
+  --NF.saveDerivativesTickers tix
+  --NF.saveTradingDepthTickers tix >>
+  --NF.saveBuyersSellersTickers tix
 
 processTickers2 :: T.Tickers -> IO ()
 processTickers2 tix =
@@ -78,7 +81,7 @@ main =
   RS.tickers >>= \tix ->
       case tix of
         Right result ->
-          processTickers2 result >>
+          --processTickers2 result
           currentFilePath >>= \cfp ->
           runReaderT (processTickers result) $ T.Env cfp
         Left err ->

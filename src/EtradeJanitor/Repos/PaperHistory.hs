@@ -35,7 +35,7 @@ fetchCsv :: T.Ticker -> IO [String]
 fetchCsv (T.Ticker _ s _ dx) =
     let
         tickerCsv :: String
-        tickerCsv = printf "%s.csv" s
+        tickerCsv = printf "%s/%s.csv" T.feed s
 
         netfondsDx :: String
         netfondsDx = netfondsDateFormat dx

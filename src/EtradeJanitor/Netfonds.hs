@@ -114,17 +114,6 @@ download_ t myHttp =
   in
   R.req R.GET myHttp R.NoReqBody R.bsResponse params
 
--- save_ :: T.Ticker -> Maybe String -> (T.Ticker -> R.Req R.BsResponse) -> IO ()
--- save_ t postFix myDownload =
---   R.runReq def $
---   myDownload t >>= \bs ->
---   let
---     fileName = case postFix of
---                 Nothing -> printf "%s/%s.csv" T.feed t
---                 Just pf -> printf "%s/%s_%s.csv" T.feed t pf
---   in
---   liftIO $ B.writeFile fileName (R.responseBody bs)
-
 save_ :: String -> T.Ticker -> (T.Ticker -> R.Req R.BsResponse) -> IO ()
 save_ fileName t myDownload =
   R.runReq def $
@@ -154,6 +143,8 @@ savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
   forM_ tix savePaperHistory
 
+fetchTickerPrices :: T.Tickers -> ReaderT T.Env IO [T.TickerPrice]
+fetchTickerPrices = undefined
 --------------------------------------------------------------------------
 ------------------------------- Trading Depth-----------------------------
 --------------------------------------------------------------------------

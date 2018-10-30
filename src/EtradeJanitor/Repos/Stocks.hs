@@ -5,6 +5,9 @@ module EtradeJanitor.Repos.Stocks where
 import qualified Data.ByteString.Char8 as B
 import Text.Printf (printf)
 import Control.Monad (forM_)
+import Data.Int (Int64)
+import Data.Functor.Contravariant (contramap)
+import qualified Data.Time.Calendar as Cal
 
 -- Hasql
 import qualified Hasql.Session as HS
@@ -52,15 +55,49 @@ asSql (T.Ticker oid _ _ _) sp =
 insertRow :: T.Ticker -> T.StockPrice -> HS.Session ()
 insertRow tickr sp =
   let
-    stmt = B.pack $ asSql tickr sp
+    sql = B.pack $ asSql tickr sp
   in
-    HS.statement () $ C.plain $ stmt
+    HS.statement () $ C.plain sql
 
 insertRows :: T.Ticker -> [T.StockPrice] -> IO (Either C.SessionError ())
 insertRows tickr stockPrices =
   C.session $
   forM_ stockPrices (insertRow tickr)
 
+insertTickerPrices :: [T.TickerPrice] -> IO (Either C.SessionError ())
+insertTickerPrices prices =
+  undefined
+
+insertTickerPrice :: T.TickerPrice -> IO (Either C.SessionError ())
+insertTickerPrice prices =
+  undefined
+
+tickerPriceEncoder :: HE.Params T.TickerPrice
+tickerPriceEncoder =
+  undefined
+
+tickerEncoder :: HE.Value T.Ticker
+tickerEncoder =
+  undefined
+
+stockPriceEncoder :: HE.Params T.StockPrice2
+stockPriceEncoder =
+  contramap T.ar (HE.param HE.int8) <>
+  contramap T.pp (HE.param HE.float4) <>
+  contramap T.tt (HE.param HE.text) <>
+  contramap T.dx2  (HE.param HE.date)
+
+qq =
+  HST.Statement "insert into stockmarket.ax (ar,p,t,dx) values ($1,$2,$3,$4)" stockPriceEncoder HD.unit True
+
+dx = Cal.fromGregorian 2018 10 30
+
+qqq =
+  C.session $ HS.statement (T.StockPrice2 34099 45.24 "Demo" dx) qq
+
+  --  contramap genderText HE.text
+
+  -- contramap getA (HE.param HE.int8)
 -- demo =
 --   C.session $
 --         HS.statement () selectStockTickers
