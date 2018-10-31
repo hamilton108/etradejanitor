@@ -8,6 +8,7 @@ import Control.Monad (forM_)
 import Data.Int (Int64)
 import Data.Functor.Contravariant (contramap)
 import qualified Data.Time.Calendar as Cal
+import qualified Data.Vector as V
 
 -- Hasql
 import qualified Hasql.Session as HS
@@ -64,13 +65,19 @@ insertRows tickr stockPrices =
   C.session $
   forM_ stockPrices (insertRow tickr)
 
-insertStockPrices2 :: [T.StockPrice2] -> IO (Either C.SessionError ())
+-- insertStockPrices2 :: [T.StockPrice2] -> IO (Either C.SessionError ())
+insertStockPrices2 :: V.Vector T.StockPrice2 -> IO (Either C.SessionError ())
 insertStockPrices2 prices =
-  undefined
-
-insertStockPrice2 :: T.StockPrice2 -> IO (Either C.SessionError ())
-insertStockPrice2 prices =
-  undefined
+  let
+    stmt =
+      HST.Statement
+        "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)"
+        stockPrice2Encoder
+        HD.unit
+        True
+  in
+  C.session $
+  forM_ prices $ (\t -> HS.statement t stmt)
 
 stockPrice2Encoder :: HE.Params T.StockPrice2
 stockPrice2Encoder =
@@ -93,16 +100,16 @@ axEncoder =
   contramap T.tt (HE.param HE.text) <>
   contramap T.dx3 (HE.param HE.date)
 
-qq =
-  -- HST.Statement "insert into stockmarket.ax (ar,p,t,dx) values ($1,$2,$3,$4)" axEncoder HD.unit True
-  HST.Statement "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)" stockPrice2Encoder HD.unit True
-
-dx = Cal.fromGregorian 2018 10 30
-tikr = T.Ticker 1 "NHY" 1 dx
-
-qqq =
-  -- C.session $ HS.statement (T.Ax 34099 45.24 "Demo" dx) qq
-  C.session $ HS.statement (T.StockPrice2 tikr dx 12.0 15.0 11.0 14.0 1000000) qq
+-- qq =
+--   -- HST.Statement "insert into stockmarket.ax (ar,p,t,dx) values ($1,$2,$3,$4)" axEncoder HD.unit True
+--   HST.Statement "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)" stockPrice2Encoder HD.unit True
+--
+-- dx = Cal.fromGregorian 2018 10 30
+-- tikr = T.Ticker 1 "NHY" 1 dx
+--
+-- qqq =
+--   -- C.session $ HS.statement (T.Ax 34099 45.24 "Demo" dx) qq
+--   C.session $ HS.statement (T.StockPrice2 tikr dx 12.0 15.0 11.0 14.0 1000000) qq
 
   --  contramap genderText HE.text
 

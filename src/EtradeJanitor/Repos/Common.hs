@@ -15,11 +15,12 @@ import qualified Hasql.Decoders as HD
 -- Local
 
 conn :: HC.Settings
-conn = HC.settings "172.17.0.3" 5432 "trader" "ok" "trader"
+conn = HC.settings "172.17.0.2" 5432 "trader" "ok" "trader"
 
 data SessionError =
-  ConnErr (HC.ConnectionError) |
-  SessionError (HS.QueryError)
+  ConnErr HC.ConnectionError
+  | SessionError HS.QueryError
+  | NoOp
   deriving (Show, Eq)
 
 

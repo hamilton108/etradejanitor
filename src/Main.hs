@@ -6,6 +6,7 @@ module Main (main) where
 import qualified System.Directory as Dir
 import qualified Data.Vector as V
 import qualified EtradeJanitor.Common.Types as T
+import qualified EtradeJanitor.Repos.Common as RC
 import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.Repos.Stocks as RS
 import qualified EtradeJanitor.Repos.PaperHistory as RP
@@ -13,39 +14,20 @@ import qualified Data.Dates as DT
 import qualified Data.Time.Calendar as Cal
 import Text.Printf (printf)
 import Control.Monad.Reader (ReaderT,runReaderT)
+import Control.Monad.IO.Class (liftIO)
 
--- processTickers :: T.Tickers -> IO ()
--- processTickers tix =
---     let
---         cat3 = V.filter (\t -> (T.category t) == 3) tix
---     in
---         NF.savePaperHistoryTickers cat3 >>
---         NF.saveDerivativesTickers tix >>
---         RP.updateStockPricesTickers cat3
-
--- xprocessTickers :: T.Tickers -> ReaderT T.Env IO ()
--- xprocessTickers tix =
---   ask >>= \env ->
---   liftIO $
---   let
---     putStrLn_ = putStrLn . (++(T.getHtmlPath env)) . Tx.unpack . T.ticker
---     one = V.head tix
---     rest = V.tail tix
---   in
---     V.mapM_ putStrLn_ rest >>
---     putStrLn "Here I come! " >>
---     putStrLn_ one >>
---     pure ()
-
-
-processTickers :: T.Tickers -> ReaderT T.Env IO ()
+processTickers :: T.Tickers -> ReaderT T.Env IO (Either RC.SessionError ())
 processTickers tix =
   let
     catNot3 = V.filter (\t -> (T.category t) /= 3) tix
   in
-  NF.saveDerivativesTickers tix
-  --NF.saveTradingDepthTickers tix >>
-  --NF.saveBuyersSellersTickers tix
+  NF.saveDerivativesTickers tix >>
+  NF.saveTradingDepthTickers tix >>
+  NF.saveBuyersSellersTickers tix >>
+  NF.fetchStockPrices2 catNot3 >>= \prices ->
+  liftIO $ RS.insertStockPrices2 prices
+
+
 
 processTickers2 :: T.Tickers -> IO ()
 processTickers2 tix =
@@ -81,8 +63,9 @@ main =
   RS.tickers >>= \tix ->
       case tix of
         Right result ->
-          --processTickers2 result
+          processTickers2 result >>
           currentFilePath >>= \cfp ->
-          runReaderT (processTickers result) $ T.Env cfp
+          runReaderT (processTickers result) (T.Env cfp) >>
+          putStrLn "Done"
         Left err ->
-          putStrLn (show err)
+          putStrLn $ show err

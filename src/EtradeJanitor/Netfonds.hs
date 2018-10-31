@@ -53,8 +53,8 @@ stockPriceVal curSoup attr  =
 dateRe :: String
 dateRe = "[0-9][0-9]/[0-9][0-9]-[0-9][0-9][0-9][0-9]"
 
-stockPriceDx :: StringSoup -> T.IsoDate
-stockPriceDx curSoup =
+stockPriceDx_ :: StringSoup -> (String, String, String)
+stockPriceDx_ curSoup =
     let
         tag = TS.TagOpen ("span" :: String) [("id","toptime")]
         findFn =  take 2 . dropWhile (~/= tag)
@@ -62,24 +62,29 @@ stockPriceDx curSoup =
         rawValue = (extractFn . findFn) curSoup
         match = rawValue =~ dateRe :: RE.AllTextMatches [] String
         dx = (head . RE.getAllTextMatches) match
+        -- day = read (take 2 dx) :: Int
+        -- month = read (take 2 . drop 3 $ dx) :: Int
+        -- year = read (take 4 . drop 6 $ dx) :: Integer
         day = take 2 dx
         month = take 2 . drop 3 $ dx
         year = take 4 . drop 6 $ dx
+    in
+    (year,month,day)
+
+stockPriceDx :: StringSoup -> T.IsoDate
+stockPriceDx curSoup =
+    let
+      (year,month,day) = stockPriceDx_ curSoup
     in
       T.IsoDate year month day
 
 stockPriceDay :: StringSoup -> Cal.Day
 stockPriceDay curSoup =
     let
-        tag = TS.TagOpen ("span" :: String) [("id","toptime")]
-        findFn =  take 2 . dropWhile (~/= tag)
-        extractFn = TS.fromTagText . head . drop 1
-        rawValue = (extractFn . findFn) curSoup
-        match = rawValue =~ dateRe :: RE.AllTextMatches [] String
-        dx = (head . RE.getAllTextMatches) match
-        day = read (take 2 dx) :: Int
-        month = read (take 2 . drop 3 $ dx) :: Int
-        year = read (take 4 . drop 6 $ dx) :: Integer
+      (y,m,d) = stockPriceDx_ curSoup
+      year = read y :: Integer
+      month = read m :: Int
+      day = read d :: Int
     in
     Cal.fromGregorian year month day
 
