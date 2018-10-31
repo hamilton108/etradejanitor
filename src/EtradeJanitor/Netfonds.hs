@@ -12,9 +12,12 @@ import Network.HTTP.Req ((=:), (/:))
 import System.IO (IOMode(..))
 import Text.HTML.TagSoup ((~/=))
 import Text.Regex.TDFA ((=~))
+import qualified Data.Int as DI
 -- import qualified Data.Vector as V
 import qualified System.IO as IO
+import qualified Data.Time.Calendar as Cal
 import qualified Text.Regex.TDFA as RE
+import qualified Data.Vector as V
 import qualified Text.HTML.TagSoup as TS
 import qualified Network.HTTP.Req as R
 import qualified Data.ByteString.Char8 as B
@@ -65,6 +68,21 @@ stockPriceDx curSoup =
     in
       T.IsoDate year month day
 
+stockPriceDay :: StringSoup -> Cal.Day
+stockPriceDay curSoup =
+    let
+        tag = TS.TagOpen ("span" :: String) [("id","toptime")]
+        findFn =  take 2 . dropWhile (~/= tag)
+        extractFn = TS.fromTagText . head . drop 1
+        rawValue = (extractFn . findFn) curSoup
+        match = rawValue =~ dateRe :: RE.AllTextMatches [] String
+        dx = (head . RE.getAllTextMatches) match
+        day = read (take 2 dx) :: Int
+        month = read (take 2 . drop 3 $ dx) :: Int
+        year = read (take 4 . drop 6 $ dx) :: Integer
+    in
+    Cal.fromGregorian year month day
+
 createStockPrice :: StringSoup -> T.StockPrice
 createStockPrice soupx =
   let opn = stockPriceVal soupx ("name", "ju.op")
@@ -75,6 +93,17 @@ createStockPrice soupx =
       dx = (T.isoDateStr . stockPriceDx) soupx
   in
     T.StockPrice dx opn hi lo cls vol
+
+createStockPrice2 :: T.Ticker -> StringSoup -> T.StockPrice2
+createStockPrice2 tikr soupx =
+  let opn = read (stockPriceVal soupx ("name", "ju.op")) :: Float
+      hi = read (stockPriceVal soupx ("name", "ju.h")) :: Float
+      lo = read (stockPriceVal soupx ("name", "ju.lo")) :: Float
+      cls = read (stockPriceVal soupx ("id", "ju.l")) :: Float
+      vol = read (filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")) :: DI.Int64
+      dx = stockPriceDay soupx -- (T.isoDateStr . stockPriceDx) soupx
+  in
+    T.StockPrice2 tikr dx opn hi lo cls vol
 
 --------------------------------------------------------------------------
 ------------------------------ Derivatives -------------------------------
@@ -143,8 +172,17 @@ savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
   forM_ tix savePaperHistory
 
-fetchTickerPrices :: T.Tickers -> ReaderT T.Env IO [T.TickerPrice]
-fetchTickerPrices = undefined
+fetchStockPrice2 :: T.Ticker -> ReaderT T.Env IO T.StockPrice2
+fetchStockPrice2 tikr =
+  soup tikr >>= \soupx ->
+  pure $ createStockPrice2 tikr soupx
+
+
+fetchStockPrices2 :: T.Tickers -> ReaderT T.Env IO (V.Vector T.StockPrice2)
+fetchStockPrices2 tix =
+  V.mapM fetchStockPrice2 tix
+
+
 --------------------------------------------------------------------------
 ------------------------------- Trading Depth-----------------------------
 --------------------------------------------------------------------------

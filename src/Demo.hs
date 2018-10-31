@@ -34,6 +34,7 @@ import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.Repos.Stocks as RS
 import qualified EtradeJanitor.Repos.PaperHistory as RP
+import Control.Monad.Reader (ReaderT,Reader,ask,runReader,runReaderT)
 
 import qualified Data.ByteString.Char8 as B
 
@@ -41,9 +42,11 @@ dx = Cal.fromGregorian 2018 10 1
 
 tikr = T.Ticker 1 "NHY" 1 dx
 
+sx = runReaderT (NF.fetchStockPrice2 tikr) $ T.Env "/home/rcs/opt/haskell/etradejanitor/feed/2018/10/31"
+
 dr = NF.derivativesResponseBody tikr >>= pure . NF.stockPriceDx . TS.parseTags . B.unpack
 
-price = NF.derivativesResponseBody tikr >>= pure . NF.createStockPrice . TS.parseTags . B.unpack 
+price = NF.derivativesResponseBody tikr >>= pure . NF.createStockPrice . TS.parseTags . B.unpack
 
 {-
 price = NF.createStockPrice tikr

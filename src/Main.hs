@@ -43,7 +43,7 @@ processTickers tix =
   let
     catNot3 = V.filter (\t -> (T.category t) /= 3) tix
   in
-  --NF.saveDerivativesTickers tix
+  NF.saveDerivativesTickers tix
   --NF.saveTradingDepthTickers tix >>
   --NF.saveBuyersSellersTickers tix
 

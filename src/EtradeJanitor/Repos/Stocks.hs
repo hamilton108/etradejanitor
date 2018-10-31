@@ -64,16 +64,16 @@ insertRows tickr stockPrices =
   C.session $
   forM_ stockPrices (insertRow tickr)
 
-insertTickerPrices :: [T.TickerPrice] -> IO (Either C.SessionError ())
-insertTickerPrices prices =
+insertStockPrices2 :: [T.StockPrice2] -> IO (Either C.SessionError ())
+insertStockPrices2 prices =
   undefined
 
-insertTickerPrice :: T.TickerPrice -> IO (Either C.SessionError ())
-insertTickerPrice prices =
+insertStockPrice2 :: T.StockPrice2 -> IO (Either C.SessionError ())
+insertStockPrice2 prices =
   undefined
 
-tickerPriceEncoder :: HE.Params T.TickerPrice
-tickerPriceEncoder =
+stockPrice2Encoder :: HE.Params T.StockPrice2
+stockPrice2Encoder =
   contramap T.tick (HE.param tickerEncoder) <>
   contramap T.dx2 (HE.param HE.date)  <>
   contramap T.opn2 (HE.param HE.float4) <>
@@ -86,20 +86,23 @@ tickerEncoder :: HE.Value T.Ticker
 tickerEncoder =
   contramap T.oid HE.int8
 
-stockPriceEncoder :: HE.Params T.StockPrice2
-stockPriceEncoder =
+axEncoder :: HE.Params T.Ax
+axEncoder =
   contramap T.ar (HE.param HE.int8) <>
   contramap T.pp (HE.param HE.float4) <>
   contramap T.tt (HE.param HE.text) <>
   contramap T.dx3 (HE.param HE.date)
 
 qq =
-  HST.Statement "insert into stockmarket.ax (ar,p,t,dx) values ($1,$2,$3,$4)" stockPriceEncoder HD.unit True
+  -- HST.Statement "insert into stockmarket.ax (ar,p,t,dx) values ($1,$2,$3,$4)" axEncoder HD.unit True
+  HST.Statement "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)" stockPrice2Encoder HD.unit True
 
 dx = Cal.fromGregorian 2018 10 30
+tikr = T.Ticker 1 "NHY" 1 dx
 
 qqq =
-  C.session $ HS.statement (T.StockPrice2 34099 45.24 "Demo" dx) qq
+  -- C.session $ HS.statement (T.Ax 34099 45.24 "Demo" dx) qq
+  C.session $ HS.statement (T.StockPrice2 tikr dx 12.0 15.0 11.0 14.0 1000000) qq
 
   --  contramap genderText HE.text
 
