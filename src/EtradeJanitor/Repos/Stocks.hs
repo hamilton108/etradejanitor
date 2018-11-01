@@ -94,13 +94,13 @@ tickerEncoder :: HE.Value T.Ticker
 tickerEncoder =
   contramap T.oid HE.int8
 
-axEncoder :: HE.Params T.Ax
-axEncoder =
-  contramap T.ar (HE.param HE.int8) <>
-  contramap T.pp (HE.param HE.float4) <>
-  contramap T.tt (HE.param HE.text) <>
-  contramap T.dx3 (HE.param HE.date)
-
+  -- axEncoder :: HE.Params T.Ax
+  -- axEncoder =
+  --   contramap T.ar (HE.param HE.int8) <>
+  --   contramap T.pp (HE.param HE.float4) <>
+  --   contramap T.tt (HE.param HE.text) <>
+  --   contramap T.dx3 (HE.param HE.date)
+  --
 -- qq =
 --   -- HST.Statement "insert into stockmarket.ax (ar,p,t,dx) values ($1,$2,$3,$4)" axEncoder HD.unit True
 --   HST.Statement "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)" stockPrice2Encoder HD.unit True

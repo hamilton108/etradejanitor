@@ -25,6 +25,8 @@ processTickers tix =
   -- NF.saveTradingDepthTickers tix >>
   -- NF.saveBuyersSellersTickers tix >>
   NF.fetchStockPrices2 catNot3 >>= \prices ->
+  let pricesx = V.filter (\t -> t /= Nothing) prices
+  in
   liftIO $ RS.insertStockPrices2 prices
 
 

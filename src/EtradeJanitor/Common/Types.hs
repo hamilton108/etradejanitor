@@ -14,7 +14,7 @@ newtype Env = Env { getHtmlPath :: FilePath } deriving (Show)
 data Ticker = Ticker { oid :: DI.Int64
                      , ticker :: Tx.Text
                      , category :: DI.Int64
-                     , date :: Cal.Day } deriving (Show)
+                     , date :: Cal.Day } deriving (Eq,Show)
 
 type Tickers = DV.Vector Ticker
 
@@ -38,19 +38,19 @@ data StockPrice =
     , vol :: String
     } deriving (Show)
 
-data Ax =
-  Ax {
-    ar :: DI.Int64
-    , pp :: Float
-    , tt :: Tx.Text
-    , dx3 :: Cal.Day
-    --   dx2  :: String
-    -- , opn2 :: String
-    -- , hi2  :: String
-    -- , lo2  :: String
-    -- , cls2 :: String
-    -- , vol2 :: String
-    } deriving (Show)
+-- data Ax =
+--   Ax {
+--     ar :: DI.Int64
+--     , pp :: Float
+--     , tt :: Tx.Text
+--     , dx3 :: Cal.Day
+--     --   dx2  :: String
+--     -- , opn2 :: String
+--     -- , hi2  :: String
+--     -- , lo2  :: String
+--     -- , cls2 :: String
+--     -- , vol2 :: String
+--     } deriving (Show)
 
 data StockPrice2 = StockPrice2 { tick :: Ticker
                                , dx2 :: Cal.Day
@@ -58,4 +58,4 @@ data StockPrice2 = StockPrice2 { tick :: Ticker
                                , hi2 :: Float
                                , lo2 :: Float
                                , cls2 :: Float
-                               , vol2 :: DI.Int64 } deriving (Show)
+                               , vol2 :: DI.Int64 } deriving (Eq,Show)
