@@ -29,6 +29,7 @@ import qualified Data.Vector as V
 import Data.Maybe (fromMaybe)
 import qualified Text.HTML.TagSoup as TS
 import Text.HTML.TagSoup ((~==),(~/=))
+import Text.Read (readMaybe)
 import qualified Data.Time.Calendar as Cal
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Netfonds as NF
@@ -38,9 +39,14 @@ import Control.Monad.Reader (ReaderT,Reader,ask,runReader,runReaderT)
 
 import qualified Data.ByteString.Char8 as B
 
+tx :: Read a => String -> Maybe a
+tx s = readMaybe s
+
 dx = Cal.fromGregorian 2018 10 1
 
-tikr = T.Ticker 1 "NHY" 1 dx
+--tikr = T.Ticker 1 "NHY" 1 dx
+--tikr = T.Ticker 3 "YAR" 1 dx
+tikr = T.Ticker 2 "STL" 1 dx
 
 sx = runReaderT (NF.fetchStockPrice2 tikr) $ T.Env "/home/rcs/opt/haskell/etradejanitor/feed/2018/10/31"
 

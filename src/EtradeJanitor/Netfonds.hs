@@ -5,6 +5,7 @@ module EtradeJanitor.Netfonds where
 import Control.Monad (forM_)
 import Data.Text (Text,pack)
 import Text.Printf (printf)
+import Text.Read (readMaybe)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT,ask)
 import Data.Default.Class (def)
@@ -99,16 +100,32 @@ createStockPrice soupx =
   in
     T.StockPrice dx opn hi lo cls vol
 
-createStockPrice2 :: T.Ticker -> StringSoup -> T.StockPrice2
+--maybeStockPriceVal :: StringSoup -> TS.Attribute String -> Maybe a
+
+createStockPrice2 :: T.Ticker -> StringSoup -> Maybe T.StockPrice2
 createStockPrice2 tikr soupx =
-  let opn = read (stockPriceVal soupx ("name", "ju.op")) :: Float
-      hi = read (stockPriceVal soupx ("name", "ju.h")) :: Float
-      lo = read (stockPriceVal soupx ("name", "ju.lo")) :: Float
-      cls = read (stockPriceVal soupx ("id", "ju.l")) :: Float
-      vol = read (filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")) :: DI.Int64
+  let
+      readFn :: Read a => TS.Attribute String -> Maybe a
+      readFn attr = readMaybe $ stockPriceVal soupx attr
+
+      readVol =
+        readMaybe (filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")) :: Maybe DI.Int64
+
       dx = stockPriceDay soupx -- (T.isoDateStr . stockPriceDx) soupx
+
+
+      -- opn = read (stockPriceVal soupx ("name", "ju.op")) :: Float
+      -- hi = read (stockPriceVal soupx ("name", "ju.h")) :: Float
+      -- lo = read (stockPriceVal soupx ("name", "ju.lo")) :: Float
+      -- cls = read (stockPriceVal soupx ("id", "ju.l")) :: Float
+      -- vol = read (filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")) :: DI.Int64
   in
-    T.StockPrice2 tikr dx opn hi lo cls vol
+    (readFn ("name","ju.op") :: Maybe Float) >>= \opn ->
+    (readFn ("name","ju.h") :: Maybe Float) >>= \hi ->
+    (readFn ("name","ju.lo") :: Maybe Float) >>= \lo ->
+    (readFn ("id","ju.l") :: Maybe Float) >>= \cls ->
+    readVol >>= \vol ->
+    Just $ T.StockPrice2 tikr dx opn hi lo cls vol
 
 --------------------------------------------------------------------------
 ------------------------------ Derivatives -------------------------------
@@ -177,13 +194,13 @@ savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
   forM_ tix savePaperHistory
 
-fetchStockPrice2 :: T.Ticker -> ReaderT T.Env IO T.StockPrice2
+fetchStockPrice2 :: T.Ticker -> ReaderT T.Env IO (Maybe T.StockPrice2)
 fetchStockPrice2 tikr =
   soup tikr >>= \soupx ->
   pure $ createStockPrice2 tikr soupx
 
 
-fetchStockPrices2 :: T.Tickers -> ReaderT T.Env IO (V.Vector T.StockPrice2)
+fetchStockPrices2 :: T.Tickers -> ReaderT T.Env IO (V.Vector (Maybe T.StockPrice2))
 fetchStockPrices2 tix =
   V.mapM fetchStockPrice2 tix
 

@@ -35,7 +35,7 @@ selectStockTickers =
   where
     sql =
       -- "select t.oid,t.ticker,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 and t.oid = 1 group by t.oid,t.ticker order by t.ticker"
-      "select t.oid,t.ticker,t.ticker_category,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 group by t.oid,t.ticker order by t.ticker"
+      "select t.oid,t.ticker,t.ticker_category,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 group by t.oid,t.ticker order by t.oid"
     encoder =
       HE.unit
     decoder =
@@ -66,18 +66,19 @@ insertRows tickr stockPrices =
   forM_ stockPrices (insertRow tickr)
 
 -- insertStockPrices2 :: [T.StockPrice2] -> IO (Either C.SessionError ())
-insertStockPrices2 :: V.Vector T.StockPrice2 -> IO (Either C.SessionError ())
+insertStockPrices2 :: V.Vector (Maybe T.StockPrice2) -> IO (Either C.SessionError ())
 insertStockPrices2 prices =
-  let
-    stmt =
-      HST.Statement
-        "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)"
-        stockPrice2Encoder
-        HD.unit
-        True
-  in
-  C.session $
-  forM_ prices $ (\t -> HS.statement t stmt)
+  undefined
+  -- let
+  --   stmt =
+  --     HST.Statement
+  --       "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)"
+  --       stockPrice2Encoder
+  --       HD.unit
+  --       True
+  -- in
+  -- C.session $
+  -- forM_ prices $ (\t -> HS.statement t stmt)
 
 stockPrice2Encoder :: HE.Params T.StockPrice2
 stockPrice2Encoder =
