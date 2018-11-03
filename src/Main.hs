@@ -10,6 +10,7 @@ import qualified EtradeJanitor.Repos.Common as RC
 import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.Repos.Stocks as RS
 import qualified EtradeJanitor.Repos.PaperHistory as RP
+import qualified EtradeJanitor.Params as PA
 import qualified Data.Dates as DT
 import qualified Data.Time.Calendar as Cal
 import Text.Printf (printf)
@@ -62,7 +63,14 @@ currentFilePath =
   pure filePath
 
 main :: IO ()
-main =
+main = PA.cmdLineParser >>= work
+
+work :: PA.Params -> IO ()
+work params =
+  putStrLn (PA.containerIp params) 
+
+xmain :: IO ()
+xmain =
   RS.tickers >>= \tix ->
       case tix of
         Right result ->
