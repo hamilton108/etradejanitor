@@ -28,15 +28,15 @@ data IsoDate = IsoDate { year :: String
 isoDateStr :: IsoDate -> String
 isoDateStr (IsoDate y m d) = y ++ "-" ++ m ++ "-" ++ d
 
-data StockPrice =
-  StockPrice {
-      dx :: String
-    , opn:: String
-    , hi :: String
-    , lo :: String
-    , cls :: String
-    , vol :: String
-    } deriving (Show)
+-- data StockPrice =
+--   StockPrice {
+--       dx :: String
+--     , opn:: String
+--     , hi :: String
+--     , lo :: String
+--     , cls :: String
+--     , vol :: String
+--     } deriving (Show)
 
 -- data Ax =
 --   Ax {
@@ -52,7 +52,7 @@ data StockPrice =
 --     -- , vol2 :: String
 --     } deriving (Show)
 
-data StockPrice2 = StockPrice2 { tick :: Ticker
+data StockPrice = StockPrice { tick :: Ticker
                                , dx2 :: Cal.Day
                                , opn2 :: Float
                                , hi2 :: Float

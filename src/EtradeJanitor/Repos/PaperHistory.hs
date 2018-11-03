@@ -20,7 +20,7 @@ import qualified EtradeJanitor.Repos.Common as C
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Repos.Stocks as RS
 
-processLine :: T.Ticker -> String -> T.StockPrice2
+processLine :: T.Ticker -> String -> T.StockPrice
 processLine tikr line =
         let
           [dx',_,_,opn',hi',lo',cls',vol',_] = splitOn "," line
@@ -32,7 +32,7 @@ processLine tikr line =
           voli = read vol' :: Int64
         in
           -- forM_ lxx putStrLn >>
-        T.StockPrice2 tikr dxx opnf hif lof clsf voli
+        T.StockPrice tikr dxx opnf hif lof clsf voli
 
 netfondsDateFormat :: Cal.Day -> String
 netfondsDateFormat = concat . splitOn "-" . Cal.showGregorian
@@ -55,7 +55,7 @@ fetchCsv (T.Ticker _ s _ dx) =
       in
       return result
 
-fetchStockPrices :: T.Ticker -> IO [T.StockPrice2]
+fetchStockPrices :: T.Ticker -> IO [T.StockPrice]
 fetchStockPrices tikr =
   fetchCsv tikr >>= \lx ->
   return $ map (processLine tikr) lx

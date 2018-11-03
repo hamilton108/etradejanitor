@@ -24,7 +24,7 @@ processTickers tix =
   NF.saveDerivativesTickers tix >>
   NF.saveTradingDepthTickers tix >>
   NF.saveBuyersSellersTickers tix >>
-  NF.fetchStockPrices2 catNot3 >>= \prices ->
+  NF.fetchStockPrices catNot3 >>= \prices ->
   liftIO $ RS.insertStockPrices2 prices
 
 

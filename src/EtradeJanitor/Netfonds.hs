@@ -89,21 +89,21 @@ stockPriceDay curSoup =
     in
     Cal.fromGregorian year month day
 
-createStockPrice :: StringSoup -> T.StockPrice
-createStockPrice soupx =
-  let opn = stockPriceVal soupx ("name", "ju.op")
-      hi = stockPriceVal soupx ("name", "ju.h")
-      lo = stockPriceVal soupx ("name", "ju.lo")
-      cls = stockPriceVal soupx ("id", "ju.l")
-      vol = filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")
-      dx = (T.isoDateStr . stockPriceDx) soupx
-  in
-    T.StockPrice dx opn hi lo cls vol
+-- createStockPrice :: StringSoup -> T.StockPrice
+-- createStockPrice soupx =
+--   let opn = stockPriceVal soupx ("name", "ju.op")
+--       hi = stockPriceVal soupx ("name", "ju.h")
+--       lo = stockPriceVal soupx ("name", "ju.lo")
+--       cls = stockPriceVal soupx ("id", "ju.l")
+--       vol = filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")
+--       dx = (T.isoDateStr . stockPriceDx) soupx
+--   in
+--     T.StockPrice dx opn hi lo cls vol
 
 --maybeStockPriceVal :: StringSoup -> TS.Attribute String -> Maybe a
 
-createStockPrice2 :: T.Ticker -> StringSoup -> Maybe T.StockPrice2
-createStockPrice2 tikr soupx =
+createStockPrice :: T.Ticker -> StringSoup -> Maybe T.StockPrice
+createStockPrice tikr soupx =
   let
       readFn :: Read a => TS.Attribute String -> Maybe a
       readFn attr = readMaybe $ stockPriceVal soupx attr
@@ -118,7 +118,7 @@ createStockPrice2 tikr soupx =
     (readFn ("name","ju.lo") :: Maybe Float) >>= \lo ->
     (readFn ("id","ju.l") :: Maybe Float) >>= \cls ->
     readVol >>= \vol ->
-    Just $ T.StockPrice2 tikr dx opn hi lo cls vol
+    Just $ T.StockPrice tikr dx opn hi lo cls vol
 
 --------------------------------------------------------------------------
 ------------------------------ Derivatives -------------------------------
@@ -187,15 +187,15 @@ savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
   forM_ tix savePaperHistory
 
-fetchStockPrice2 :: T.Ticker -> ReaderT T.Env IO (Maybe T.StockPrice2)
-fetchStockPrice2 tikr =
+fetchStockPrice :: T.Ticker -> ReaderT T.Env IO (Maybe T.StockPrice)
+fetchStockPrice tikr =
   soup tikr >>= \soupx ->
-  pure $ createStockPrice2 tikr soupx
+  pure $ createStockPrice tikr soupx
 
 
-fetchStockPrices2 :: T.Tickers -> ReaderT T.Env IO (V.Vector (Maybe T.StockPrice2))
-fetchStockPrices2 tix =
-  V.mapM fetchStockPrice2 tix
+fetchStockPrices :: T.Tickers -> ReaderT T.Env IO (V.Vector (Maybe T.StockPrice))
+fetchStockPrices tix =
+  V.mapM fetchStockPrice tix
 
 
 --------------------------------------------------------------------------

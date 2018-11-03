@@ -43,45 +43,44 @@ selectStockTickers =
     decoder =
       HD.rowVector stockTickerDecoder
 
-asSql :: T.Ticker -> T.StockPrice -> String -- B.ByteString
-asSql (T.Ticker oid _ _ _) sp =
-    printf
-      "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values (%d,'%s',%s,%s,%s,%s,%s)"
-      oid
-      (T.dx sp)
-      (T.opn sp)
-      (T.hi sp)
-      (T.lo sp)
-      (T.cls sp)
-      (T.vol sp)
+-- asSql :: T.Ticker -> T.StockPrice -> String -- B.ByteString
+-- asSql (T.Ticker oid _ _ _) sp =
+--     printf
+--       "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values (%d,'%s',%s,%s,%s,%s,%s)"
+--       oid
+--       (T.dx sp)
+--       (T.opn sp)
+--       (T.hi sp)
+--       (T.lo sp)
+--       (T.cls sp)
+--       (T.vol sp)
+--
+-- insertRow :: T.Ticker -> T.StockPrice -> HS.Session ()
+-- insertRow tickr sp =
+--   let
+--     sql = B.pack $ asSql tickr sp
+--   in
+--     HS.statement () $ C.plain sql
+--
+-- insertRows :: T.Ticker -> [T.StockPrice] -> IO (Either C.SessionError ())
+-- insertRows tickr stockPrices =
+--   C.session $
+--   forM_ stockPrices (insertRow tickr)
 
-insertRow :: T.Ticker -> T.StockPrice -> HS.Session ()
-insertRow tickr sp =
-  let
-    sql = B.pack $ asSql tickr sp
-  in
-    HS.statement () $ C.plain sql
-
-insertRows :: T.Ticker -> [T.StockPrice] -> IO (Either C.SessionError ())
-insertRows tickr stockPrices =
-  C.session $
-  forM_ stockPrices (insertRow tickr)
-
-insertStockPriceStmt :: HST.Statement T.StockPrice2 ()
+insertStockPriceStmt :: HST.Statement T.StockPrice ()
 insertStockPriceStmt =
       HST.Statement
         "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)"
-        stockPrice2Encoder
+        stockPriceEncoder
         HD.unit
         True
 
-insertStockPrices :: [T.StockPrice2] -> IO (Either C.SessionError ())
+insertStockPrices :: [T.StockPrice] -> IO (Either C.SessionError ())
 insertStockPrices prices =
   C.session $
   forM_ prices $ \t -> HS.statement t insertStockPriceStmt
 
--- insertStockPrices2 :: [T.StockPrice2] -> IO (Either C.SessionError ())
-insertStockPrices2 :: V.Vector (Maybe T.StockPrice2) -> IO (Either C.SessionError ())
+insertStockPrices2 :: V.Vector (Maybe T.StockPrice) -> IO (Either C.SessionError ())
 insertStockPrices2 prices =
   let
     p1 = V.filter (\x -> x /= Nothing) prices
@@ -90,8 +89,8 @@ insertStockPrices2 prices =
   C.session $
   forM_ p2 $ \t -> HS.statement t insertStockPriceStmt
 
-stockPrice2Encoder :: HE.Params T.StockPrice2
-stockPrice2Encoder =
+stockPriceEncoder :: HE.Params T.StockPrice
+stockPriceEncoder =
   contramap T.tick (HE.param tickerEncoder) <>
   contramap T.dx2 (HE.param HE.date)  <>
   contramap T.opn2 (HE.param HE.float4) <>
