@@ -21,9 +21,9 @@ processTickers tix =
   let
     catNot3 = V.filter (\t -> (T.category t) /= 3) tix
   in
-  -- NF.saveDerivativesTickers tix >>
-  -- NF.saveTradingDepthTickers tix >>
-  -- NF.saveBuyersSellersTickers tix >>
+  NF.saveDerivativesTickers tix >>
+  NF.saveTradingDepthTickers tix >>
+  NF.saveBuyersSellersTickers tix >>
   NF.fetchStockPrices2 catNot3 >>= \prices ->
   liftIO $ RS.insertStockPrices2 prices
 
@@ -48,11 +48,11 @@ processTickers2 tix =
 
 
 
-currentFilePath :: IO FilePath
-currentFilePath = pure "/home/rcs/opt/haskell/etradejanitor/feed/2018/10/31"
-
 xcurrentFilePath :: IO FilePath
-xcurrentFilePath =
+xcurrentFilePath = pure "/home/rcs/opt/haskell/etradejanitor/feed/2018/10/31"
+
+currentFilePath :: IO FilePath
+currentFilePath =
   DT.getCurrentDateTime >>= \cdt ->
   let today = DT.dateTimeToDay cdt
       (y,m,d) = Cal.toGregorian today
@@ -66,7 +66,7 @@ main =
   RS.tickers >>= \tix ->
       case tix of
         Right result ->
-          -- processTickers2 result >>
+          processTickers2 result >>
           currentFilePath >>= \cfp ->
           runReaderT (processTickers result) (T.Env cfp) >>
           putStrLn "Done"

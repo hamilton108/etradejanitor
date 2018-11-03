@@ -67,21 +67,28 @@ insertRows tickr stockPrices =
   C.session $
   forM_ stockPrices (insertRow tickr)
 
+insertStockPriceStmt :: HST.Statement T.StockPrice2 ()
+insertStockPriceStmt =
+      HST.Statement
+        "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)"
+        stockPrice2Encoder
+        HD.unit
+        True
+
+insertStockPrices :: [T.StockPrice2] -> IO (Either C.SessionError ())
+insertStockPrices prices =
+  C.session $
+  forM_ prices $ \t -> HS.statement t insertStockPriceStmt
+
 -- insertStockPrices2 :: [T.StockPrice2] -> IO (Either C.SessionError ())
 insertStockPrices2 :: V.Vector (Maybe T.StockPrice2) -> IO (Either C.SessionError ())
 insertStockPrices2 prices =
   let
     p1 = V.filter (\x -> x /= Nothing) prices
     p2 = V.map (\x -> M.fromJust x) p1
-    stmt =
-      HST.Statement
-        "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)"
-        stockPrice2Encoder
-        HD.unit
-        True
   in
   C.session $
-  forM_ p2 $ (\t -> HS.statement t stmt)
+  forM_ p2 $ \t -> HS.statement t insertStockPriceStmt
 
 stockPrice2Encoder :: HE.Params T.StockPrice2
 stockPrice2Encoder =

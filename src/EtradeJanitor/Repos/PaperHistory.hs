@@ -6,6 +6,7 @@ module EtradeJanitor.Repos.PaperHistory where
 -- Hasql
 import qualified Hasql.Session as HS
 
+import Data.Int (Int64)
 import Text.Printf (printf)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Time.Calendar as Cal
@@ -19,14 +20,19 @@ import qualified EtradeJanitor.Repos.Common as C
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Repos.Stocks as RS
 
-processLine :: String -> T.StockPrice
-processLine line =
+processLine :: T.Ticker -> String -> T.StockPrice2
+processLine tikr line =
         let
           [dx',_,_,opn',hi',lo',cls',vol',_] = splitOn "," line
-          dxx = asDateString dx'
+          dxx = asDay dx' -- asDateString dx'
+          opnf = read opn' :: Float
+          hif = read hi' :: Float
+          lof = read lo' :: Float
+          clsf = read cls' :: Float
+          voli = read vol' :: Int64
         in
           -- forM_ lxx putStrLn >>
-          T.StockPrice dxx opn' hi' lo' cls' vol'
+        T.StockPrice2 tikr dxx opnf hif lof clsf voli
 
 netfondsDateFormat :: Cal.Day -> String
 netfondsDateFormat = concat . splitOn "-" . Cal.showGregorian
@@ -49,30 +55,42 @@ fetchCsv (T.Ticker _ s _ dx) =
       in
       return result
 
-fetchStockPrices :: T.Ticker -> IO [T.StockPrice]
-fetchStockPrices tickr =
-  fetchCsv tickr >>= \lx ->
-  return $ map processLine lx
+fetchStockPrices :: T.Ticker -> IO [T.StockPrice2]
+fetchStockPrices tikr =
+  fetchCsv tikr >>= \lx ->
+  return $ map (processLine tikr) lx
 
-asDateString :: String -> String
-asDateString v =
+asDay :: String -> Cal.Day
+asDay v =
   let
-    year :: String
-    year = take 4 v
+    year = read (take 4 v) :: Integer
 
-    month :: String
-    month = take 2 $ drop 4 v
+    month = read (take 2 $ drop 4 v) :: Int
 
-    day :: String
-    day = take 2 $ drop 6 v
+    day = read (take 2 $ drop 6 v) :: Int
   in
-    printf "%s-%s-%s" year month day
+  Cal.fromGregorian year month day
+
+
+-- asDateString :: String -> String
+-- asDateString v =
+--   let
+--     year :: String
+--     year = take 4 v
+--
+--     month :: String
+--     month = take 2 $ drop 4 v
+--
+--     day :: String
+--     day = take 2 $ drop 6 v
+--   in
+--     printf "%s-%s-%s" year month day
 
 
 updateStockPrices :: T.Ticker -> IO (Either C.SessionError ())
 updateStockPrices tickr =
   fetchStockPrices tickr >>= \stockPrices ->
-  RS.insertRows tickr stockPrices
+  RS.insertStockPrices stockPrices
 
 updateStockPricesTickers :: T.Tickers -> IO ()
 updateStockPricesTickers tix =

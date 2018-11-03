@@ -111,14 +111,7 @@ createStockPrice2 tikr soupx =
       readVol =
         readMaybe (filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")) :: Maybe DI.Int64
 
-      dx = stockPriceDay soupx -- (T.isoDateStr . stockPriceDx) soupx
-
-
-      -- opn = read (stockPriceVal soupx ("name", "ju.op")) :: Float
-      -- hi = read (stockPriceVal soupx ("name", "ju.h")) :: Float
-      -- lo = read (stockPriceVal soupx ("name", "ju.lo")) :: Float
-      -- cls = read (stockPriceVal soupx ("id", "ju.l")) :: Float
-      -- vol = read (filter (/= ' ') $ stockPriceVal soupx ("name", "ju.vo")) :: DI.Int64
+      dx = stockPriceDay soupx
   in
     (readFn ("name","ju.op") :: Maybe Float) >>= \opn ->
     (readFn ("name","ju.h") :: Maybe Float) >>= \hi ->
