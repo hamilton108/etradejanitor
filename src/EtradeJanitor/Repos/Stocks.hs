@@ -9,6 +9,8 @@ import Data.Int (Int64)
 import Data.Functor.Contravariant (contramap)
 import qualified Data.Time.Calendar as Cal
 import qualified Data.Vector as V
+import qualified Data.Maybe as M
+
 
 -- Hasql
 import qualified Hasql.Session as HS
@@ -68,17 +70,18 @@ insertRows tickr stockPrices =
 -- insertStockPrices2 :: [T.StockPrice2] -> IO (Either C.SessionError ())
 insertStockPrices2 :: V.Vector (Maybe T.StockPrice2) -> IO (Either C.SessionError ())
 insertStockPrices2 prices =
-  undefined
-  -- let
-  --   stmt =
-  --     HST.Statement
-  --       "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)"
-  --       stockPrice2Encoder
-  --       HD.unit
-  --       True
-  -- in
-  -- C.session $
-  -- forM_ prices $ (\t -> HS.statement t stmt)
+  let
+    p1 = V.filter (\x -> x /= Nothing) prices
+    p2 = V.map (\x -> M.fromJust x) p1
+    stmt =
+      HST.Statement
+        "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)"
+        stockPrice2Encoder
+        HD.unit
+        True
+  in
+  C.session $
+  forM_ p2 $ (\t -> HS.statement t stmt)
 
 stockPrice2Encoder :: HE.Params T.StockPrice2
 stockPrice2Encoder =
