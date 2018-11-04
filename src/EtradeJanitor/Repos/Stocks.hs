@@ -7,6 +7,8 @@ import Text.Printf (printf)
 import Control.Monad (forM_)
 import Data.Int (Int64)
 import Data.Functor.Contravariant (contramap)
+import Control.Monad.Reader (ReaderT,ask)
+import Control.Monad.IO.Class (liftIO)
 import qualified Data.Time.Calendar as Cal
 import qualified Data.Vector as V
 import qualified Data.Maybe as M
@@ -21,11 +23,12 @@ import qualified Hasql.Decoders as HD
 -- Local
 import qualified EtradeJanitor.Repos.Common as C
 import qualified EtradeJanitor.Common.Types as T
+import qualified EtradeJanitor.Params as PA
 
 
-tickers :: IO (Either C.SessionError T.Tickers)
-tickers =
-  C.session $
+tickers :: String -> IO (Either C.SessionError T.Tickers)
+tickers dbIp =
+  C.session dbIp $
     HS.statement () selectStockTickers
 
 stockTickerDecoder :: HD.Row T.Ticker
@@ -75,18 +78,22 @@ insertStockPriceStmt =
         HD.unit
         True
 
-insertStockPrices :: [T.StockPrice] -> IO (Either C.SessionError ())
+insertStockPrices :: [T.StockPrice] -> ReaderT T.Env IO (Either C.SessionError ())
 insertStockPrices prices =
-  C.session $
+  liftIO $
+  C.session "sfs" $
   forM_ prices $ \t -> HS.statement t insertStockPriceStmt
 
-insertStockPrices2 :: V.Vector (Maybe T.StockPrice) -> IO (Either C.SessionError ())
+insertStockPrices2 :: V.Vector (Maybe T.StockPrice) -> ReaderT T.Env IO (Either C.SessionError ())
 insertStockPrices2 prices =
+  ask >>= \env ->
   let
     p1 = V.filter (\x -> x /= Nothing) prices
     p2 = V.map (\x -> M.fromJust x) p1
+    dbIp = "sfsd" -- (PA.databaseIp . T.getParams)  ask
   in
-  C.session $
+  liftIO $
+  C.session dbIp $
   forM_ p2 $ \t -> HS.statement t insertStockPriceStmt
 
 stockPriceEncoder :: HE.Params T.StockPrice

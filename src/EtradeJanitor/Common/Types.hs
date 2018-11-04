@@ -6,10 +6,14 @@ import qualified Data.Text as Tx
 import qualified Data.Vector as DV
 import qualified Data.Time.Calendar as Cal
 
+import qualified EtradeJanitor.Params as PA
+
 feed :: FilePath
 feed = "/home/rcs/opt/haskell/etradejanitor/feed"
 
-newtype Env = Env { getHtmlPath :: FilePath } deriving (Show)
+newtype DbIP = DbIP { getIp :: String }
+
+data Env = Env { getHtmlPath :: FilePath, getParams :: PA.Params } deriving (Show)
 
 data Ticker = Ticker { oid :: DI.Int64
                      , ticker :: Tx.Text

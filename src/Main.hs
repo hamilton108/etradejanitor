@@ -9,7 +9,7 @@ import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Repos.Common as RC
 import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.Repos.Stocks as RS
-import qualified EtradeJanitor.Repos.PaperHistory as RP
+import qualified EtradeJanitor.Repos.PaperHistory as PH
 import qualified EtradeJanitor.Params as PA
 import qualified Data.Dates as DT
 import qualified Data.Time.Calendar as Cal
@@ -26,17 +26,17 @@ processTickers tix =
   NF.saveTradingDepthTickers tix >>
   NF.saveBuyersSellersTickers tix >>
   NF.fetchStockPrices catNot3 >>= \prices ->
-  liftIO $ RS.insertStockPrices2 prices
+  RS.insertStockPrices2 prices
 
 
 
-processTickers2 :: T.Tickers -> IO ()
+processTickers2 :: T.Tickers -> ReaderT T.Env IO ()
 processTickers2 tix =
   let
     cat3 = V.filter (\t -> (T.category t) == 3) tix
   in
-  NF.savePaperHistoryTickers cat3 >>
-  RP.updateStockPricesTickers cat3
+  liftIO (NF.savePaperHistoryTickers cat3) >>
+  PH.updateStockPricesTickers cat3
 
 -- xx =
 --   RS.tickers >>= \tix ->
@@ -71,12 +71,15 @@ main = PA.cmdLineParser >>= work
 
 work :: PA.Params -> IO ()
 work params =
-  RS.tickers >>= \tix ->
+  RS.tickers (PA.databaseIp params) >>= \tix ->
       case tix of
         Right result ->
-          processTickers2 result >>
           currentFilePath >>= \cfp ->
-          runReaderT (processTickers result) (T.Env cfp) >>
+          let
+            env = T.Env cfp params
+          in
+          runReaderT (processTickers2 result) env >>
+          runReaderT (processTickers result) env >>
           putStrLn "Done"
         Left err ->
           putStrLn $ show err

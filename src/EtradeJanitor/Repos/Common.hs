@@ -28,8 +28,8 @@ plain :: B.ByteString -> HQ.Statement () ()
 plain sql =
   HQ.Statement sql mempty HD.unit False
 
-session :: HS.Session a -> IO (Either SessionError a)
-session sess =
+session :: String ->  HS.Session a -> IO (Either SessionError a)
+session dbIp sess =
   runExceptT $ acquire >>= \c -> use c <* release c
   where
     acquire =

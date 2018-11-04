@@ -6,6 +6,8 @@ module EtradeJanitor.Repos.PaperHistory where
 -- Hasql
 import qualified Hasql.Session as HS
 
+import Control.Monad.Reader (ReaderT)
+import Control.Monad.IO.Class (liftIO)
 import Data.Int (Int64)
 import Text.Printf (printf)
 import qualified Data.ByteString.Char8 as B
@@ -87,11 +89,12 @@ asDay v =
 --     printf "%s-%s-%s" year month day
 
 
-updateStockPrices :: T.Ticker -> IO (Either C.SessionError ())
+updateStockPrices :: T.Ticker -> ReaderT T.Env IO (Either C.SessionError ())
 updateStockPrices tickr =
-  fetchStockPrices tickr >>= \stockPrices ->
+  liftIO (fetchStockPrices tickr) >>= \stockPrices ->
   RS.insertStockPrices stockPrices
 
-updateStockPricesTickers :: T.Tickers -> IO ()
+
+updateStockPricesTickers :: T.Tickers -> ReaderT T.Env IO ()
 updateStockPricesTickers tix =
   forM_ tix updateStockPrices
