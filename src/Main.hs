@@ -65,12 +65,12 @@ currentFilePath =
 main :: IO ()
 main = PA.cmdLineParser >>= work
 
+-- work :: PA.Params -> IO ()
+-- work params =
+--   putStrLn (PA.databaseI  p params)
+
 work :: PA.Params -> IO ()
 work params =
-  putStrLn (PA.containerIp params) 
-
-xmain :: IO ()
-xmain =
   RS.tickers >>= \tix ->
       case tix of
         Right result ->

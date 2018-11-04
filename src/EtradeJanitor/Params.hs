@@ -6,14 +6,14 @@ import Options.Applicative.Builder (strArgument,metavar,help)
 import Options.Applicative.Extra (execParser)
 
 data Params = Params {
-    containerIp :: String
-  }
+    databaseIp :: String
+  } deriving (Show)
 
 mkParams :: Parser Params
 mkParams =
   Params <$>
     strArgument
-    (metavar "IP"  <> help "Docker container ip adress")
+    (metavar "IP"  <> help "Database ip address")
 
 cmdLineParser :: IO Params
 cmdLineParser =
