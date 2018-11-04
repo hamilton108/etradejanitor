@@ -66,11 +66,7 @@ main :: IO ()
 main = PA.cmdLineParser >>= work
 
 -- main :: IO ()
--- main =
---   let
---     params = PA.Params "172.17.0.2"
---   in
---   work params
+-- main = work $ PA.Params "172.17.0.2"
 
 work :: PA.Params -> IO ()
 work params =
