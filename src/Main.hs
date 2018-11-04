@@ -30,8 +30,8 @@ processTickers tix =
 
 
 
-processTickers2 :: T.Tickers -> ReaderT T.Env IO ()
-processTickers2 tix =
+processTickersCat3 :: T.Tickers -> ReaderT T.Env IO ()
+processTickersCat3 tix =
   let
     cat3 = V.filter (\t -> (T.category t) == 3) tix
   in
@@ -65,9 +65,12 @@ currentFilePath =
 main :: IO ()
 main = PA.cmdLineParser >>= work
 
--- work :: PA.Params -> IO ()
--- work params =
---   putStrLn (PA.databaseI  p params)
+-- main :: IO ()
+-- main =
+--   let
+--     params = PA.Params "172.17.0.2"
+--   in
+--   work params
 
 work :: PA.Params -> IO ()
 work params =
@@ -78,7 +81,7 @@ work params =
           let
             env = T.Env cfp params
           in
-          runReaderT (processTickers2 result) env >>
+          runReaderT (processTickersCat3 result) env >>
           runReaderT (processTickers result) env >>
           putStrLn "Done"
         Left err ->

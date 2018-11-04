@@ -80,8 +80,12 @@ insertStockPriceStmt =
 
 insertStockPrices :: [T.StockPrice] -> ReaderT T.Env IO (Either C.SessionError ())
 insertStockPrices prices =
+  ask >>= \env ->
+  let
+    dbIp = (PA.databaseIp . T.getParams) env
+  in
   liftIO $
-  C.session "sfs" $
+  C.session dbIp $
   forM_ prices $ \t -> HS.statement t insertStockPriceStmt
 
 insertStockPrices2 :: V.Vector (Maybe T.StockPrice) -> ReaderT T.Env IO (Either C.SessionError ())
@@ -90,7 +94,7 @@ insertStockPrices2 prices =
   let
     p1 = V.filter (\x -> x /= Nothing) prices
     p2 = V.map (\x -> M.fromJust x) p1
-    dbIp = "sfsd" -- (PA.databaseIp . T.getParams)  ask
+    dbIp = (PA.databaseIp . T.getParams) env
   in
   liftIO $
   C.session dbIp $
