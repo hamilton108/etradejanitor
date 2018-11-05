@@ -14,8 +14,8 @@ import qualified Hasql.Decoders as HD
 
 -- Local
 
-conn :: HC.Settings
-conn = HC.settings "172.17.0.2" 5432 "trader" "ok" "trader"
+conn :: B.ByteString -> HC.Settings
+conn dbIp = HC.settings dbIp 5432 "trader" "ok" "trader"
 
 data SessionError =
   ConnErr HC.ConnectionError
@@ -33,7 +33,7 @@ session dbIp sess =
   runExceptT $ acquire >>= \c -> use c <* release c
   where
     acquire =
-      ExceptT $ fmap (mapLeft ConnErr) $ HC.acquire conn
+      ExceptT $ fmap (mapLeft ConnErr) $ HC.acquire $ conn $ B.pack dbIp
     use connection =
       ExceptT $
       fmap (mapLeft SessionError) $
