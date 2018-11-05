@@ -4,11 +4,9 @@ HASKELL_VER="8.4"
 
 HOME="/home/rcs/opt/haskell/etradejanitor"
 
-EXE="$HOME/etradejanitor-1.0"
+JANITOR_VER="1.0"
 
-# docker run -it --rm -v $HOME:/home/rcs/opt/haskell/etradejanitor rcs/haskell:$HASKELL_VER "-c" $EXE
-
-docker run -it --rm -v $HOME:$HOME rcs/haskell:$HASKELL_VER "-c" $EXE
+docker run -it --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER 172.17.0.5
 
 exit 0
 
