@@ -73,12 +73,23 @@ work params =
   RS.tickers (PA.databaseIp params) >>= \tix ->
       case tix of
         Right result ->
-          currentFilePath >>= \cfp ->
-          let
-            env = T.Env cfp params
-          in
-          runReaderT (processTickersCat3 result) env >>
-          runReaderT (processTickers result) env >>
-          putStrLn "Done"
+          case (PA.allPaper params) of
+            True ->
+              workPapers params result
+            False ->
+              workDefault params result
         Left err ->
           putStrLn $ show err
+
+workDefault :: PA.Params -> T.Tickers -> IO ()
+workDefault params tix =
+  currentFilePath >>= \cfp ->
+  let
+    env = T.Env cfp params
+  in
+  runReaderT (processTickersCat3 tix) env >>
+  runReaderT (processTickers tix) env >>
+  putStrLn "Done"
+
+workPapers :: PA.Params -> T.Tickers -> IO ()
+workPapers params tix = putStrLn "Done"
