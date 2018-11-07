@@ -5,11 +5,14 @@ import qualified Data.Int as DI
 import qualified Data.Text as Tx
 import qualified Data.Vector as DV
 import qualified Data.Time.Calendar as Cal
+import Control.Monad.Reader (ReaderT)
 
 import qualified EtradeJanitor.Params as PA
 
 feed :: FilePath
 feed = "/home/rcs/opt/haskell/etradejanitor/feed"
+
+type REIO = ReaderT Env IO
 
 newtype DbIP = DbIP { getIp :: String }
 

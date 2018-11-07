@@ -89,12 +89,12 @@ asDay v =
 --     printf "%s-%s-%s" year month day
 
 
-updateStockPrices :: T.Ticker -> ReaderT T.Env IO (Either C.SessionError ())
+updateStockPrices :: T.Ticker -> T.REIO (Either C.SessionError ())
 updateStockPrices tickr =
   liftIO (fetchStockPrices tickr) >>= \stockPrices ->
   RS.insertStockPrices stockPrices
 
 
-updateStockPricesTickers :: T.Tickers -> ReaderT T.Env IO ()
+updateStockPricesTickers :: T.Tickers -> T.REIO ()
 updateStockPricesTickers tix =
   forM_ tix updateStockPrices

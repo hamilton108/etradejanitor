@@ -78,7 +78,7 @@ insertStockPriceStmt =
         HD.unit
         True
 
-insertStockPrices :: [T.StockPrice] -> ReaderT T.Env IO (Either C.SessionError ())
+insertStockPrices :: [T.StockPrice] -> T.REIO (Either C.SessionError ())
 insertStockPrices prices =
   ask >>= \env ->
   let
@@ -88,7 +88,7 @@ insertStockPrices prices =
   C.session dbIp $
   forM_ prices $ \t -> HS.statement t insertStockPriceStmt
 
-insertStockPrices2 :: V.Vector (Maybe T.StockPrice) -> ReaderT T.Env IO (Either C.SessionError ())
+insertStockPrices2 :: V.Vector (Maybe T.StockPrice) -> T.REIO (Either C.SessionError ())
 insertStockPrices2 prices =
   ask >>= \env ->
   let

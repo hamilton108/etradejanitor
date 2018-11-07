@@ -30,7 +30,7 @@ processTickers tix =
 
 
 
-processTickersCat3 :: T.Tickers -> ReaderT T.Env IO ()
+processTickersCat3 :: T.Tickers -> T.REIO ()
 processTickersCat3 tix =
   let
     cat3 = V.filter (\t -> (T.category t) == 3) tix
@@ -38,6 +38,10 @@ processTickersCat3 tix =
   liftIO (NF.savePaperHistoryTickers cat3) >>
   PH.updateStockPricesTickers cat3
 
+processTickersAllPaperHistory :: T.Tickers -> T.REIO () --  ReaderT T.Env IO ()
+processTickersAllPaperHistory tix =
+  liftIO (NF.savePaperHistoryTickers tix) >>
+  PH.updateStockPricesTickers tix
 -- xx =
 --   RS.tickers >>= \tix ->
 --   case tix of
@@ -89,7 +93,12 @@ workDefault params tix =
   in
   runReaderT (processTickersCat3 tix) env >>
   runReaderT (processTickers tix) env >>
-  putStrLn "Done"
+  putStrLn "Done workDefault!"
 
 workPapers :: PA.Params -> T.Tickers -> IO ()
-workPapers params tix = putStrLn "Done"
+workPapers params tix =
+  let
+    env = T.Env "" params
+  in
+  runReaderT (processTickersAllPaperHistory tix) env >>
+  putStrLn "Done workPapers!"

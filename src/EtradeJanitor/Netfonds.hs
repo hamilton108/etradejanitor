@@ -26,7 +26,7 @@ import qualified EtradeJanitor.Common.Types as T
 
 type StringSoup = [TS.Tag String]
 
-html :: T.Ticker -> ReaderT T.Env IO String
+html :: T.Ticker -> T.REIO String
 html t =
     ask >>= \env ->
     liftIO $
@@ -38,7 +38,7 @@ html t =
     IO.hGetContents inputHandle >>= \theInput ->
     return theInput
 
-soup :: T.Ticker -> ReaderT T.Env IO StringSoup
+soup :: T.Ticker -> T.REIO StringSoup
 soup t =
   html t >>= pure . TS.parseTags
 
@@ -135,14 +135,14 @@ derivativesResponseBody ticker =
   R.runReq def $
   downloadDerivatives ticker >>= pure . R.responseBody
 
-saveDerivatives :: T.Ticker -> ReaderT T.Env IO ()
+saveDerivatives :: T.Ticker -> T.REIO ()
 saveDerivatives ticker =
   ask >>= \env ->
   liftIO $
   derivativesResponseBody ticker >>= \bs ->
   B.writeFile (printf "%s/%s.html" (T.getHtmlPath env) ticker) bs -- (R.responseBody bs)
 
-saveDerivativesTickers :: T.Tickers -> ReaderT T.Env IO ()
+saveDerivativesTickers :: T.Tickers -> T.REIO ()
 saveDerivativesTickers tix =
   forM_ tix saveDerivatives
 
@@ -187,13 +187,13 @@ savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
   forM_ tix savePaperHistory
 
-fetchStockPrice :: T.Ticker -> ReaderT T.Env IO (Maybe T.StockPrice)
+fetchStockPrice :: T.Ticker -> T.REIO (Maybe T.StockPrice)
 fetchStockPrice tikr =
   soup tikr >>= \soupx ->
   pure $ createStockPrice tikr soupx
 
 
-fetchStockPrices :: T.Tickers -> ReaderT T.Env IO (V.Vector (Maybe T.StockPrice))
+fetchStockPrices :: T.Tickers -> T.REIO (V.Vector (Maybe T.StockPrice))
 fetchStockPrices tix =
   V.mapM fetchStockPrice tix
 
@@ -210,7 +210,7 @@ downloadTradingDepth t =
     in
     download_ t myUrl
 
-saveTradingDepth:: T.Ticker -> ReaderT T.Env IO ()
+saveTradingDepth:: T.Ticker -> T.REIO ()
 saveTradingDepth t =
   ask >>= \env ->
   let
@@ -218,7 +218,7 @@ saveTradingDepth t =
   in
   liftIO $ save_ fileName t downloadTradingDepth
 
-saveTradingDepthTickers :: T.Tickers -> ReaderT T.Env IO ()
+saveTradingDepthTickers :: T.Tickers -> T.REIO ()
 saveTradingDepthTickers tix =
   forM_ tix saveTradingDepth
 --------------------------------------------------------------------------
@@ -236,7 +236,7 @@ downloadBuyersSellers t =
     download_ t myUrl
 
 
-saveBuyersSellers :: T.Ticker -> ReaderT T.Env IO ()
+saveBuyersSellers :: T.Ticker -> T.REIO ()
 saveBuyersSellers t =
   ask >>= \env ->
   let
@@ -244,6 +244,6 @@ saveBuyersSellers t =
   in
   liftIO $ save_ fileName t downloadBuyersSellers
 
-saveBuyersSellersTickers :: T.Tickers -> ReaderT T.Env IO ()
+saveBuyersSellersTickers :: T.Tickers -> T.REIO ()
 saveBuyersSellersTickers tix =
   forM_ tix saveBuyersSellers
