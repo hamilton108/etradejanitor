@@ -14,10 +14,10 @@ import qualified EtradeJanitor.Params as PA
 import qualified Data.Dates as DT
 import qualified Data.Time.Calendar as Cal
 import Text.Printf (printf)
-import Control.Monad.Reader (ReaderT,runReaderT)
+import Control.Monad.Reader (runReaderT,ask)
 import Control.Monad.IO.Class (liftIO)
 
-processTickers :: T.Tickers -> ReaderT T.Env IO (Either RC.SessionError ())
+processTickers :: T.Tickers -> T.REIO (Either RC.SessionError ())
 processTickers tix =
   let
     catNot3 = V.filter (\t -> (T.category t) /= 3) tix
@@ -32,11 +32,15 @@ processTickers tix =
 
 processTickersCat3 :: T.Tickers -> T.REIO ()
 processTickersCat3 tix =
-  let
-    cat3 = V.filter (\t -> (T.category t) == 3) tix
-  in
-  liftIO (NF.savePaperHistoryTickers cat3) >>
-  PH.updateStockPricesTickers cat3
+  ask >>= \env ->
+  if T.isDownloadOnly env == True then
+    return ()
+  else
+    let
+      cat3 = V.filter (\t -> (T.category t) == 3) tix
+    in
+    liftIO (NF.savePaperHistoryTickers cat3) >>
+    PH.updateStockPricesTickers cat3
 
 processTickersAllPaperHistory :: T.Tickers -> T.REIO () --  ReaderT T.Env IO ()
 processTickersAllPaperHistory tix =
@@ -53,8 +57,8 @@ processTickersAllPaperHistory tix =
 
 
 
-xcurrentFilePath :: IO FilePath
-xcurrentFilePath = pure "/home/rcs/opt/haskell/etradejanitor/feed/2018/10/31"
+--xcurrentFilePath :: IO FilePath
+--xcurrentFilePath = pure "/home/rcs/opt/haskell/etradejanitor/feed/2018/10/31"
 
 currentFilePath :: IO FilePath
 currentFilePath =

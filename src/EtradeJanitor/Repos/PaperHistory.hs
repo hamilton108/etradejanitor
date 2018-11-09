@@ -3,14 +3,10 @@
 module EtradeJanitor.Repos.PaperHistory where
 
 
--- Hasql
-import qualified Hasql.Session as HS
 
-import Control.Monad.Reader (ReaderT)
 import Control.Monad.IO.Class (liftIO)
 import Data.Int (Int64)
 import Text.Printf (printf)
-import qualified Data.ByteString.Char8 as B
 import qualified Data.Time.Calendar as Cal
 import qualified Data.List as L
 import Data.List.Split (splitOn)

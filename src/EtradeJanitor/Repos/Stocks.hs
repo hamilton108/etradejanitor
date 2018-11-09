@@ -2,14 +2,10 @@
 
 module EtradeJanitor.Repos.Stocks where
 
-import qualified Data.ByteString.Char8 as B
-import Text.Printf (printf)
 import Control.Monad (forM_)
-import Data.Int (Int64)
 import Data.Functor.Contravariant (contramap)
-import Control.Monad.Reader (ReaderT,ask)
+import Control.Monad.Reader (ask)
 import Control.Monad.IO.Class (liftIO)
-import qualified Data.Time.Calendar as Cal
 import qualified Data.Vector as V
 import qualified Data.Maybe as M
 
@@ -90,6 +86,17 @@ insertStockPrices prices =
 
 insertStockPrices2 :: V.Vector (Maybe T.StockPrice) -> T.REIO (Either C.SessionError ())
 insertStockPrices2 prices =
+  ask >>= \env ->
+  let
+    downloadOnly = (PA.downloadOnly . T.getParams) env
+  in
+    if downloadOnly == True then
+      return $ Right ()
+    else
+      insertStockPrices2_ prices
+
+insertStockPrices2_ :: V.Vector (Maybe T.StockPrice) -> T.REIO (Either C.SessionError ())
+insertStockPrices2_ prices =
   ask >>= \env ->
   let
     p1 = V.filter (\x -> x /= Nothing) prices

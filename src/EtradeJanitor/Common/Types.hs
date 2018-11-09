@@ -18,6 +18,14 @@ newtype DbIP = DbIP { getIp :: String }
 
 data Env = Env { getHtmlPath :: FilePath, getParams :: PA.Params } deriving (Show)
 
+isHtmlOnly :: Env -> Bool
+isHtmlOnly env =
+  (PA.htmlOnly . getParams) env
+
+isDownloadOnly :: Env -> Bool
+isDownloadOnly env =
+  (PA.downloadOnly . getParams) env
+
 data Ticker = Ticker { oid :: DI.Int64
                      , ticker :: Tx.Text
                      , category :: DI.Int64

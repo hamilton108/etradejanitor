@@ -7,7 +7,7 @@ import Data.Text (Text,pack)
 import Text.Printf (printf)
 import Text.Read (readMaybe)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Reader (ReaderT,ask)
+import Control.Monad.Reader (ask)
 import Data.Default.Class (def)
 import Network.HTTP.Req ((=:), (/:))
 import System.IO (IOMode(..))
@@ -23,6 +23,7 @@ import qualified Text.HTML.TagSoup as TS
 import qualified Network.HTTP.Req as R
 import qualified Data.ByteString.Char8 as B
 import qualified EtradeJanitor.Common.Types as T
+--import qualified EtradeJanitor.Params as PA
 
 type StringSoup = [TS.Tag String]
 
@@ -185,6 +186,10 @@ savePaperHistory t =
 
 savePaperHistoryTickers :: T.Tickers -> IO ()
 savePaperHistoryTickers tix =
+  -- ask >>= \env ->
+  -- if isHtmlOnly env == True then
+  --   return ()
+  -- else
   forM_ tix savePaperHistory
 
 fetchStockPrice :: T.Ticker -> T.REIO (Maybe T.StockPrice)
@@ -218,8 +223,13 @@ saveTradingDepth t =
   in
   liftIO $ save_ fileName t downloadTradingDepth
 
+
 saveTradingDepthTickers :: T.Tickers -> T.REIO ()
 saveTradingDepthTickers tix =
+  ask >>= \env ->
+  if T.isHtmlOnly env == True then
+    return ()
+  else
   forM_ tix saveTradingDepth
 --------------------------------------------------------------------------
 ------------------------------- Byers and Sellers ------------------------
@@ -246,4 +256,8 @@ saveBuyersSellers t =
 
 saveBuyersSellersTickers :: T.Tickers -> T.REIO ()
 saveBuyersSellersTickers tix =
-  forM_ tix saveBuyersSellers
+  ask >>= \env ->
+  if T.isHtmlOnly env == True then
+    return ()
+  else
+    forM_ tix saveBuyersSellers
