@@ -176,21 +176,22 @@ downloadPaperHistory t =
     in
     download_ t myUrl
 
-savePaperHistory :: T.Ticker -> IO ()
-savePaperHistory t =
+savePaperHistory :: FilePath -> T.Ticker -> IO ()
+savePaperHistory feed t =
   let
-    fileName = printf "%s/%s.csv" T.feed (T.ticker t)
+    -- fileName = printf "%s/%s.csv" T.feed (T.ticker t)
+    fileName = printf "%s/%s.csv" feed (T.ticker t)
   in
   putStrLn fileName >>
   save_ fileName t downloadPaperHistory
 
-savePaperHistoryTickers :: T.Tickers -> IO ()
-savePaperHistoryTickers tix =
+savePaperHistoryTickers :: FilePath -> T.Tickers -> IO ()
+savePaperHistoryTickers feed tix =
   -- ask >>= \env ->
   -- if isHtmlOnly env == True then
   --   return ()
   -- else
-  forM_ tix savePaperHistory
+  forM_ tix (savePaperHistory feed)
 
 fetchStockPrice :: T.Ticker -> T.REIO (Maybe T.StockPrice)
 fetchStockPrice tikr =

@@ -38,13 +38,18 @@ processTickersCat3 tix =
   else
     let
       cat3 = V.filter (\t -> (T.category t) == 3) tix
+      feed = (PA.feed . T.getParams) env
     in
-    liftIO (NF.savePaperHistoryTickers cat3) >>
+    liftIO (NF.savePaperHistoryTickers feed cat3) >>
     PH.updateStockPricesTickers cat3
 
 processTickersAllPaperHistory :: T.Tickers -> T.REIO () --  ReaderT T.Env IO ()
 processTickersAllPaperHistory tix =
-  liftIO (NF.savePaperHistoryTickers tix) >>
+  ask >>= \env ->
+  let
+    feed = (PA.feed . T.getParams) env
+  in
+  liftIO (NF.savePaperHistoryTickers feed tix) >>
   PH.updateStockPricesTickers tix
 -- xx =
 --   RS.tickers >>= \tix ->
@@ -60,12 +65,12 @@ processTickersAllPaperHistory tix =
 --xcurrentFilePath :: IO FilePath
 --xcurrentFilePath = pure "/home/rcs/opt/haskell/etradejanitor/feed/2018/10/31"
 
-currentFilePath :: IO FilePath
-currentFilePath =
+currentFilePath :: FilePath -> IO FilePath
+currentFilePath feed =
   DT.getCurrentDateTime >>= \cdt ->
   let today = DT.dateTimeToDay cdt
       (y,m,d) = Cal.toGregorian today
-      filePath = printf "%s/%d/%d/%d" T.feed y m d :: FilePath
+      filePath = printf "%s/%d/%d/%d" feed y m d :: FilePath
   in
   Dir.createDirectoryIfMissing True filePath >>
   pure filePath
@@ -91,7 +96,7 @@ work params =
 
 workDefault :: PA.Params -> T.Tickers -> IO ()
 workDefault params tix =
-  currentFilePath >>= \cfp ->
+  currentFilePath (PA.feed params) >>= \cfp ->
   let
     env = T.Env cfp params
   in
