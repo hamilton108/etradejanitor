@@ -1,0 +1,9 @@
+#!/bin/bash
+
+VER="1.0"
+
+cabal build
+
+cp dist/build/etradejanitor-$VER/etradejanitor-$VER .
+
+exit 0
