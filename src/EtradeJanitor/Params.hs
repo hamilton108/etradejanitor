@@ -16,7 +16,8 @@ data Params = Params {
 mkParams :: Parser Params
 mkParams =
   Params
-    <$> strArgument (metavar "IP"  <> help "Database ip address" <> value "172.17.0.2" <> showDefault)
+    -- <$> strArgument (metavar "IP"  <> help "Database ip address" <> value "172.17.0.2" <> showDefault)
+    <$> strArgument (metavar "IP"  <> help "Database ip address")
     <*> switch (long "all-paper" <> short 'p' <> help "All stock prices from paper history")
     <*> switch (long "download-only" <> short 'd' <> help "Download only, no update database")
     <*> switch (long "html-only" <> short 'x' <> help "Download html only, no trading depth or buyers/sellers")
