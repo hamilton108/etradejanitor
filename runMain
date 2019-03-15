@@ -6,7 +6,7 @@ HOME="/home/rcs/opt/haskell/etradejanitor"
 
 JANITOR_VER="1.0"
 
-/usr/bin/docker run -i --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER 172.17.0.3
+/usr/bin/docker run --user $(id -u):$(id -g)  -i --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER 172.17.0.2
 
 exit 0
 
