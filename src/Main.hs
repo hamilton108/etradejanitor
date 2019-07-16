@@ -28,8 +28,6 @@ processTickers tix =
   NF.fetchStockPrices catNot3 >>= \prices ->
   RS.insertStockPrices2 prices
 
-
-
 processTickersCat3 :: T.Tickers -> T.REIO ()
 processTickersCat3 tix =
   ask >>= \env ->
@@ -51,19 +49,6 @@ processTickersAllPaperHistory tix =
   in
   liftIO (NF.savePaperHistoryTickers feed tix) >>
   PH.updateStockPricesTickers tix
--- xx =
---   RS.tickers >>= \tix ->
---   case tix of
---     Right result ->
---       pure $ V.filter (\t -> (T.category t) == 3) result
---     Left err ->
---       putStrLn (show err) >>
---       pure V.empty
-
-
-
---xcurrentFilePath :: IO FilePath
---xcurrentFilePath = pure "/home/rcs/opt/haskell/etradejanitor/feed/2018/10/31"
 
 currentFilePath :: FilePath -> IO FilePath
 currentFilePath feed =
@@ -77,9 +62,6 @@ currentFilePath feed =
 
 main :: IO ()
 main = PA.cmdLineParser >>= work
-
--- main :: IO ()
--- main = work $ PA.Params "172.17.0.2"
 
 work :: PA.Params -> IO ()
 work params =

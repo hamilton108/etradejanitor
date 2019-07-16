@@ -8,7 +8,7 @@ import Text.Printf (printf)
 import Text.Read (readMaybe)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ask)
-import Data.Default.Class (def)
+-- import Data.Default.Class (def)
 import Network.HTTP.Req ((=:), (/:))
 import System.IO (IOMode(..))
 import Text.HTML.TagSoup ((~/=))
@@ -133,7 +133,7 @@ downloadDerivatives (T.Ticker _ ticker _ _) =
 
 derivativesResponseBody :: T.Ticker -> IO B.ByteString
 derivativesResponseBody ticker =
-  R.runReq def $
+  R.runReq R.defaultHttpConfig $
   downloadDerivatives ticker >>= pure . R.responseBody
 
 saveDerivatives :: T.Ticker -> T.REIO ()
@@ -161,7 +161,7 @@ download_ t myHttp =
 
 save_ :: String -> T.Ticker -> (T.Ticker -> R.Req R.BsResponse) -> IO ()
 save_ fileName t myDownload =
-  R.runReq def $
+  R.runReq R.defaultHttpConfig $
   myDownload  t >>= \bs ->
   liftIO $ B.writeFile fileName (R.responseBody bs)
 --------------------------------------------------------------------------

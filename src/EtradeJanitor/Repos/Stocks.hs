@@ -28,7 +28,7 @@ tickers dbIp =
     HS.statement () selectStockTickers
 
 stockTickerDecoder :: HD.Row T.Ticker
-stockTickerDecoder = T.Ticker <$> HD.column HD.int8 <*> HD.column HD.text <*> HD.column HD.int8 <*> HD.column HD.date
+stockTickerDecoder = T.Ticker <$> HD.column (HD.nonNullable HD.int8) <*> HD.column (HD.nonNullable HD.text) <*> HD.column (HD.nonNullable HD.int8) <*> HD.column (HD.nonNullable HD.date)
 
 selectStockTickers :: HST.Statement () T.Tickers
 selectStockTickers =
@@ -38,7 +38,7 @@ selectStockTickers =
       -- "select t.oid,t.ticker,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 and t.oid = 1 group by t.oid,t.ticker order by t.ticker"
       "select t.oid,t.ticker,t.ticker_category,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 group by t.oid,t.ticker order by t.oid"
     encoder =
-      HE.unit
+      HE.noParams
     decoder =
       HD.rowVector stockTickerDecoder
 
@@ -71,7 +71,7 @@ insertStockPriceStmt =
       HST.Statement
         "insert into stockmarket.stockprice (ticker_id,dx,opn,hi,lo,cls,vol) values ($1,$2,$3,$4,$5,$6,$7)"
         stockPriceEncoder
-        HD.unit
+        HD.noResult
         True
 
 insertStockPrices :: [T.StockPrice] -> T.REIO (Either C.SessionError ())
@@ -109,13 +109,13 @@ insertStockPrices2_ prices =
 
 stockPriceEncoder :: HE.Params T.StockPrice
 stockPriceEncoder =
-  contramap T.tick (HE.param tickerEncoder) <>
-  contramap T.dx2 (HE.param HE.date)  <>
-  contramap T.opn2 (HE.param HE.float4) <>
-  contramap T.hi2 (HE.param HE.float4) <>
-  contramap T.lo2 (HE.param HE.float4) <>
-  contramap T.cls2 (HE.param HE.float4) <>
-  contramap T.vol2 (HE.param HE.int8)
+  contramap T.tick (HE.param $ HE.nonNullable tickerEncoder) <>
+  contramap T.dx2 (HE.param (HE.nonNullable HE.date))  <>
+  contramap T.opn2 (HE.param $ HE.nonNullable HE.float4) <>
+  contramap T.hi2 (HE.param $ HE.nonNullable HE.float4) <>
+  contramap T.lo2 (HE.param $ HE.nonNullable HE.float4) <>
+  contramap T.cls2 (HE.param $ HE.nonNullable HE.float4) <>
+  contramap T.vol2 (HE.param $ HE.nonNullable HE.int8)
 
 tickerEncoder :: HE.Value T.Ticker
 tickerEncoder =

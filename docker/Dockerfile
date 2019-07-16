@@ -1,4 +1,4 @@
-FROM haskell:8.4
+FROM haskell:8.6
 
 MAINTAINER Hamilton
 
