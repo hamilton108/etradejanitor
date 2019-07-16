@@ -26,7 +26,7 @@ data SessionError =
 
 plain :: B.ByteString -> HQ.Statement () ()
 plain sql =
-  HQ.Statement sql mempty HD.unit False
+  HQ.Statement sql mempty HD.noResult False
 
 session :: String ->  HS.Session a -> IO (Either SessionError a)
 session dbIp sess =
