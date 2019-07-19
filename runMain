@@ -8,7 +8,7 @@ JANITOR_VER="1.0"
 
 PG_VER="172.17.0.2"
 
-/usr/bin/docker run -i --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER $PG_VER "$@"
+/usr/bin/docker run --user $(id -u):$(id -g)  -i --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER $PG_VER "$@"
 
 exit 0
 

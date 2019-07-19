@@ -6,6 +6,7 @@ import Data.Text (Text,pack)
 import Text.Printf (printf)
 import Network.HTTP.Req ((=:), (/:))
 import qualified Network.HTTP.Req as R
+import Network.HTTP.Req (Url,Scheme(..))
 import qualified Data.ByteString.Char8 as B
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad (forM_)
@@ -21,16 +22,17 @@ import qualified Data.Map.Strict as Map
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Common.Html as Html
 
+-- urlStem :: Url 
+urlStem = R.https "www.euroinvestor.com" /: "exchanges" /: "oslo-stock-exchange"
 
-urlStem :: String
-urlStem = "www.euroinvestor.com/exchanges/oslo-stock-exchange"
 
-
+{-
 urlMap :: Map.Map Int64 Text
 urlMap = 
   Map.fromList [
     (fromIntegral 1 :: Int64, pack $ printf "%s/%s" urlStem ("norsk-hydro-asa-nok1098/340345/history" :: String))
   ]
+-}
 
 tickerUrl :: T.Ticker -> Text
 tickerUrl t = 
