@@ -15,12 +15,18 @@ import qualified Hasql.Session as HS
 import qualified Hasql.Statement as HST
 import qualified Hasql.Encoders as HE
 import qualified Hasql.Decoders as HD
+import qualified Data.Time.Calendar as Calendar
 
 -- Local
 import qualified EtradeJanitor.Repos.Common as C
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Params as PA
 
+nhy :: T.Ticker
+nhy = T.Ticker 1 "NHY" 1 (Calendar.fromGregorian 2019 4 1)
+
+mockTickers :: V.Vector T.Ticker
+mockTickers = V.singleton nhy
 
 tickers :: String -> IO (Either C.SessionError T.Tickers)
 tickers dbIp =

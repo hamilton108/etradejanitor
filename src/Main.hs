@@ -7,7 +7,7 @@ import qualified System.Directory as Dir
 import qualified Data.Vector as V
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Repos.Common as RC
-import qualified EtradeJanitor.Netfonds as NF
+-- import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.Repos.Stocks as RS
 import qualified EtradeJanitor.Repos.PaperHistory as PH
 import qualified EtradeJanitor.Params as PA
@@ -17,6 +17,28 @@ import Text.Printf (printf)
 import Control.Monad.Reader (runReaderT,ask)
 import Control.Monad.IO.Class (liftIO)
 
+main :: IO ()
+main = PA.cmdLineParser >>= \cmd ->
+    mockWork cmd
+
+{-
+    case (PA.isMock cmd) of
+      True -> mockWork cmd
+      False -> work cmd
+-}
+
+work :: PA.Params -> IO ()
+work params = 
+    putStrLn "work"
+
+mockWork :: PA.Params -> IO ()
+mockWork params = 
+    let 
+        tix = RS.mockTickers 
+    in
+    putStrLn "mockwork"
+
+{-
 processTickers :: T.Tickers -> T.REIO (Either RC.SessionError ())
 processTickers tix =
   let
@@ -93,3 +115,5 @@ workPapers params tix =
   in
   runReaderT (processTickersAllPaperHistory tix) env >>
   putStrLn "Done workPapers!"
+
+-}

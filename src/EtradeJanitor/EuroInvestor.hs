@@ -22,7 +22,7 @@ import qualified Data.Map.Strict as Map
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Common.Html as Html
 
--- urlStem :: Url 
+urlStem :: Url Https
 urlStem = R.https "www.euroinvestor.com" /: "exchanges" /: "oslo-stock-exchange"
 
 
@@ -52,6 +52,8 @@ download t myHttp =
   R.req R.GET myHttp R.NoReqBody R.bsResponse params
 -}
 
+-- https://www.euroinvestor.com/markets/stocks/europe/norway/obx/history
+
 --------------------------------------------------------------------------
 -------------------------- Paper History ---------------------------------
 --------------------------------------------------------------------------
@@ -59,7 +61,6 @@ downloadPaperHistory :: T.Ticker -> R.Req R.BsResponse
 downloadPaperHistory t =
   let
     myUrl = R.https "www.euroinvestor.com" /: "exchanges" /: "oslo-stock-exchange" /: "norsk-hydro-asa-nok1098" /: "340345" /: "history"
-    -- R.https $ tickerUrl t
   in
   R.req R.GET myUrl R.NoReqBody R.bsResponse mempty
 

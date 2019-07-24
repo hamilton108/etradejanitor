@@ -18,17 +18,11 @@ import qualified EtradeJanitor.Common.Types as T
 
 type StringSoup = [TS.Tag String]
 
-eiDateFormat :: Cal.Day -> String
-eiDateFormat = concat . splitOn "/" . Cal.showGregorian
-
 fetchHtml :: T.Ticker -> IO String
 fetchHtml (T.Ticker _ s _ dx) =
     let
         tickerHtml :: String
         tickerHtml = printf "%s/%s.html" T.feed s
-
-        netfondsDx :: String
-        netfondsDx = eiDateFormat dx
     in
     openFile tickerHtml ReadMode >>= \inputHandle ->
     hSetEncoding inputHandle latin1 >> -- utf8
