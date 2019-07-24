@@ -10,7 +10,7 @@ import Control.Monad.Reader (ReaderT)
 import qualified EtradeJanitor.Params as PA
 
 feed :: FilePath
-feed = "/home/rcs/opt/haskell/etradejanitor/feed"
+feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
 
 type REIO = ReaderT Env IO
 
@@ -26,51 +26,36 @@ isDownloadOnly :: Env -> Bool
 isDownloadOnly env =
   (PA.downloadOnly . getParams) env
 
-data Ticker = Ticker { oid :: DI.Int64
-                     , ticker :: Tx.Text
-                     , category :: DI.Int64
-                     , date :: Cal.Day } deriving (Eq,Show)
+data Ticker = 
+    Ticker 
+    { oid :: DI.Int64
+    , ticker :: Tx.Text
+    , category :: DI.Int64
+    , date :: Cal.Day 
+    } deriving (Eq,Show)
 
 type Tickers = DV.Vector Ticker
 
 instance TP.PrintfArg Ticker where
   formatArg (Ticker _ t _ _) fmt = TP.formatString (Tx.unpack t) fmt
 
-data IsoDate = IsoDate { year :: String
-                       , month :: String
-                       , day :: String} deriving (Show)
+data IsoDate = 
+    IsoDate 
+    { year :: String
+    , month :: String
+    , day :: String
+    } deriving (Show)
 
 isoDateStr :: IsoDate -> String
 isoDateStr (IsoDate y m d) = y ++ "-" ++ m ++ "-" ++ d
 
--- data StockPrice =
---   StockPrice {
---       dx :: String
---     , opn:: String
---     , hi :: String
---     , lo :: String
---     , cls :: String
---     , vol :: String
---     } deriving (Show)
-
--- data Ax =
---   Ax {
---     ar :: DI.Int64
---     , pp :: Float
---     , tt :: Tx.Text
---     , dx3 :: Cal.Day
---     --   dx2  :: String
---     -- , opn2 :: String
---     -- , hi2  :: String
---     -- , lo2  :: String
---     -- , cls2 :: String
---     -- , vol2 :: String
---     } deriving (Show)
-
-data StockPrice = StockPrice { tick :: Ticker
-                               , dx2 :: Cal.Day
-                               , opn2 :: Float
-                               , hi2 :: Float
-                               , lo2 :: Float
-                               , cls2 :: Float
-                               , vol2 :: DI.Int64 } deriving (Eq,Show)
+data StockPrice = 
+    StockPrice 
+    { tick :: Ticker
+    , dx2 :: Cal.Day
+    , opn2 :: Float
+    , hi2 :: Float
+    , lo2 :: Float
+    , cls2 :: Float
+    , vol2 :: DI.Int64 
+    } deriving (Eq,Show)
