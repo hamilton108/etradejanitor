@@ -18,8 +18,7 @@ import Control.Monad.Reader (runReaderT,ask)
 import Control.Monad.IO.Class (liftIO)
 
 main :: IO ()
-main = PA.cmdLineParser >>= \cmd ->
-    mockWork cmd
+main = PA.cmdLineParser >>= work
 
 {-
     case (PA.isMock cmd) of
@@ -30,14 +29,6 @@ main = PA.cmdLineParser >>= \cmd ->
 work :: PA.Params -> IO ()
 work params = 
     putStrLn "work"
-
-mockWork :: PA.Params -> IO ()
-mockWork params = 
-    let 
-        tix = RS.mockTickers 
-    in
-    PH.
-    putStrLn "mockwork"
 
 {-
 processTickers :: T.Tickers -> T.REIO (Either RC.SessionError ())

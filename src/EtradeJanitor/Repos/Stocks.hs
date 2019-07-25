@@ -22,12 +22,6 @@ import qualified EtradeJanitor.Repos.Common as C
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Params as PA
 
-nhy :: T.Ticker
-nhy = T.Ticker 1 "NHY" 1 (Calendar.fromGregorian 2019 4 1)
-
-mockTickers :: V.Vector T.Ticker
-mockTickers = V.singleton nhy
-
 tickers :: String -> IO (Either C.SessionError T.Tickers)
 tickers dbIp =
   C.session dbIp $
@@ -90,6 +84,7 @@ insertStockPrices prices =
   C.session dbIp $
   forM_ prices $ \t -> HS.statement t insertStockPriceStmt
 
+{-
 insertStockPrices2 :: V.Vector (Maybe T.StockPrice) -> T.REIO (Either C.SessionError ())
 insertStockPrices2 prices =
   ask >>= \env ->
@@ -112,6 +107,7 @@ insertStockPrices2_ prices =
   liftIO $
   C.session dbIp $
   forM_ p2 $ \t -> HS.statement t insertStockPriceStmt
+-}
 
 stockPriceEncoder :: HE.Params T.StockPrice
 stockPriceEncoder =

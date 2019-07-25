@@ -25,10 +25,10 @@ import qualified EtradeJanitor.Common.Types as T
 prms = PA.Params 
   {
     PA.databaseIp = "172.17.0.2"
-  , PA.isMock = True
-  , PA.downloadOnly = False
   , PA.feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
   }
+
+env = T.Env prms
 
 -- yax = EuroInvestor.downloadPaperHistory
 
@@ -61,19 +61,15 @@ stok = coll >>= pure . PaperHistory.createStockPrice nhy
 
 xx = coll >>= pure . head . drop 8
 
-stox = PaperHistory.fetchStockPrices nhy
+stox = runReaderT (PaperHistory.fetchStockPrices nhy) env
 
 insertTicker :: T.Ticker -> IO () 
 insertTicker tik =
-  PaperHistory.fetchStockPrices tik >>= \prices ->
-  let 
-    env = 
-      T.Env "" prms
-    in 
-    runReaderT (RS.insertStockPrices prices) env >>= \result ->
-      case result of
-        Right resultx ->
-          putStrLn $ "OK!"
-        Left err ->
-          putStrLn $ show err
+  runReaderT (PaperHistory.fetchStockPrices tik) env >>= \prices ->
+  runReaderT (RS.insertStockPrices prices) env >>= \result ->
+    case result of
+      Right resultx ->
+        putStrLn $ "OK!"
+      Left err ->
+        putStrLn $ show err
 

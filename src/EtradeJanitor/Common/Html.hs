@@ -18,6 +18,7 @@ import qualified EtradeJanitor.Common.Types as T
 
 type StringSoup = [TS.Tag String]
 
+{-
 html :: T.Ticker -> T.REIO String
 html t =
     ask >>= \env ->
@@ -33,17 +34,8 @@ html t =
 soup :: T.Ticker -> T.REIO StringSoup
 soup t =
   html t >>= pure . TS.parseTags
-
-{-
-download :: T.Ticker -> R.Url a -> R.Req R.BsResponse
-download t myHttp =
-  let
-    ticker = (T.ticker t)
-    tickerParam = printf "%s.OSE" ticker
-    params = "paper" =: (pack tickerParam) <> "csv_format" =: ("csv" :: Text)
-  in
-  R.req R.GET myHttp R.NoReqBody R.bsResponse params
 -}
+
 
 save :: String -> T.Ticker -> (T.Ticker -> R.Req R.BsResponse) -> IO ()
 save fileName t myDownload =
