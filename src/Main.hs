@@ -36,6 +36,7 @@ mockWork params =
     let 
         tix = RS.mockTickers 
     in
+    PH.
     putStrLn "mockwork"
 
 {-

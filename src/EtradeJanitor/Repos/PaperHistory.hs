@@ -17,7 +17,7 @@ import qualified EtradeJanitor.Repos.PaperHistoryEuroInvestor as PaperHistoryEur
 
 updateStockPrices :: T.Ticker -> T.REIO (Either C.SessionError ())
 updateStockPrices tickr =
-  liftIO (PaperHistoryCsv.fetchStockPrices tickr) >>= \stockPrices ->
+  liftIO (PaperHistoryEuroInvestor.fetchStockPrices tickr) >>= \stockPrices ->
   RS.insertStockPrices stockPrices
 
 

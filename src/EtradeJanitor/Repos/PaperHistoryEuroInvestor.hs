@@ -7,6 +7,7 @@ import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
 import Data.List.Split (splitOn,chunksOf)
 import Text.Read (readMaybe)
 import qualified Data.Int as DI
+import Data.Maybe (fromJust)
 
 import qualified Data.Time.Calendar as Cal
 import qualified Text.HTML.TagSoup as TS
@@ -80,17 +81,23 @@ readVol x =
 
 
 
-createStockPrice :: T.Ticker -> StringSoup -> T.StockPrice
+createStockPrice :: T.Ticker -> StringSoup -> Maybe T.StockPrice
 createStockPrice tik stockSoup =
     let 
         day = (asDay . head . drop 2) stockSoup
-        opn = (readFloat . head . drop 5) stockSoup
-        hi = (readFloat . head . drop 8) stockSoup
-        lo = (readFloat . head . drop 11) stockSoup
-        cls = (readFloat . head . drop 14) stockSoup
-        vol = (readVol . head . drop 17) stockSoup
     in 
-    T.StockPrice tik day opn hi lo cls vol
+    case ((T.date tik) >= day) of
+        True -> 
+            Nothing
+        False -> 
+            let 
+                opn = (readFloat . head . drop 5) stockSoup
+                hi = (readFloat . head . drop 8) stockSoup
+                lo = (readFloat . head . drop 11) stockSoup
+                cls = (readFloat . head . drop 14) stockSoup
+                vol = (readVol . head . drop 17) stockSoup
+            in 
+            Just $ T.StockPrice tik day opn hi lo cls vol
 
 {-
 startDataLines :: StringSoup -> StringSoup 
@@ -108,5 +115,6 @@ fetchStockPrices tik =
     let
         stockSoups = collect curSoup
         stox = map (createStockPrice tik) stockSoups
+        result = map (\y -> fromJust y) $ filter (\x -> x /= Nothing) stox
     in
-    pure $ reverse stox
+    pure $ reverse result

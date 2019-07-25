@@ -22,7 +22,7 @@ import qualified Data.Map.Strict as Map
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Common.Html as Html
 
-urlStem :: Url Https
+--urlStem :: Url Https
 urlStem = R.https "www.euroinvestor.com" /: "exchanges" /: "oslo-stock-exchange"
 
 
