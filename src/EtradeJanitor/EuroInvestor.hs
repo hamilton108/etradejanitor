@@ -73,6 +73,7 @@ https://www.euroinvestor.com/exchanges/oslo-stock-exchange/tomra-systems-asa-nok
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/aker-solutions-asa-nok108/1087272 18
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/dnb-asa-nok10/5656880 19 
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/dno-asa-nok025/340378 20
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/gjensidige-forsikring-asa-nok/2851291 21 
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/subsea-7-sa-com-usd2/2956006  23
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/aker-bp-asa-nok1/32707136 25
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/bw-lpg-ltd-usd001/17893004 26
@@ -105,6 +106,7 @@ urlMap =
     , (18, TickerUrl "aker-solutions-asa-nok108" "1087272" )
     , (19, TickerUrl "dnb-asa-nok10" "5656880" )
     , (20, TickerUrl "dno-asa-nok025" "340378" )
+    , (21, TickerUrl "gjensidige-forsikring-asa-nok" "2851291" )
     , (23, TickerUrl "subsea-7-sa-com-usd2" "2956006" )
     , (25, TickerUrl "aker-bp-asa-nok1" "32707136" )
     , (26, TickerUrl "bw-lpg-ltd-usd001" "17893004" )
@@ -119,8 +121,15 @@ urlMap =
 downloadPaperHistory :: T.Ticker -> R.Req R.BsResponse
 downloadPaperHistory t =
   let
-    tu = fromJust $ Map.lookup (T.oid t) urlMap
-    myUrl = R.https "www.euroinvestor.com" /: "exchanges" /: "oslo-stock-exchange" /: first tu /: second tu /: "history"
+    oid = T.oid t
+    myUrl = 
+      case oid of 
+        7 -> R.https "www.euroinvestor.com" /: "markets" /: "stocks" /: "europe" /: "norway" /: "obx" /: "history"
+        _ -> 
+          let 
+            tu = fromJust $ Map.lookup (T.oid t) urlMap
+          in 
+          R.https "www.euroinvestor.com" /: "exchanges" /: "oslo-stock-exchange" /: first tu /: second tu /: "history"
   in
   R.req R.GET myUrl R.NoReqBody R.bsResponse mempty
 

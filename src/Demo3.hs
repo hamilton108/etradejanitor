@@ -79,4 +79,13 @@ insertTickers =
           Left err ->
               putStrLn $ show err
 
+downloadTickers :: IO () 
+downloadTickers =
+    RS.tickers (PA.databaseIp prms) >>= \tix ->
+      case tix of
+          Right result ->
+            EuroInvestor.savePaperHistoryTickers (PA.feed prms) result
+          Left err ->
+              putStrLn $ show err
+
 tixx = RS.tickers "172.17.0.2"
