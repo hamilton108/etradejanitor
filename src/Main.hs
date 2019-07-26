@@ -28,7 +28,7 @@ main = PA.cmdLineParser >>= work
 
 work :: PA.Params -> IO ()
 work params = 
-    putStrLn "work"
+    putStrLn $ show params
 
 {-
 processTickers :: T.Tickers -> T.REIO (Either RC.SessionError ())

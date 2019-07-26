@@ -16,6 +16,7 @@ import Control.Monad.Reader (ReaderT,ask,runReaderT)
 
 import qualified EtradeJanitor.EuroInvestor as EuroInvestor
 import qualified EtradeJanitor.Repos.PaperHistoryEuroInvestor as PaperHistory
+import qualified EtradeJanitor.Repos.PaperHistory as PaperHistoryx
 
 import qualified EtradeJanitor.Repos.Common as RC
 import qualified EtradeJanitor.Repos.Stocks as RS
@@ -26,18 +27,13 @@ prms = PA.Params
   {
     PA.databaseIp = "172.17.0.2"
   , PA.feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
+  , PA.downloadOnly = False
+  , PA.updateDbOnly = False
   }
 
 env = T.Env prms
 
 -- yax = EuroInvestor.downloadPaperHistory
-
-yux = RS.tickers (PA.databaseIp prms) >>= \tix ->
-        case tix of
-          Right result ->
-            putStrLn $ show result
-          Left err ->
-            putStrLn $ show err
 
 nhy = T.Ticker 1 "NHY" 1 (Calendar.fromGregorian 2019 4 24)
 
@@ -46,8 +42,6 @@ feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
 tix = DV.fromList [nhy]
 
 sx = EuroInvestor.savePaperHistoryTickers feed tix 
-
-hex = EuroInvestor.tickerUrl nhy
 
 soup = PaperHistory.soup nhy 
 
@@ -73,3 +67,16 @@ insertTicker tik =
       Left err ->
         putStrLn $ show err
 
+
+
+insertTickers :: IO () 
+insertTickers =
+    RS.tickers (PA.databaseIp prms) >>= \tix ->
+      case tix of
+          Right result ->
+              runReaderT (PaperHistoryx.updateStockPricesTickers result) env
+              --mapM_ insertTicker result
+          Left err ->
+              putStrLn $ show err
+
+tixx = RS.tickers "172.17.0.2"
