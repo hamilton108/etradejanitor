@@ -10,7 +10,7 @@ import qualified EtradeJanitor.Common.Types as Types
 -- import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.EuroInvestor as EuroInvestor
 import qualified EtradeJanitor.Repos.Stocks as Stocks
-import qualified EtradeJanitor.Repos.PaperHistory as PaperHistory
+import qualified EtradeJanitor.PaperHistory as PaperHistory
 import qualified EtradeJanitor.Params as PA
 --import qualified Data.Dates as DT
 --import qualified Data.Time.Calendar as Cal

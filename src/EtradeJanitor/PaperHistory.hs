@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module EtradeJanitor.Repos.PaperHistory where
+module EtradeJanitor.PaperHistory where
 
 
 
@@ -12,12 +12,12 @@ import qualified EtradeJanitor.Repos.Common as C
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Repos.Stocks as RS
 --import qualified EtradeJanitor.Repos.PaperHistoryCsv as PaperHistoryCsv 
-import qualified EtradeJanitor.Repos.PaperHistoryEuroInvestor as PaperHistoryEuroInvestor 
+import qualified EtradeJanitor.Repos.EuroInvestor.PaperHistory as PaperHistoryEI
 
 
 updateStockPrices :: T.Ticker -> T.REIO (Either C.SessionError ())
 updateStockPrices tickr =
-  PaperHistoryEuroInvestor.fetchStockPrices tickr >>= \stockPrices ->
+  PaperHistoryEI.fetchStockPrices tickr >>= \stockPrices ->
   RS.insertStockPrices stockPrices
 
 

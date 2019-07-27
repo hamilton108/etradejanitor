@@ -15,8 +15,8 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT,ask,runReaderT)
 
 import qualified EtradeJanitor.EuroInvestor as EuroInvestor
-import qualified EtradeJanitor.Repos.PaperHistoryEuroInvestor as PaperHistory
-import qualified EtradeJanitor.Repos.PaperHistory as PaperHistoryx
+import qualified EtradeJanitor.Repos.EuroInvestor.PaperHistory as PaperHistory
+import qualified EtradeJanitor.PaperHistory as PaperHistoryx
 
 import qualified EtradeJanitor.Repos.Common as RC
 import qualified EtradeJanitor.Repos.Stocks as RS
@@ -74,7 +74,6 @@ insertTickers =
       case tix of
           Right result ->
               runReaderT (PaperHistoryx.updateStockPricesTickers result) env
-              --mapM_ insertTicker result
           Left err ->
               putStrLn $ show err
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module EtradeJanitor.Repos.PaperHistoryEuroInvestor where
+module EtradeJanitor.Repos.EuroInvestor.PaperHistory where
 
 import Text.Printf (printf)
 import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
