@@ -2,84 +2,52 @@
 
 module EtradeJanitor.EuroInvestor where
     
-import Data.Text (Text,pack)
 import Text.Printf (printf)
-import Network.HTTP.Req ((=:), (/:))
+import Data.Text (Text)
+import Network.HTTP.Req ((/:))
 import qualified Network.HTTP.Req as R
-import Network.HTTP.Req (Url,Scheme(..))
-import qualified Data.ByteString.Char8 as B
-import Control.Monad.IO.Class (liftIO)
 import Control.Monad (forM_)
+import Control.Monad.Reader (ask)
 import Data.Monoid (mempty)
+import Control.Monad.IO.Class (liftIO)
 
 import Data.Maybe (fromJust)
 
 import Data.Int (Int64)
-import qualified Data.Time.Calendar as Calendar
 
 import qualified Data.Map.Strict as Map
 
+import qualified EtradeJanitor.Params as PA
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Common.Html as Html
 
--- urlStem :: Url 'Https
-urlStem = R.https "www.euroinvestor.com" /: "exchanges" /: "oslo-stock-exchange"
 
 {-
-urlMap :: Map.Map Int64 Text
-urlMap = 
-  Map.fromList [
-    (fromIntegral 1 :: Int64, pack $ printf "%s/%s" urlStem ("norsk-hydro-asa-nok1098/340345/history" :: String))
-  ]
--}
 
--- tickerUrl :: T.Ticker -> Text
-{-
-tickerUrl t = 
-    let 
-        urlStem = R.https "www.euroinvestor.com" /: "exchanges" /: "oslo-stock-exchange"
-    in 
--}
-  
-  -- "www.euroinvestor.com" /: "exchanges" /: "oslo-stock-exchange" /: "norsk-hydro-asa-nok1098" /: "340345" /: "history"
-  --pack "www.euroinvestor.com" -- /exchanges/oslo-stock-exchange/norsk-hydro-asa-nok1098/340345/history"
-  -- fromJust $ Map.lookup (T.oid t) urlMap
+https://www.euroinvestor.com/markets/stocks/europe/norway/obx/history 
 
-{-
-download :: T.Ticker -> R.Url a -> R.Req R.BsResponse
-download t myHttp =
-  let
-    ticker = (T.ticker t)
-    tickerParam = printf "%s.OSE" ticker
-    params = "paper" =: (pack tickerParam) <> "csv_format" =: ("csv" :: Text)
-  in
-  R.req R.GET myHttp R.NoReqBody R.bsResponse params
--}
-
---https://www.euroinvestor.com/markets/stocks/europe/norway/obx/history 
-
-{-
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/statoil-dmob/26207570/history 2
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/yara-international-nok17/440822/history 3
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/seadrill-ltd-usd2/514951 4
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/telenor-asa-ord-nok6/340363 6
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/marine-harvest-dmob/26207560 8
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/orkla-asa-nok125/340387 9
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/rec-silicon-asa-nok1/572189 11
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/petroleum-geo-svs-nok3/340407 12
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/storebrand-asa-seranok5/340352 14
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/tgs-nopec-geophco-nok025/340383 16
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/tomra-systems-asa-nok1/340366 17
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/aker-solutions-asa-nok108/1087272 18
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/dnb-asa-nok10/5656880 19 
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/dno-asa-nok025/340378 20
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/gjensidige-forsikring-asa-nok/2851291 21 
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/subsea-7-sa-com-usd2/2956006  23
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/aker-bp-asa-nok1/32707136 25
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/bw-lpg-ltd-usd001/17893004 26
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/p-f-bakkafrost-dkk1/2270837 27
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/golden-ocean-group-com-usd001/482749 28 
-https://www.euroinvestor.com/exchanges/oslo-stock-exchange/norwegian-air-shut-nok010/432011 29
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/yara-international-nok17/440822/history 
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/seadrill-ltd-usd2/514951/history 
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/telenor-asa-ord-nok6/340363/history 
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/marine-harvest-dmob/26207560/history 
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/orkla-asa-nok125/340387/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/rec-silicon-asa-nok1/572189/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/petroleum-geo-svs-nok3/340407/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/storebrand-asa-seranok5/340352/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/tgs-nopec-geophco-nok025/340383/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/tomra-systems-asa-nok1/340366/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/aker-solutions-asa-nok108/1087272/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/dnb-asa-nok10/5656880/history   
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/dno-asa-nok025/340378/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/gjensidige-forsikring-asa-nok/2851291/history   
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/subsea-7-sa-com-usd2/2956006/history   
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/aker-bp-asa-nok1/32707136/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/bw-lpg-ltd-usd001/17893004/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/p-f-bakkafrost-dkk1/2270837/history  
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/golden-ocean-group-com-usd001/482749/history   
+https://www.euroinvestor.com/exchanges/oslo-stock-exchange/norwegian-air-shut-nok010/432011/history  
+
 -}
 
 data TickerUrl = 
@@ -141,6 +109,11 @@ savePaperHistory feed t =
   putStrLn fileName >>
   Html.save fileName t downloadPaperHistory
 
-savePaperHistoryTickers :: FilePath -> T.Tickers -> IO ()
-savePaperHistoryTickers feed tix =
-  forM_ tix (savePaperHistory feed)
+savePaperHistoryTickers :: T.Tickers -> T.REIO ()
+savePaperHistoryTickers tix =
+  ask >>= \env ->
+  let
+    prms = T.getParams env
+    feed = PA.feed prms
+  in
+  liftIO $ forM_ tix (savePaperHistory feed)

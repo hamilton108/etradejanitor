@@ -2,7 +2,7 @@
 
 module EtradeJanitor.Repos.PaperHistoryCsv where
 
-import Text.Printf (printf)
+--import Text.Printf (printf)
 import Data.Int (Int64)
 import qualified Data.List as L
 import Data.List.Split (splitOn)
@@ -40,10 +40,10 @@ netfondsDateFormat :: Cal.Day -> String
 netfondsDateFormat = concat . splitOn "-" . Cal.showGregorian
 
 fetchCsv :: T.Ticker -> IO [String]
-fetchCsv (T.Ticker _ s _ dx) =
+fetchCsv (T.Ticker _ _ _ dx) =
     let
         tickerCsv :: String
-        tickerCsv = printf "%s/%s.csv" T.feed s
+        tickerCsv = "N/A" --printf "%s/%s.csv" "T.feed" s
 
         netfondsDx :: String
         netfondsDx = netfondsDateFormat dx

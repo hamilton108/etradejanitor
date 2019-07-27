@@ -4,8 +4,8 @@ module EtradeJanitor.Repos.PaperHistoryEuroInvestor where
 
 import Text.Printf (printf)
 import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
-import Data.List.Split (splitOn,chunksOf)
-import Text.Read (readMaybe)
+import Data.List.Split (splitOn)
+--import Text.Read (readMaybe)
 import qualified Data.Int as DI
 import Data.Maybe (fromJust)
 
@@ -13,17 +13,17 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ask)
 import qualified Data.Time.Calendar as Cal
 import qualified Text.HTML.TagSoup as TS
-import Text.HTML.TagSoup ((~/=),(~==),sections)
+import Text.HTML.TagSoup ((~==))
 
 import qualified EtradeJanitor.Params as PA
 import qualified EtradeJanitor.Common.Types as T
-import qualified EtradeJanitor.Common.Types as T
+--import qualified EtradeJanitor.Common.Types as T
 
 
 type StringSoup = [TS.Tag String]
 
 fetchHtml :: T.Ticker -> T.REIO String
-fetchHtml (T.Ticker _ s _ dx) =
+fetchHtml (T.Ticker _ s _ _) =
     ask >>= \env ->
     let
         feed = (PA.feed . T.getParams) env

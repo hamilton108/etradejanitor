@@ -9,8 +9,8 @@ import Control.Monad.Reader (ReaderT)
 
 import qualified EtradeJanitor.Params as PA
 
-feed :: FilePath
-feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
+--feed :: FilePath
+--feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
 
 type REIO = ReaderT Env IO
 

@@ -37,11 +37,9 @@ env = T.Env prms
 
 nhy = T.Ticker 1 "NHY" 1 (Calendar.fromGregorian 2019 4 24)
 
-feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
+feed = "/home/rcs/opt/haskell/etradejanitor/feedtmp"
 
 tix = DV.fromList [nhy]
-
-sx = EuroInvestor.savePaperHistoryTickers feed tix 
 
 soup = PaperHistory.soup nhy 
 
@@ -68,6 +66,7 @@ insertTicker tik =
         putStrLn $ show err
 
 
+tixx = RS.tickers "172.17.0.2"
 
 insertTickers :: IO () 
 insertTickers =
@@ -81,11 +80,13 @@ insertTickers =
 
 downloadTickers :: IO () 
 downloadTickers =
-    RS.tickers (PA.databaseIp prms) >>= \tix ->
-      case tix of
-          Right result ->
-            EuroInvestor.savePaperHistoryTickers (PA.feed prms) result
-          Left err ->
-              putStrLn $ show err
+    RS.tickers (PA.databaseIp prms) >>= \tx ->
+        case tx of
+            Right result -> 
+                runReaderT (EuroInvestor.savePaperHistoryTickers result) env
+            Left err ->
+                putStrLn $ show err
 
-tixx = RS.tickers "172.17.0.2"
+q = T.Ticker 29 "NAS" 1 (Calendar.fromGregorian 2019 4 24)
+
+itq = insertTicker q

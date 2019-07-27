@@ -6,8 +6,8 @@ import Control.Monad (forM_)
 import Data.Functor.Contravariant (contramap)
 import Control.Monad.Reader (ask)
 import Control.Monad.IO.Class (liftIO)
-import qualified Data.Vector as V
-import qualified Data.Maybe as M
+--import qualified Data.Vector as V
+--import qualified Data.Maybe as M
 
 
 -- Hasql
@@ -15,7 +15,7 @@ import qualified Hasql.Session as HS
 import qualified Hasql.Statement as HST
 import qualified Hasql.Encoders as HE
 import qualified Hasql.Decoders as HD
-import qualified Data.Time.Calendar as Calendar
+--import qualified Data.Time.Calendar as Calendar
 
 -- Local
 import qualified EtradeJanitor.Repos.Common as C
