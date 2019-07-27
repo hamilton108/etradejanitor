@@ -26,7 +26,7 @@ import qualified EtradeJanitor.Common.Types as T
 prms = PA.Params 
   {
     PA.databaseIp = "172.17.0.2"
-  , PA.feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
+  , PA.feed = "/home/rcs/opt/haskell/etradejanitor/feedtmp"
   , PA.downloadOnly = False
   , PA.updateDbOnly = False
   }
@@ -86,6 +86,6 @@ downloadTickers =
             Left err ->
                 putStrLn $ show err
 
-q = T.Ticker 29 "NAS" 1 (Calendar.fromGregorian 2019 4 24)
+q = T.Ticker 2 "1" 1 (Calendar.fromGregorian 2019 4 29)
 
 itq = insertTicker q

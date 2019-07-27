@@ -27,6 +27,7 @@ import qualified EtradeJanitor.Common.Html as Html
 https://www.euroinvestor.com/markets/stocks/europe/norway/obx/history 
 
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/statoil-dmob/26207570/history 2
+https://www.euroinvestor.com/exchanges/nasdaq-omx-first-north-stockholm/equinor/1985577/history 2
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/yara-international-nok17/440822/history 
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/seadrill-ltd-usd2/514951/history 
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/telenor-asa-ord-nok6/340363/history 
@@ -60,7 +61,7 @@ urlMap :: Map.Map Int64 TickerUrl
 urlMap = 
     Map.fromList 
     [ (1, TickerUrl "norsk-hydro-asa-nok1098" "340345")
-    , (2, TickerUrl "statoil-dmob" "26207570" )
+    --, (2, TickerUrl "statoil-dmob" "26207570" )
     , (3, TickerUrl "yara-international-nok17" "440822")
     , (4, TickerUrl "seadrill-ltd-usd2" "514951" )
     , (6, TickerUrl "telenor-asa-ord-nok6" "340363" )
@@ -92,6 +93,7 @@ downloadPaperHistory t =
     oid = T.oid t
     myUrl = 
       case oid of 
+        2 -> R.https "www.euroinvestor.com" /: "exchanges" /: "nasdaq-omx-first-north-stockholm" /: "equinor" /: "1985577" /: "history"
         7 -> R.https "www.euroinvestor.com" /: "markets" /: "stocks" /: "europe" /: "norway" /: "obx" /: "history"
         _ -> 
           let 
