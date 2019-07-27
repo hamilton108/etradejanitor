@@ -3,23 +3,22 @@
 
 module Main (main) where
 
-import qualified System.Directory as Dir
-import qualified Data.Vector as V
-import qualified EtradeJanitor.Common.Types as T
-import qualified EtradeJanitor.Repos.Common as RC
+--import qualified System.Directory as Dir
+--import qualified Data.Vector as V
+--import qualified EtradeJanitor.Common.Types as T
+--import qualified EtradeJanitor.Repos.Common as RC
 -- import qualified EtradeJanitor.Netfonds as NF
-import qualified EtradeJanitor.Repos.Stocks as RS
-import qualified EtradeJanitor.Repos.PaperHistory as PH
+--import qualified EtradeJanitor.Repos.Stocks as RS
+--import qualified EtradeJanitor.Repos.PaperHistory as PH
 import qualified EtradeJanitor.Params as PA
-import qualified Data.Dates as DT
-import qualified Data.Time.Calendar as Cal
-import Text.Printf (printf)
-import Control.Monad.Reader (runReaderT,ask)
-import Control.Monad.IO.Class (liftIO)
+--import qualified Data.Dates as DT
+--import qualified Data.Time.Calendar as Cal
+--import Text.Printf (printf)
+--import Control.Monad.Reader (runReaderT,ask)
+--import Control.Monad.IO.Class (liftIO)
 
 main :: IO ()
-main = PA.cmdLineParser >>= \cmd ->
-    mockWork cmd
+main = PA.cmdLineParser >>= work
 
 {-
     case (PA.isMock cmd) of
@@ -29,15 +28,8 @@ main = PA.cmdLineParser >>= \cmd ->
 
 work :: PA.Params -> IO ()
 work params = 
-    putStrLn "work"
+    putStrLn (show params)
 
-mockWork :: PA.Params -> IO ()
-mockWork params = 
-    let 
-        tix = RS.mockTickers 
-    in
-    PH.
-    putStrLn "mockwork"
 
 {-
 processTickers :: T.Tickers -> T.REIO (Either RC.SessionError ())

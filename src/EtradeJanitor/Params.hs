@@ -10,7 +10,7 @@ data Params =
     { databaseIp :: String
     , feed :: String
     , downloadOnly :: Bool
-    , isMock :: Bool
+    , updateDbOnly :: Bool
     } deriving (Show)
 
 mkParams :: Parser Params
@@ -18,8 +18,8 @@ mkParams =
     Params
         <$> strArgument (metavar "IP"  <> help "Database ip address")
         <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value "/home/rcs/opt/haskell/etradejanitor/feed2" <> showDefault)
-        <*> switch (long "download-only" <> short 'd' <> help "Download only, no update database")
-        <*> switch (long "is-mock" <> short 'm' <> help "Use mock tickers instead from database")
+        <*> switch (long "download-only" <> short 'q' <> help "Download only, no update database" )
+        <*> switch (long "db-only" <> short 'Q' <> help "Update database only, no downloads" )
 {-
 data Params = Params {
     databaseIp :: String
