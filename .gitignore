@@ -18,3 +18,7 @@ src/ghci-sandbox
 .cabal-sandbox
 cabal.sandbox.config
 src/stearnswharf_xml
+.stack-work/
+feed/
+feed2/
+feedtmp/
