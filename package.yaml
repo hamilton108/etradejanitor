@@ -1,0 +1,68 @@
+name:                etradejanitor 
+version:             0.1.0
+github:              "githubuser/demo3"
+license:             BSD3
+author:              "Rolf C Stadheim"
+maintainer:          "rolf.c.stadheim@gmail.com"
+copyright:           "2019 Rolf C Stadheim"
+
+# extra-source-files:
+# - README.md
+# - ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/demo3#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- containers
+- hasql
+- mtl
+- utf8-string
+- optparse-applicative 
+- tagsoup
+- req 
+- aeson
+- data-default-class
+- text
+- bytestring
+- split
+- contravariant
+- either
+- vector
+- time
+- directory
+- process
+- regex-tdfa
+- directory
+
+library:
+  source-dirs: src
+
+executables:
+  etradejanitor:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - etradejanitor 
+
+tests:
+  etradejanitor-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - etradejanitor 
