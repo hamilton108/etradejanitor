@@ -114,8 +114,21 @@ startDataLines curSoup =
     dataLines
 -}
 
-fetchStockPrices :: T.Ticker -> T.REIO [T.StockPrice]
-fetchStockPrices tik = 
+fetchStockPrices :: T.Ticker -> StringSoup -> [T.StockPrice]
+fetchStockPrices tik curSoup = 
+    let
+        stockSoups = collect curSoup
+        stox = map (createStockPrice tik) stockSoups
+        result = map (\y -> fromJust y) $ filter (\x -> x /= Nothing) stox
+    in
+    reverse result
+
+fetchStockPricesM :: T.Ticker -> T.REIO [T.StockPrice]
+fetchStockPricesM tik = 
+    soup tik >>= \curSoup ->
+    pure $ fetchStockPrices tik curSoup 
+
+{-
     soup tik >>= \curSoup ->
     let
         stockSoups = collect curSoup
@@ -123,3 +136,4 @@ fetchStockPrices tik =
         result = map (\y -> fromJust y) $ filter (\x -> x /= Nothing) stox
     in
     pure $ reverse result
+-}
