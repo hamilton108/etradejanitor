@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a400960615a406d5cbb7bd0b66fa1c83bff56f8c70a92e0cf245a145db783a4f
+-- hash: 96c05fa1759618862b72df866b34ffe779cce1e67a7a6c04bcbaf82a75f83d7a
 
 name:                etradejanitor
 version:             0.1.0
@@ -47,6 +47,7 @@ library
     , directory
     , either
     , hasql
+    , hspec
     , mtl
     , optparse-applicative
     , process
@@ -78,6 +79,7 @@ executable etradejanitor
     , either
     , etradejanitor
     , hasql
+    , hspec
     , mtl
     , optparse-applicative
     , process
@@ -110,6 +112,7 @@ test-suite etradejanitor-test
     , either
     , etradejanitor
     , hasql
+    , hspec
     , mtl
     , optparse-applicative
     , process

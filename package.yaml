@@ -41,6 +41,7 @@ dependencies:
 - process
 - regex-tdfa
 - directory
+- hspec
 
 library:
   source-dirs: src
