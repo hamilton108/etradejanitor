@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 96c05fa1759618862b72df866b34ffe779cce1e67a7a6c04bcbaf82a75f83d7a
+-- hash: e6c55377ddf56c404523c513ad62ac9ba0cf5f3b4b4f5a511b4d629e1966b365
 
 name:                etradejanitor
-version:             0.1.0
+version:             1.1
 description:         Please see the README on GitHub at <https://github.com/githubuser/demo3#readme>
 homepage:            https://github.com/githubuser/demo3#readme
 bug-reports:         https://github.com/githubuser/demo3/issues
@@ -33,6 +33,7 @@ library
       EtradeJanitor.Repos.Nordnet.Derivatives
       EtradeJanitor.Repos.PaperHistoryCsv
       EtradeJanitor.Repos.Stocks
+      EtradeJanitor.Sample
   other-modules:
       Paths_etradejanitor
   hs-source-dirs:
@@ -61,7 +62,7 @@ library
     , vector
   default-language: Haskell2010
 
-executable etradejanitor
+executable etradejanitor-1.1
   main-is: Main.hs
   other-modules:
       Paths_etradejanitor
