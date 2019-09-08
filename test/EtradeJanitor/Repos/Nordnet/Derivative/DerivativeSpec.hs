@@ -43,8 +43,13 @@ testParams =
 testEnv :: Types.Env 
 testEnv = Types.Env testParams
 
-expectedUrls :: [Derivative.Url]
-expectedUrls = []
+expectedPathName :: String 
+expectedPathName = 
+    "/home/rcs/opt/haskell/etradejanitor/test/feed/2019/9/1/NHY"
+
+testTicker :: Derivative.Ticker
+testTicker = 
+    Derivative.Ticker "NHY"
 
 spec :: Spec
 spec = do
@@ -53,9 +58,16 @@ spec = do
             it "expiry dates in UTC should be [..]" $ do
                 testExpiryDates <- runReaderT (OptionExpiry.expiryTimes testDay) testEnv
                 shouldBe testExpiryDates expectedExpiryDates 
+    describe "Derivative" $ do
+        context "when download date is 2019-09-01 and option ticker is NHY" $ do
+            it ("path name should be " ++ expectedPathName) $ do
+                testPathName <- runReaderT (Derivative.pathNameFor testTicker testDay) testEnv
+                shouldBe testPathName expectedPathName
+        {-
         context "when download date is 2019-09-01 and option ticker is NHY" $ do
             it "urls should be [..]" $ do
                 testExpiryDates <- runReaderT (OptionExpiry.expiryTimes testDay) testEnv
                 let ticker = Derivative.Ticker "NHY"
                 let testUrls = Derivative.urls ticker testExpiryDates
                 shouldBe testUrls expectedUrls
+        -}
