@@ -5,6 +5,8 @@ import Options.Applicative (Parser,info,helper,showDefault,fullDesc,progDesc,(<*
 import Options.Applicative.Builder (strArgument,strOption,switch,metavar,long,short,value,help)
 import Options.Applicative.Extra (execParser)
 
+import qualified EtradeJanitor.Common.Misc as Misc
+
 data Params = 
     Params 
     { databaseIp :: String
@@ -13,11 +15,14 @@ data Params =
     , updateDbOnly :: Bool
     } deriving (Show)
 
+defaultFeed :: String
+defaultFeed = Misc.feedRoot ++ "/feed2"
+
 mkParams :: Parser Params
 mkParams =
     Params
         <$> strArgument (metavar "IP"  <> help "Database ip address")
-        <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value "/home/rcs/opt/haskell/etradejanitor/feed2" <> showDefault)
+        <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value defaultFeed <> showDefault)
         <*> switch (long "download-only" <> short 'q' <> help "Download only, no update database" )
         <*> switch (long "db-only" <> short 'Q' <> help "Update database only, no downloads" )
 {-
