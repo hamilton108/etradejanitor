@@ -35,7 +35,7 @@ testParams :: Params.Params
 testParams = 
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
-    , Params.feed = Misc.feedRoot ++ "/test/feed" 
+    , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
     , Params.downloadOnly = True
     , Params.updateDbOnly = True
     }
@@ -45,7 +45,7 @@ testEnv = Types.Env testParams
 
 expectedPathName :: String 
 expectedPathName = 
-    "/home/rcs/opt/haskell/etradejanitor/test/feed/2019/9/1/NHY"
+    "/home/rcs/opt/haskell/etradejanitor/test/testfeed/2019/9/1/NHY"
 
 testTicker :: Derivative.Ticker
 testTicker = 

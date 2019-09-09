@@ -9,27 +9,44 @@ import qualified Data.Time.Calendar as Calendar
 import qualified Data.Time.Clock.POSIX as POSIX
 import qualified Text.Printf as Printf
 
+import Network.HTTP.Req ((/:),(=:))
+import qualified Network.HTTP.Req as Req
+import qualified Data.ByteString.Char8 as Char8
+
+import qualified System.Directory as Directory
+
 import qualified EtradeJanitor.Params as Params
 import EtradeJanitor.Common.Types (REIO,getParams)
 import qualified EtradeJanitor.Common.Misc as Misc
 
+-- import qualified EtradeJanitor.Common.Types as Types
+
 -- https://www.nordnet.no/market/options?currency=NOK&underlyingSymbol=BAKKA&expireDate=1565906400000
 
 nordNetUrl :: String 
-nordNetUrl = "https://www.nordnet.no/market/options" -- ?currency=NOK&underlyingSymbol=BAKKA&expireDate=1565906400000
+nordNetUrl = "www.nordnet.no/market/options" -- ?currency=NOK&underlyingSymbol=BAKKA&expireDate=1565906400000
 
 newtype Ticker = 
     Ticker { getTicker :: String }
     deriving (Show)
 
-download_ :: Ticker -> POSIX.POSIXTime -> IO ()
-download_ (Ticker ticker) unixTime = 
-    pure ()
 
+{-
+testParams :: Params.Params
+testParams = 
+    Params.Params 
+    { Params.databaseIp = "172.17.0.2"
+    , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
+    , Params.downloadOnly = True
+    , Params.updateDbOnly = True
+    }
 
--- d = Calendar.fromGregorian 2019 3 30
+d = Calendar.fromGregorian 2019 3 30
 
--- t = Ticker "NHY"
+t = Ticker "NHY"
+
+env = Types.Env testParams
+-}
 
 pathNameFor :: Ticker -> Calendar.Day -> REIO String
 pathNameFor (Ticker ticker) curDay = 
@@ -41,8 +58,17 @@ pathNameFor (Ticker ticker) curDay =
     pure $ Printf.printf "%s/%d/%d/%d/%s" feed y m d ticker
 
 mkDir :: Ticker -> Calendar.Day -> REIO ()
-mkDir (Ticker ticker) curDay = 
+mkDir ticker curDay = 
+    pathNameFor ticker curDay >>= \pn ->
+    liftIO $ Directory.createDirectoryIfMissing True pn
+        
+download_ :: Ticker -> POSIX.POSIXTime -> REIO ()
+download_ (Ticker ticker) unixTime = 
+    let
+        myUrl = Req.https (nordNetUrl /: "currency" =: "NOK")
+    in
     pure ()
+
 
 download :: Ticker -> Calendar.Day -> [POSIX.POSIXTime] -> REIO ()
 download ticker curDay unixTimes = 
@@ -50,4 +76,4 @@ download ticker curDay unixTimes =
     let
         dlfn = download_ ticker 
     in 
-    liftIO $ mapM_ dlfn unixTimes
+    mapM_ dlfn unixTimes
