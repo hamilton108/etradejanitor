@@ -5,12 +5,13 @@ module EtradeJanitor.Repos.Nordnet.Derivative where
 import qualified Control.Monad.Reader as Reader
 import Control.Monad.IO.Class (liftIO)
 
+import qualified Data.Text as Text
 import qualified Data.Time.Calendar as Calendar
 import qualified Data.Time.Clock.POSIX as POSIX
 import qualified Text.Printf as Printf
 
-import Network.HTTP.Req ((/:),(=:))
-import qualified Network.HTTP.Req as Req
+import Network.HTTP.Req ((=:))
+import qualified Network.HTTP.Req as R
 import qualified Data.ByteString.Char8 as Char8
 
 import qualified System.Directory as Directory
@@ -18,12 +19,13 @@ import qualified System.Directory as Directory
 import qualified EtradeJanitor.Params as Params
 import EtradeJanitor.Common.Types (REIO,getParams)
 import qualified EtradeJanitor.Common.Misc as Misc
+import qualified EtradeJanitor.Common.Types as T
 
 -- import qualified EtradeJanitor.Common.Types as Types
 
 -- https://www.nordnet.no/market/options?currency=NOK&underlyingSymbol=BAKKA&expireDate=1565906400000
 
-nordNetUrl :: String 
+nordNetUrl :: Text.Text
 nordNetUrl = "www.nordnet.no/market/options" -- ?currency=NOK&underlyingSymbol=BAKKA&expireDate=1565906400000
 
 newtype Ticker = 
@@ -62,11 +64,20 @@ mkDir ticker curDay =
     pathNameFor ticker curDay >>= \pn ->
     liftIO $ Directory.createDirectoryIfMissing True pn
         
+downloadResponse :: Ticker -> POSIX.POSIXTime -> R.Req R.BsResponse 
+downloadResponse t posix = 
+    let
+        myUrl = 
+            R.https nordNetUrl 
+        --optionName = Types.ticker t
+    in
+    R.req R.GET myUrl R.NoReqBody R.bsResponse $ 
+        "currency" =: ("NOK":: Text.Text) 
+        <> "underlyingSymbol" =: ("BAKKA" :: Text.Text) 
+        <> "expireDate" =: (123213124 :: Int)
+
 download_ :: Ticker -> POSIX.POSIXTime -> REIO ()
 download_ (Ticker ticker) unixTime = 
-    let
-        myUrl = Req.https (nordNetUrl /: "currency" =: "NOK")
-    in
     pure ()
 
 
