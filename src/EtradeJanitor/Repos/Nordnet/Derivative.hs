@@ -28,11 +28,6 @@ import qualified EtradeJanitor.Common.Types as T
 nordNetUrl :: Text.Text
 nordNetUrl = "www.nordnet.no/market/options" -- ?currency=NOK&underlyingSymbol=BAKKA&expireDate=1565906400000
 
-newtype Ticker = 
-    Ticker { getTicker :: String }
-    deriving (Show)
-
-
 {-
 testParams :: Params.Params
 testParams = 
@@ -50,21 +45,22 @@ t = Ticker "NHY"
 env = Types.Env testParams
 -}
 
-pathNameFor :: Ticker -> Calendar.Day -> REIO String
-pathNameFor (Ticker ticker) curDay = 
+pathNameFor :: T.Ticker -> Calendar.Day -> REIO String
+pathNameFor t curDay = 
     Reader.ask >>= \env ->
     let 
+        ticker = T.ticker t
         feed = (Params.feed . getParams) env
         (y,m,d) = Calendar.toGregorian curDay
     in
     pure $ Printf.printf "%s/%d/%d/%d/%s" feed y m d ticker
 
-mkDir :: Ticker -> Calendar.Day -> REIO ()
+mkDir :: T.Ticker -> Calendar.Day -> REIO ()
 mkDir ticker curDay = 
     pathNameFor ticker curDay >>= \pn ->
     liftIO $ Directory.createDirectoryIfMissing True pn
         
-downloadResponse :: Ticker -> POSIX.POSIXTime -> R.Req R.BsResponse 
+downloadResponse :: T.Ticker -> POSIX.POSIXTime -> R.Req R.BsResponse 
 downloadResponse t posix = 
     let
         myUrl = 
@@ -76,12 +72,12 @@ downloadResponse t posix =
         <> "underlyingSymbol" =: ("BAKKA" :: Text.Text) 
         <> "expireDate" =: (123213124 :: Int)
 
-download_ :: Ticker -> POSIX.POSIXTime -> REIO ()
-download_ (Ticker ticker) unixTime = 
+download_ :: T.Ticker -> POSIX.POSIXTime -> REIO ()
+download_ t unixTime = 
     pure ()
 
 
-download :: Ticker -> Calendar.Day -> [POSIX.POSIXTime] -> REIO ()
+download :: T.Ticker -> Calendar.Day -> [POSIX.POSIXTime] -> REIO ()
 download ticker curDay unixTimes = 
     mkDir ticker curDay >>
     let
