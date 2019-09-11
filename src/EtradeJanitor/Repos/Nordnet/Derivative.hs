@@ -8,6 +8,7 @@ import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text as Text
 import qualified Data.Time.Calendar as Calendar
 import qualified Data.Time.Clock.POSIX as POSIX
+import qualified Data.Time.Clock as Clock
 import qualified Text.Printf as Printf
 
 import Network.HTTP.Req ((=:))
@@ -57,24 +58,27 @@ pathNameFor t curDay =
 
 mkDir :: T.Ticker -> Calendar.Day -> REIO ()
 mkDir ticker curDay = 
+    let 
+        a = 1
+    in
     pathNameFor ticker curDay >>= \pn ->
     liftIO $ Directory.createDirectoryIfMissing True pn
         
-downloadResponse :: T.Ticker -> POSIX.POSIXTime -> R.Req R.BsResponse 
-downloadResponse t posix = 
+responseGET :: T.Ticker -> POSIX.POSIXTime -> R.Req R.BsResponse 
+responseGET t unixTime = 
     let
-        myUrl = 
-            R.https nordNetUrl 
-        --optionName = Types.ticker t
+        myUrl = R.https nordNetUrl 
+        optionName = T.ticker t
     in
     R.req R.GET myUrl R.NoReqBody R.bsResponse $ 
         "currency" =: ("NOK":: Text.Text) 
-        <> "underlyingSymbol" =: ("BAKKA" :: Text.Text) 
-        <> "expireDate" =: (123213124 :: Int)
+        <> "underlyingSymbol" =: (optionName :: Text.Text) 
+        <> "expireDate" =: (unixTime :: Clock.NominalDiffTime)
 
 download_ :: T.Ticker -> POSIX.POSIXTime -> REIO ()
 download_ t unixTime = 
-    pure ()
+    R.runReq R.defaultHttpConfig (responseGET t unixTime) >>= \bs -> 
+    liftIO $ Char8.putStrLn (R.responseBody bs)
 
 
 download :: T.Ticker -> Calendar.Day -> [POSIX.POSIXTime] -> REIO ()

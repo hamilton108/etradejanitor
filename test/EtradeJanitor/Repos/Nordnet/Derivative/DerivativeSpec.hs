@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module EtradeJanitor.Repos.Nordnet.Derivative.DerivativeSpec (spec) where
 
 
@@ -47,9 +49,9 @@ expectedPathName :: String
 expectedPathName = 
     "/home/rcs/opt/haskell/etradejanitor/test/testfeed/2019/9/1/NHY"
 
-testTicker :: Derivative.Ticker
+testTicker :: Types.Ticker
 testTicker = 
-    Derivative.Ticker "NHY"
+    Types.Ticker 1 "NHY" 1 testDay
 
 spec :: Spec
 spec = do
