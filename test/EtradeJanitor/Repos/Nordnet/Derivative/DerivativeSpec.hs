@@ -63,7 +63,7 @@ spec = do
     describe "Derivative" $ do
         context "when download date is 2019-09-01 and option ticker is NHY" $ do
             it ("path name should be " ++ expectedPathName) $ do
-                testPathName <- runReaderT (Derivative.pathNameFor testTicker testDay) testEnv
+                testPathName <- runReaderT (Derivative.pathNameFor testTicker) testEnv
                 shouldBe testPathName expectedPathName
         {-
         context "when download date is 2019-09-01 and option ticker is NHY" $ do

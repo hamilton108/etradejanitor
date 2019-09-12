@@ -3,6 +3,7 @@
 module Demo.Demo1 where
 
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (runReaderT)
 
 import Data.Maybe (fromJust)
 import Data.Text as Text
@@ -10,7 +11,43 @@ import Data.Text as Text
 -- import qualified Network.HTTP.Req as Req
 import Network.HTTP.Req
 import qualified Data.ByteString.Char8 as Char8
+import qualified Data.Time.Calendar as Calendar
 
+import qualified EtradeJanitor.StockExchange.OptionExpiry as OptionExpiry 
+import qualified EtradeJanitor.Params as Params
+import qualified EtradeJanitor.Common.Types as Types
+import qualified EtradeJanitor.Common.Misc as Misc
+import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
+import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
+
+testParams :: Params.Params
+testParams = 
+    Params.Params 
+    { Params.databaseIp = "172.17.0.2"
+    , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
+    , Params.downloadOnly = True
+    , Params.updateDbOnly = True
+    }
+
+testDay :: Calendar.Day
+testDay = 
+    Calendar.fromGregorian 2019 9 12
+
+testEnv :: Types.Env 
+testEnv = Types.Env testParams
+
+testTicker :: Types.Ticker
+testTicker = 
+    Types.Ticker 1 "NHY" 1 testDay
+
+demo :: IO ()
+demo = 
+    runReaderT (OptionExpiry.expiryTimes testDay) testEnv >>= \exp ->
+    runReaderT (Derivative.download testTicker exp) testEnv >>
+    putStrLn (show exp)
+
+dtou = CalendarUtil.dayToUnixTime
+tmint = CalendarUtil.unixTimeToInt 
  {-
 main :: IO ()
 main = runReq defaultHttpConfig $ do
@@ -31,7 +68,6 @@ yax =
         prm = Req.queryParam "foo" (Just 3 :: Maybe Int)
     in 
     9
--}
 
 main :: IO ()
 main = runReq defaultHttpConfig $ do
@@ -41,3 +77,4 @@ main = runReq defaultHttpConfig $ do
     bs <- req GET (https "httpbin.org" /: "bytes" /~ n) NoReqBody bsResponse $
         "seed" =: seed
     liftIO $ Char8.putStrLn "Hey ho" -- (responseBody bs)
+-}

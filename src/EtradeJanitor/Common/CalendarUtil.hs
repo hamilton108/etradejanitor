@@ -16,7 +16,9 @@ dayToUnixTime d =
     in 
     POSIX.utcTimeToPOSIXSeconds dx
 
-
+unixTimeToInt :: POSIX.POSIXTime -> Int
+unixTimeToInt unixTime = 
+    floor $ toRational unixTime
 
 
 
