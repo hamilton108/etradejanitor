@@ -19,7 +19,8 @@ import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
 parseStringDate :: Calendar.Day -> String -> Maybe POSIX.POSIXTime
 parseStringDate curDay sd = 
     let
-        [ys,ms,ds] = Split.splitOn "-" sd
+        [datePart,timePart] = Split.splitOn ":" sd
+        [ys,ms,ds] = Split.splitOn "-" datePart -- sd
         year = read ys :: Integer
         month = read ms :: Int
         day = read ds :: Int
@@ -28,7 +29,7 @@ parseStringDate curDay sd =
     if expDate < curDay then
         Nothing
     else
-        Just $ CalendarUtil.dayToUnixTime expDate 
+        Just $ CalendarUtil.strToUnixTime timePart -- CalendarUtil.dayToUnixTime expDate 
     
 
 

@@ -48,6 +48,7 @@ demo =
 
 dtou = CalendarUtil.dayToUnixTime
 tmint = CalendarUtil.unixTimeToInt 
+psd = OptionExpiry.parseStringDate 
  {-
 main :: IO ()
 main = runReq defaultHttpConfig $ do
