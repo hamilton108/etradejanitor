@@ -65,17 +65,21 @@ mkDir ticker =
     liftIO (Directory.createDirectoryIfMissing True pn) >>
     pure pn
     
-        
+unixTimeToNordnetExpireDate :: POSIX.POSIXTime -> Int
+unixTimeToNordnetExpireDate unixTime =
+    (CalendarUtil.unixTimeToInt unixTime) * 1000
+
 responseGET :: T.Ticker -> POSIX.POSIXTime -> R.Req R.BsResponse 
 responseGET t unixTime = 
     let
         myUrl = R.https "www.nordnet.no" /: "market" /: "options"
         optionName = T.ticker t
+        nordnetExpiry = unixTimeToNordnetExpireDate unixTime
     in
     R.req R.GET myUrl R.NoReqBody R.bsResponse $ 
         "currency" =: ("NOK":: Text.Text) 
         <> "underlyingSymbol" =: (optionName :: Text.Text) 
-        <> "expireDate" =: (unixTime :: Clock.NominalDiffTime)
+        <> "expireDate" =: (1576796400000 :: Int) -- (nordnetExpiry :: Int)
 
 download_ :: T.Ticker -> FilePath -> POSIX.POSIXTime -> REIO ()
 download_ t filePath unixTime = 
