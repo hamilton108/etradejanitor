@@ -49,6 +49,10 @@ demo =
 dtou = CalendarUtil.dayToUnixTime
 tmint = CalendarUtil.unixTimeToInt 
 psd = OptionExpiry.parseStringDate 
+expt = OptionExpiry.expiryTimes 
+pth = OptionExpiry.expiryFileName
+rfn = OptionExpiry.readExpiryFile
+
  {-
 main :: IO ()
 main = runReq defaultHttpConfig $ do

@@ -65,11 +65,11 @@ mkDir ticker =
     liftIO (Directory.createDirectoryIfMissing True pn) >>
     pure pn
     
-unixTimeToNordnetExpireDate :: POSIX.POSIXTime -> Int
+unixTimeToNordnetExpireDate :: T.NordnetExpiry -> Int
 unixTimeToNordnetExpireDate unixTime =
     (CalendarUtil.unixTimeToInt unixTime) * 1000
 
-responseGET :: T.Ticker -> POSIX.POSIXTime -> R.Req R.BsResponse 
+responseGET :: T.Ticker -> T.NordnetExpiry -> R.Req R.BsResponse 
 responseGET t unixTime = 
     let
         myUrl = R.https "www.nordnet.no" /: "market" /: "options"
@@ -81,7 +81,7 @@ responseGET t unixTime =
         <> "underlyingSymbol" =: (optionName :: Text.Text) 
         <> "expireDate" =: (1576796400000 :: Int) -- (nordnetExpiry :: Int)
 
-download_ :: T.Ticker -> FilePath -> POSIX.POSIXTime -> REIO ()
+download_ :: T.Ticker -> FilePath -> T.NordnetExpiry -> REIO ()
 download_ t filePath unixTime = 
     R.runReq R.defaultHttpConfig (responseGET t unixTime) >>= \bs -> 
     liftIO $ 
@@ -93,7 +93,7 @@ download_ t filePath unixTime =
     --liftIO $ Char8.putStrLn (R.responseBody bs)
 
 
-download :: T.Ticker -> [POSIX.POSIXTime] -> REIO ()
+download :: T.Ticker -> [T.NordnetExpiry] -> REIO ()
 download ticker unixTimes = 
     mkDir ticker >>= \filePath ->
     let

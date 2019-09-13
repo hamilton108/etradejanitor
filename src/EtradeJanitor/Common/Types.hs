@@ -5,12 +5,15 @@ import qualified Data.Int as DI
 import qualified Data.Text as Tx
 import qualified Data.Vector as DV
 import qualified Data.Time.Calendar as Cal
+import qualified Data.Time.Clock.POSIX as POSIX
 import Control.Monad.Reader (ReaderT)
 
 import qualified EtradeJanitor.Params as PA
 
 --feed :: FilePath
 --feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
+
+type NordnetExpiry = POSIX.POSIXTime
 
 type REIO = ReaderT Env IO
 

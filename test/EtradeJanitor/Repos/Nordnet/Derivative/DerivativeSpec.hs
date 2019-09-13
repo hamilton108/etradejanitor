@@ -23,7 +23,7 @@ testDay =
     in 
     Calendar.fromGregorian year month day
 
-expectedExpiryDates :: [POSIX.POSIXTime]
+expectedExpiryDates :: [Types.NordnetExpiry] 
 expectedExpiryDates = 
     [ 1568937600
     , 1571356800
