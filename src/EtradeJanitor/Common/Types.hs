@@ -13,7 +13,7 @@ import qualified EtradeJanitor.Params as PA
 --feed :: FilePath
 --feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
 
-type NordnetExpiry = POSIX.POSIXTime
+type NordnetExpiry = Int -- POSIX.POSIXTime
 
 type REIO = ReaderT Env IO
 

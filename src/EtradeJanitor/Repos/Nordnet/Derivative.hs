@@ -67,7 +67,8 @@ mkDir ticker =
     
 unixTimeToNordnetExpireDate :: T.NordnetExpiry -> Int
 unixTimeToNordnetExpireDate unixTime =
-    (CalendarUtil.unixTimeToInt unixTime) * 1000
+    unixTime * 1000
+    -- (CalendarUtil.unixTimeToInt unixTime) * 1000
 
 responseGET :: T.Ticker -> T.NordnetExpiry -> R.Req R.BsResponse 
 responseGET t unixTime = 
@@ -86,8 +87,8 @@ download_ t filePath unixTime =
     R.runReq R.defaultHttpConfig (responseGET t unixTime) >>= \bs -> 
     liftIO $ 
         let 
-            expiryAsUnixTime = CalendarUtil.unixTimeToInt unixTime
-            fileName = Printf.printf "%s/%d.html" filePath expiryAsUnixTime
+            -- expiryAsUnixTime = CalendarUtil.unixTimeToInt unixTime
+            fileName = Printf.printf "%s/%d.html" filePath unixTime -- expiryAsUnixTime
         in
         Char8.writeFile fileName (R.responseBody bs)
     --liftIO $ Char8.putStrLn (R.responseBody bs)
