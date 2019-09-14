@@ -16,6 +16,7 @@ import qualified EtradeJanitor.EuroInvestor as EuroInvestor
 import qualified EtradeJanitor.Repos.Stocks as Stocks
 import qualified EtradeJanitor.PaperHistory as PaperHistory
 import qualified EtradeJanitor.Params as PA
+import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 --import qualified Data.Dates as DT
 --import qualified Data.Time.Calendar as Cal
 --import Text.Printf (printf)
@@ -52,7 +53,8 @@ work params =
             Right result ->
                 runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
                 runReaderT (PaperHistory.updateStockPricesTickers result) env >>
-                runReaderT (showStockTickers result) env
+                runReaderT (showStockTickers result) env >>
+                runReaderT (Derivative.downloadTickers result) env
             Left err ->
                 putStrLn $ show err
 

@@ -118,7 +118,7 @@ savePaperHistoryTickers tix =
     let
         prms = T.getParams env
         feed = Params.feed prms
-        skipDownload = Params.skipDownload prms
+        skipDownload = Params.skipDownloadStockPrices prms
     in
     case skipDownload of  
         True -> pure ()
