@@ -12,15 +12,17 @@ import qualified Data.Time.Calendar as Calendar
 import qualified Data.Time.Clock as Clock
 import qualified Data.Time.Clock.POSIX as POSIX
 
-import EtradeJanitor.Common.Types (REIO,getParams)
+import EtradeJanitor.Common.Types (REIO,NordnetExpiry,getParams)
 import qualified EtradeJanitor.Params as Params
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
 
-parseStringDate :: Calendar.Day -> String -> Maybe POSIX.POSIXTime
+{-
+parseStringDate :: Calendar.Day -> String -> Maybe NordnetExpiry  
 parseStringDate curDay sd = 
     let
-        [datePart,timePart] = Split.splitOn ":" sd
-        [ys,ms,ds] = Split.splitOn "-" datePart -- sd
+        -- [datePart,timePart] = Split.splitOn ":" sd
+        -- [ys,ms,ds] = Split.splitOn "-" datePart -- sd
+        [ys,ms,ds] = Split.splitOn "-" sd
         year = read ys :: Integer
         month = read ms :: Int
         day = read ds :: Int
@@ -29,11 +31,32 @@ parseStringDate curDay sd =
     if expDate < curDay then
         Nothing
     else
-        Just $ CalendarUtil.strToUnixTime timePart -- CalendarUtil.dayToUnixTime expDate 
+        -- Just $ CalendarUtil.strToUnixTime timePart -- CalendarUtil.dayToUnixTime expDate 
+        Just $ CalendarUtil.dayToUnixTime expDate 
+-}
+
+parseStringDate :: Calendar.Day -> String -> Maybe NordnetExpiry  
+parseStringDate curDay sd = 
+    let
+        [datePart,timePart] = Split.splitOn ":" sd
+        [ys,ms,ds] = Split.splitOn "-" datePart 
+        year = read ys :: Integer
+        month = read ms :: Int
+        day = read ds :: Int
+        expDate = Calendar.fromGregorian year month day
+    in
+    if expDate < curDay then
+        Nothing
+    else
+        let 
+            result :: Int
+            result = read timePart
+        in
+        Just result
     
 
 
-parseStringDates :: Calendar.Day -> [String] -> [POSIX.POSIXTime]
+parseStringDates :: Calendar.Day -> [String] -> [NordnetExpiry]
 parseStringDates curDay lx = 
     let
         parseFn = parseStringDate curDay 
@@ -41,19 +64,25 @@ parseStringDates curDay lx =
     in
     map (\y -> Maybe.fromJust y) $ filter (\x -> x /= Nothing) result
     
-
-expiryTimes :: Calendar.Day -> REIO [POSIX.POSIXTime] -- REIO [POSIX.POSIXTime]
-expiryTimes curDay = 
+expiryFileName :: REIO String
+expiryFileName =
     Reader.ask >>= \env ->
     let
         feed = (Params.feed . getParams) env
         fpath :: String
         fpath = feed ++ "/expiry_dates"
     in
-    liftIO $ openFile fpath ReadMode >>= \inputHandle ->
+    pure fpath
+
+readExpiryFile :: String -> IO [String]
+readExpiryFile fname =  
+    openFile fname ReadMode >>= \inputHandle ->
     hSetEncoding inputHandle latin1 >> -- utf8
     hGetContents inputHandle >>= \theInput ->
-    let 
-        lx = lines theInput
-    in
+    pure $ lines theInput
+
+expiryTimes :: Calendar.Day -> REIO [NordnetExpiry] 
+expiryTimes curDay = 
+    expiryFileName >>= \fname ->
+    liftIO $ readExpiryFile fname >>= \lx -> 
     pure (parseStringDates curDay lx)
