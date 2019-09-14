@@ -50,8 +50,8 @@ testParams =
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
     , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
-    , Params.downloadOnly = True
-    , Params.updateDbOnly = True
+    , Params.skipDownload = True
+    , Params.skipDbUpdateStocks = True
     , Params.showStockTickers = False
     }
 
