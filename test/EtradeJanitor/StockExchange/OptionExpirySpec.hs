@@ -40,7 +40,7 @@ expectedExpiryDate =
 spec :: Spec
 spec = do
     describe "OptionExpiry" $ do
-        context "when string-date is 2019-09-20" $ do
+        context "when string-date is 2019-09-20:1568937600" $ do
             it "expiry date should be (Just 1568937600)" $ do
-                let testExpiryDate = OptionExpiry.parseStringDate testDay "2019-09-20"
+                let testExpiryDate = OptionExpiry.parseStringDate testDay "2019-09-20:1568937600"
                 shouldBe testExpiryDate expectedExpiryDate

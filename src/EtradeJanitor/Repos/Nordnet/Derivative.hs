@@ -70,7 +70,7 @@ unixTimeToNordnetExpireDate unixTime =
     unixTime * 1000
     -- (CalendarUtil.unixTimeToInt unixTime) * 1000
 
-responseGET :: T.Ticker -> T.NordnetExpiry -> R.Req R.BsResponse 
+responseGET :: T.Ticker -> T.NordnetExpiry -> R.Req R.BsResponse
 responseGET t unixTime = 
     let
         myUrl = R.https "www.nordnet.no" /: "market" /: "options"
