@@ -80,7 +80,7 @@ responseGET t unixTime =
     R.req R.GET myUrl R.NoReqBody R.bsResponse $ 
         "currency" =: ("NOK":: Text.Text) 
         <> "underlyingSymbol" =: (optionName :: Text.Text) 
-        <> "expireDate" =: (1576796400000 :: Int) -- (nordnetExpiry :: Int)
+        <> "expireDate" =: (nordnetExpiry :: Int) 
 
 download_ :: T.Ticker -> FilePath -> T.NordnetExpiry -> REIO ()
 download_ t filePath unixTime = 
