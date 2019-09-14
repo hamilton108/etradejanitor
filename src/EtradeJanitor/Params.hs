@@ -13,6 +13,7 @@ data Params =
     , feed :: String
     , downloadOnly :: Bool
     , updateDbOnly :: Bool
+    , showStockTickers :: Bool
     } deriving (Show)
 
 defaultFeed :: String
@@ -25,6 +26,7 @@ mkParams =
         <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value defaultFeed <> showDefault)
         <*> switch (long "download-only" <> short 'q' <> help "Download only, no update database" )
         <*> switch (long "db-only" <> short 'Q' <> help "Update database only, no downloads" )
+        <*> switch (long "show-stock-tickers" <> short 'd' <> help "Show current stock tickers" )
 {-
 data Params = Params {
     databaseIp :: String

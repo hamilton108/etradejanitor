@@ -27,6 +27,7 @@ testParams =
     , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
     , Params.downloadOnly = True
     , Params.updateDbOnly = True
+    , Params.showStockTickers = False
     }
 
 testDay :: Calendar.Day
