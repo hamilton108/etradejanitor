@@ -11,7 +11,8 @@ data Params =
     Params 
     { databaseIp :: String
     , feed :: String
-    , skipDownload :: Bool
+    , skipDownloadStockPrices :: Bool
+    , skipDownloadDerivatives :: Bool
     , skipDbUpdateStocks :: Bool
     , showStockTickers :: Bool
     } deriving (Show)
@@ -24,8 +25,9 @@ mkParams =
     Params
         <$> strArgument (metavar "IP"  <> help "Database ip address")
         <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value defaultFeed <> showDefault)
-        <*> switch (long "skip-download" <> short 'q' <> help "Do not download from Nordnet" )
-        <*> switch (long "skip-db-update-stocks" <> short 'Q' <> help "Do not update database stock prices" )
+        <*> switch (long "skip-download-stocks" <> short 'q' <> help "Do not download from Nordnet" )
+        <*> switch (long "skip-download-derivatives" <> short 'Q' <> help "Do not download from Nordnet" )
+        <*> switch (long "skip-db-update-stocks" <> short 'r' <> help "Do not update database stock prices" )
         <*> switch (long "show-stock-tickers" <> short 'd' <> help "Show current stock tickers" )
 {-
 data Params = Params {

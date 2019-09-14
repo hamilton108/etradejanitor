@@ -23,13 +23,14 @@ import EtradeJanitor.Common.Types (REIO,getParams)
 import qualified EtradeJanitor.Common.Misc as Misc
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
+import qualified EtradeJanitor.StockExchange.OptionExpiry as OptionExpiry 
 
 -- import qualified EtradeJanitor.Common.Types as Types
 
 -- https://www.nordnet.no/market/options?currency=NOK&underlyingSymbol=BAKKA&expireDate=1565906400000
 
-nordNetUrl :: Text.Text
-nordNetUrl = "www.nordnet.no/market/options" -- ?currency=NOK&underlyingSymbol=BAKKA&expireDate=1565906400000
+-- nordNetUrl :: Text.Text
+-- nordNetUrl = "www.nordnet.no/market/options" -- ?currency=NOK&underlyingSymbol=BAKKA&expireDate=1565906400000
 
 {-
 testParams :: Params.Params
@@ -94,6 +95,16 @@ download_ t filePath unixTime =
     --liftIO $ Char8.putStrLn (R.responseBody bs)
 
 
+nordNetExpiry :: REIO [T.NordnetExpiry]
+nordNetExpiry =
+    Reader.ask >>= \env ->
+    let
+        expiry = 
+            CalendarUtil.today >>= \today -> 
+            Reader.runReaderT (OptionExpiry.expiryTimes today) env
+    in
+    liftIO expiry
+
 download :: T.Ticker -> [T.NordnetExpiry] -> REIO ()
 download ticker unixTimes = 
     mkDir ticker >>= \filePath ->
@@ -101,3 +112,15 @@ download ticker unixTimes =
         dlfn = download_ ticker filePath
     in 
     mapM_ dlfn unixTimes
+
+downloadTickers :: [T.Ticker] -> REIO ()
+downloadTickers tix = 
+    Reader.ask >>= \env ->
+    let 
+        skipDownload = (Params.skipDownloadDerivatives . getParams) env
+    in
+    case skipDownload of 
+        True -> pure ()
+        False -> nordNetExpiry >>= \expiry ->
+                    liftIO $ 
+                    mapM_ (\t -> Reader.runReaderT (download t expiry) env) tix 

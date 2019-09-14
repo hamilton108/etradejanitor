@@ -27,8 +27,7 @@ updateStockPricesTickers :: T.Tickers -> T.REIO ()
 updateStockPricesTickers tix =
     ask >>= \env ->
     let
-        prms = T.getParams env
-        skipUpdate = Params.skipDbUpdateStocks prms
+        skipUpdate = (Params.skipDbUpdateStocks . T.getParams) env
     in
     case skipUpdate of  
       True -> pure ()

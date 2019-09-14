@@ -52,7 +52,8 @@ work params =
             Right result ->
                 runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
                 runReaderT (PaperHistory.updateStockPricesTickers result) env >>
-                runReaderT (showStockTickers result) env
+                runReaderT (showStockTickers result) env >>
+                runReaderT (Derivatives.downloadTickers result) env
             Left err ->
                 putStrLn $ show err
 

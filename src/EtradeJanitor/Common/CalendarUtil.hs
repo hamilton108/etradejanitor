@@ -27,4 +27,9 @@ strToUnixTime s =
         x = read s :: Integer
     in
     fromInteger x :: POSIX.POSIXTime
+
+today :: IO Calendar.Day
+today = 
+    Clock.getCurrentTime >>= \now ->
+    pure $ Clock.utctDay now
     
