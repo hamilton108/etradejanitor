@@ -19,15 +19,16 @@ import qualified EtradeJanitor.Common.Types as Types
 import qualified EtradeJanitor.Common.Misc as Misc
 import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
+-- import qualified Main 
 
 testParams :: Params.Params
 testParams = 
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
     , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
-    , Params.downloadOnly = True
-    , Params.updateDbOnly = True
-    , Params.showStockTickers = False
+    , Params.skipDownload = True
+    , Params.skipDbUpdateStocks = True
+    , Params.showStockTickers = True
     }
 
 testDay :: Calendar.Day
@@ -46,6 +47,11 @@ demo =
     runReaderT (OptionExpiry.expiryTimes testDay) testEnv >>= \exp ->
     runReaderT (Derivative.download testTicker exp) testEnv >>
     putStrLn (show exp)
+
+{-
+demo2 :: IO ()
+demo2 = Main.work testParams
+-}
 
 dtou = CalendarUtil.dayToUnixTime
 tmint = CalendarUtil.unixTimeToInt 

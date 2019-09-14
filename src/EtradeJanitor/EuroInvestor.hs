@@ -20,6 +20,7 @@ import qualified Data.Map.Strict as Map
 import qualified EtradeJanitor.Params as PA
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Common.Html as Html
+import qualified EtradeJanitor.Params as Params
 
 
 {-
@@ -105,17 +106,20 @@ downloadPaperHistory t =
 
 savePaperHistory :: FilePath -> T.Ticker -> IO ()
 savePaperHistory feed t =
-  let
-    fileName = printf "%s/%s.html" feed (T.ticker t)
-  in
-  putStrLn fileName >>
-  Html.save fileName t downloadPaperHistory
+    let
+        fileName = printf "%s/%s.html" feed (T.ticker t)
+    in
+    putStrLn fileName >>
+    Html.save fileName t downloadPaperHistory
 
 savePaperHistoryTickers :: T.Tickers -> T.REIO ()
 savePaperHistoryTickers tix =
-  ask >>= \env ->
-  let
-    prms = T.getParams env
-    feed = PA.feed prms
-  in
-  liftIO $ forM_ tix (savePaperHistory feed)
+    ask >>= \env ->
+    let
+        prms = T.getParams env
+        feed = Params.feed prms
+        skipDownload = Params.skipDownload prms
+    in
+    case skipDownload of  
+        True -> pure ()
+        False -> liftIO $ forM_ tix (savePaperHistory feed)
