@@ -113,7 +113,11 @@ download ticker unixTimes =
     in 
     mapM_ dlfn unixTimes
 
+<<<<<<< HEAD
 downloadTickers :: T.Tickers -> REIO ()
+=======
+downloadTickers :: [T.Ticker] -> REIO ()
+>>>>>>> c1a15be6eb2a5e028ffad2380234e6cb62b09a21
 downloadTickers tix = 
     Reader.ask >>= \env ->
     let 
@@ -122,4 +126,9 @@ downloadTickers tix =
     case skipDownload of 
         True -> pure ()
         False -> nordNetExpiry >>= \expiry ->
+<<<<<<< HEAD
                     mapM_ (\t -> download t expiry) tix 
+=======
+                    liftIO $ 
+                    mapM_ (\t -> Reader.runReaderT (download t expiry) env) tix 
+>>>>>>> c1a15be6eb2a5e028ffad2380234e6cb62b09a21
