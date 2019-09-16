@@ -93,8 +93,9 @@ download_ t filePath skipIfExists unixTime =
     liftIO $ 
     doDownloadIO >>= \doDownload -> 
         case doDownload of 
-            False -> putStrLn (Printf.printf "Skipping download of file %s" fileName) >> pure ()
+            False -> putStrLn (Printf.printf "Skipping download of %s" fileName) >> pure ()
             True -> 
+                putStrLn (Printf.printf "Downloading %s" fileName) >> 
                 R.runReq R.defaultHttpConfig (responseGET t unixTime) >>= \bs -> 
                 Char8.writeFile fileName (R.responseBody bs)
 

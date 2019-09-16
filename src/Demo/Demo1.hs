@@ -6,7 +6,8 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (runReaderT)
 
 import Data.Maybe (fromJust)
-import Data.Text as Text
+import qualified Data.Text as Text
+import qualified Data.Vector as Vector
 -- import Network.HTTP.Req ((/:),(=:))
 -- import qualified Network.HTTP.Req as Req
 import Network.HTTP.Req
@@ -19,7 +20,7 @@ import qualified EtradeJanitor.Common.Types as Types
 import qualified EtradeJanitor.Common.Misc as Misc
 import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
--- import qualified Main 
+--import qualified Main 
 
 testParams :: Params.Params
 testParams = 
@@ -30,12 +31,12 @@ testParams =
     , Params.skipDownloadDerivatives = False
     , Params.skipDbUpdateStocks = True
     , Params.skipIfDownloadFileExists = True
-    , Params.showStockTickers = False
+    , Params.showStockTickers = True
     }
 
 testDay :: Calendar.Day
 testDay = 
-    Calendar.fromGregorian 2019 9 12
+    Calendar.fromGregorian 2019 9 16
 
 testEnv :: Types.Env 
 testEnv = Types.Env testParams
@@ -44,16 +45,54 @@ testTicker :: Types.Ticker
 testTicker = 
     Types.Ticker 1 "NHY" 1 testDay
 
+testTickers :: Types.Tickers
+testTickers =
+    Vector.fromList 
+    [
+          Types.Ticker 1 "NHY" 1 testDay
+        , Types.Ticker 2 "EQNR" 1 testDay
+    ]
+
+{-
+    Ticker {oid = 1, ticker = "NHY", category = 1, date = 2019-09-13}
+    Ticker {oid = 2, ticker = "EQNR", category = 1, date = 2019-09-13}
+    Ticker {oid = 3, ticker = "YAR", category = 1, date = 2019-09-13}
+    Ticker {oid = 4, ticker = "SDRL", category = 1, date = 2019-09-13}
+    Ticker {oid = 6, ticker = "TEL", category = 1, date = 2019-09-13}
+    Ticker {oid = 7, ticker = "OBX", category = 3, date = 2019-09-13}
+    Ticker {oid = 8, ticker = "MHG", category = 1, date = 2019-09-13}
+    Ticker {oid = 9, ticker = "ORK", category = 1, date = 2019-09-13}
+    Ticker {oid = 11, ticker = "REC", category = 1, date = 2019-09-13}
+    Ticker {oid = 12, ticker = "PGS", category = 1, date = 2019-09-13}
+    Ticker {oid = 14, ticker = "STB", category = 1, date = 2019-09-13}
+    Ticker {oid = 16, ticker = "TGS", category = 1, date = 2019-09-13}
+    Ticker {oid = 17, ticker = "TOM", category = 1, date = 2019-09-13}
+    Ticker {oid = 18, ticker = "AKSO", category = 1, date = 2019-09-13}
+    Ticker {oid = 19, ticker = "DNB", category = 1, date = 2019-09-13}
+    Ticker {oid = 20, ticker = "DNO", category = 1, date = 2019-09-13}
+    Ticker {oid = 21, ticker = "GJF", category = 1, date = 2019-09-13}
+    Ticker {oid = 23, ticker = "SUBC", category = 1, date = 2019-09-13}
+    Ticker {oid = 25, ticker = "AKERBP", category = 1, date = 2019-09-13}
+    Ticker {oid = 26, ticker = "BWLPG", category = 1, date = 2019-09-13}
+    Ticker {oid = 27, ticker = "BAKKA", category = 1, date = 2019-09-13}
+    Ticker {oid = 28, ticker = "GOGL", category = 1, date = 2019-09-13}
+    Ticker {oid = 29, ticker = "NAS", category = 1, date = 2019-09-13}
+-}
+    
+
 demo :: IO ()
 demo = 
     runReaderT (OptionExpiry.expiryTimes testDay) testEnv >>= \exp ->
     runReaderT (Derivative.download testTicker exp) testEnv >>
     putStrLn (show exp)
 
-{-
 demo2 :: IO ()
-demo2 = Main.work testParams
--}
+demo2 = 
+    runReaderT (Derivative.downloadTickers testTickers) testEnv >>
+    putStrLn "Done!" 
+
+--demo3 :: IO ()
+--demo3 = Main.work testParams
 
 dtou = CalendarUtil.dayToUnixTime
 tmint = CalendarUtil.unixTimeToInt 
