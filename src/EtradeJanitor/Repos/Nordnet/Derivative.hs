@@ -83,16 +83,20 @@ responseGET t unixTime =
         <> "underlyingSymbol" =: (optionName :: Text.Text) 
         <> "expireDate" =: (nordnetExpiry :: Int) 
 
-download_ :: T.Ticker -> FilePath -> T.NordnetExpiry -> REIO ()
-download_ t filePath unixTime = 
-    R.runReq R.defaultHttpConfig (responseGET t unixTime) >>= \bs -> 
+download_ :: T.Ticker -> FilePath -> Bool -> T.NordnetExpiry -> REIO ()
+download_ t filePath skipIfExists unixTime = 
+    let
+        fileName = Printf.printf "%s/%d.html" filePath unixTime -- expiryAsUnixTime
+        doDownloadIO = (Directory.doesFileExist fileName >>= \fileExist ->
+                        pure $ not $ skipIfExists && fileExist) :: IO Bool
+    in
     liftIO $ 
-        let 
-            -- expiryAsUnixTime = CalendarUtil.unixTimeToInt unixTime
-            fileName = Printf.printf "%s/%d.html" filePath unixTime -- expiryAsUnixTime
-        in
-        Char8.writeFile fileName (R.responseBody bs)
-    --liftIO $ Char8.putStrLn (R.responseBody bs)
+    doDownloadIO >>= \doDownload -> 
+        case doDownload of 
+            False -> putStrLn (Printf.printf "Skipping download of file %s" fileName) >> pure ()
+            True -> 
+                R.runReq R.defaultHttpConfig (responseGET t unixTime) >>= \bs -> 
+                Char8.writeFile fileName (R.responseBody bs)
 
 
 nordNetExpiry :: REIO [T.NordnetExpiry]
@@ -107,17 +111,17 @@ nordNetExpiry =
 
 download :: T.Ticker -> [T.NordnetExpiry] -> REIO ()
 download ticker unixTimes = 
+    Reader.ask >>= \env ->
+    let
+        skipIfExists = (Params.skipIfDownloadFileExists . getParams) env
+    in
     mkDir ticker >>= \filePath ->
     let
-        dlfn = download_ ticker filePath
+        dlfn = download_ ticker filePath skipIfExists 
     in 
     mapM_ dlfn unixTimes
 
-<<<<<<< HEAD
 downloadTickers :: T.Tickers -> REIO ()
-=======
-downloadTickers :: [T.Ticker] -> REIO ()
->>>>>>> c1a15be6eb2a5e028ffad2380234e6cb62b09a21
 downloadTickers tix = 
     Reader.ask >>= \env ->
     let 
@@ -126,9 +130,4 @@ downloadTickers tix =
     case skipDownload of 
         True -> pure ()
         False -> nordNetExpiry >>= \expiry ->
-<<<<<<< HEAD
                     mapM_ (\t -> download t expiry) tix 
-=======
-                    liftIO $ 
-                    mapM_ (\t -> Reader.runReaderT (download t expiry) env) tix 
->>>>>>> c1a15be6eb2a5e028ffad2380234e6cb62b09a21

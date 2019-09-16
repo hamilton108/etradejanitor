@@ -53,6 +53,7 @@ testParams =
     , Params.skipDownloadStockPrices = True
     , Params.skipDownloadDerivatives = True
     , Params.skipDbUpdateStocks = True
+    , Params.skipIfDownloadFileExists = True
     , Params.showStockTickers = False
     }
 

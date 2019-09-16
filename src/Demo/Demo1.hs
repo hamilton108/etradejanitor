@@ -27,9 +27,10 @@ testParams =
     { Params.databaseIp = "172.17.0.2"
     , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
     , Params.skipDownloadStockPrices = True
-    , Params.skipDownloadDerivatives = True
+    , Params.skipDownloadDerivatives = False
     , Params.skipDbUpdateStocks = True
-    , Params.showStockTickers = True
+    , Params.skipIfDownloadFileExists = True
+    , Params.showStockTickers = False
     }
 
 testDay :: Calendar.Day
