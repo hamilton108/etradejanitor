@@ -46,8 +46,9 @@ showStockTickers tix =
 work :: PA.Params -> IO ()
 work params = 
     putStrLn (show params) >>
+    CalendarUtil.today >>= \today ->
     let 
-        env = Types.Env params
+        env = Types.Env params today
     in 
     Stocks.tickers (PA.databaseIp params) >>= \tix ->
         case tix of

@@ -19,7 +19,7 @@ import qualified System.Directory as Directory
 import qualified System.FilePath as FilePath
 
 import qualified EtradeJanitor.Params as Params
-import EtradeJanitor.Common.Types (REIO,getParams)
+import EtradeJanitor.Common.Types (REIO,getParams,getDownloadDate)
 import qualified EtradeJanitor.Common.Misc as Misc
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
@@ -53,7 +53,7 @@ pathNameFor :: T.Ticker -> REIO FilePath
 pathNameFor t = 
     Reader.ask >>= \env ->
     let 
-        curDay = T.date t
+        curDay = getDownloadDate env
         ticker = T.ticker t
         feed = (Params.feed . getParams) env
         (y,m,d) = Calendar.toGregorian curDay

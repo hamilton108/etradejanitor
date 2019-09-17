@@ -58,7 +58,7 @@ testParams =
     }
 
 testEnv :: Types.Env 
-testEnv = Types.Env testParams
+testEnv = Types.Env testParams testDay
 
 expectedPathName :: String 
 expectedPathName = 
