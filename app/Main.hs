@@ -10,6 +10,7 @@ import Control.Monad.IO.Class (liftIO)
 --import qualified System.Directory as Dir
 --import qualified Data.Vector as V
 import qualified EtradeJanitor.Common.Types as Types
+import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
 --import qualified EtradeJanitor.Repos.Common as RC
 -- import qualified EtradeJanitor.Netfonds as NF
 import qualified EtradeJanitor.EuroInvestor as EuroInvestor

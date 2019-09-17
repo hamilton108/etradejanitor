@@ -51,6 +51,31 @@ testTickers =
     [
           Types.Ticker 1 "NHY" 1 testDay
         , Types.Ticker 2 "EQNR" 1 testDay
+        , Types.Ticker 3 "YAR" 1 testDay
+        , Types.Ticker 4 "SDRL" 1 testDay
+        , Types.Ticker 6 "TEL" 1 testDay
+        , Types.Ticker 7 "OBX" 1 testDay
+        , Types.Ticker 8 "MHG" 1 testDay
+        , Types.Ticker 9 "ORK" 1 testDay
+        , Types.Ticker 11 "REC" 1 testDay
+        , Types.Ticker 12 "PGS" 1 testDay
+        , Types.Ticker 14 "STB" 1 testDay
+
+        , Types.Ticker 16 "TGS" 1 testDay
+        , Types.Ticker 17 "TOM" 1 testDay
+        , Types.Ticker 18 "AKSO" 1 testDay
+
+        , Types.Ticker 19 "DNB" 1 testDay
+        , Types.Ticker 20 "DNO" 1 testDay
+        , Types.Ticker 21 "GJF" 1 testDay
+
+        , Types.Ticker 23 "SUBC" 1 testDay
+        , Types.Ticker 25 "AKERBP" 1 testDay
+        , Types.Ticker 26 "BWLPG" 1 testDay
+
+        , Types.Ticker 27 "BAKKA" 1 testDay
+        , Types.Ticker 28 "GOGL" 1 testDay
+        , Types.Ticker 29 "NAS" 1 testDay
     ]
 
 {-
