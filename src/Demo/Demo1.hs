@@ -38,8 +38,8 @@ testDay :: Calendar.Day
 testDay = 
     Calendar.fromGregorian 2019 9 16
 
-testEnv :: Types.Env 
-testEnv = Types.Env testParams
+-- testEnv :: IO Types.Env 
+-- testEnv = Types.Env testParams CalendarUtil.today
 
 testTicker :: Types.Ticker
 testTicker = 
@@ -50,6 +50,9 @@ testTickers =
     Vector.fromList 
     [
           Types.Ticker 1 "NHY" 1 testDay
+    ]
+
+{-
         , Types.Ticker 2 "EQNR" 1 testDay
         , Types.Ticker 3 "YAR" 1 testDay
         , Types.Ticker 4 "SDRL" 1 testDay
@@ -77,6 +80,7 @@ testTickers =
         , Types.Ticker 28 "GOGL" 1 testDay
         , Types.Ticker 29 "NAS" 1 testDay
     ]
+-}
 
 {-
     Ticker {oid = 1, ticker = "NHY", category = 1, date = 2019-09-13}
@@ -107,12 +111,20 @@ testTickers =
 
 demo :: IO ()
 demo = 
+    CalendarUtil.today >>= \today ->
+    let
+        testEnv = Types.Env testParams today
+    in
     runReaderT (OptionExpiry.expiryTimes testDay) testEnv >>= \exp ->
     runReaderT (Derivative.download testTicker exp) testEnv >>
     putStrLn (show exp)
 
 demo2 :: IO ()
 demo2 = 
+    CalendarUtil.today >>= \today ->
+    let
+        testEnv = Types.Env testParams today
+    in
     runReaderT (Derivative.downloadTickers testTickers) testEnv >>
     putStrLn "Done!" 
 

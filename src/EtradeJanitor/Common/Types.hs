@@ -19,7 +19,11 @@ type REIO = ReaderT Env IO
 
 -- newtype DbIP = DbIP { getIp :: String }
 
-newtype Env = Env { getParams :: PA.Params } deriving (Show)
+data Env = 
+    Env 
+    { getParams :: PA.Params  
+    , getDownloadDate :: Cal.Day 
+    } deriving (Show)
 
 {-
 isHtmlOnly :: Env -> Bool
