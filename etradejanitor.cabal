@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 819b4bb4650e4651dc32c3492424f24efcd34bb4bae3a3cc75f256358e26f9e2
+-- hash: 3542efdd7321afd683c125c07cff621b5a2ed759787030cc305fe2d4ab9e98c5
 
 name:                etradejanitor
 version:             1.1
@@ -23,16 +23,20 @@ source-repository head
 
 library
   exposed-modules:
+      Demo.Demo1
+      EtradeJanitor.Common.CalendarUtil
       EtradeJanitor.Common.Html
+      EtradeJanitor.Common.Misc
       EtradeJanitor.Common.Types
       EtradeJanitor.EuroInvestor
       EtradeJanitor.PaperHistory
       EtradeJanitor.Params
       EtradeJanitor.Repos.Common
       EtradeJanitor.Repos.EuroInvestor.PaperHistory
-      EtradeJanitor.Repos.Nordnet.Derivatives
+      EtradeJanitor.Repos.Nordnet.Derivative
       EtradeJanitor.Repos.PaperHistoryCsv
       EtradeJanitor.Repos.Stocks
+      EtradeJanitor.StockExchange.OptionExpiry
   other-modules:
       Paths_etradejanitor
   hs-source-dirs:
@@ -46,6 +50,7 @@ library
     , data-default-class
     , directory
     , either
+    , filepath
     , hasql
     , hspec
     , mtl
@@ -78,6 +83,7 @@ executable etradejanitor-1.1
     , directory
     , either
     , etradejanitor
+    , filepath
     , hasql
     , hspec
     , mtl
@@ -97,7 +103,9 @@ test-suite etradejanitor-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Nordnet.DerivativesSpec
+      EtradeJanitor.Common.CalendarUtilSpec
+      EtradeJanitor.Repos.Nordnet.Derivative.DerivativeSpec
+      EtradeJanitor.StockExchange.OptionExpirySpec
       Paths_etradejanitor
   hs-source-dirs:
       test
@@ -112,6 +120,7 @@ test-suite etradejanitor-test
     , directory
     , either
     , etradejanitor
+    , filepath
     , hasql
     , hspec
     , mtl

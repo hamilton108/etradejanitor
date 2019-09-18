@@ -20,6 +20,7 @@ import qualified Data.Map.Strict as Map
 import qualified EtradeJanitor.Params as PA
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Common.Html as Html
+import qualified EtradeJanitor.Params as Params
 
 
 {-
@@ -49,6 +50,7 @@ https://www.euroinvestor.com/exchanges/oslo-stock-exchange/p-f-bakkafrost-dkk1/2
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/golden-ocean-group-com-usd001/482749/history   
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/norwegian-air-shut-nok010/432011/history  
 
+https://www.euroinvestor.com/exchanges/nasdaq-omx-first-north-stockholm/equinor/1985577
 -}
 
 data TickerUrl = 
@@ -105,17 +107,20 @@ downloadPaperHistory t =
 
 savePaperHistory :: FilePath -> T.Ticker -> IO ()
 savePaperHistory feed t =
-  let
-    fileName = printf "%s/%s.html" feed (T.ticker t)
-  in
-  putStrLn fileName >>
-  Html.save fileName t downloadPaperHistory
+    let
+        fileName = printf "%s/%s.html" feed (T.ticker t)
+    in
+    putStrLn fileName >>
+    Html.save fileName t downloadPaperHistory
 
 savePaperHistoryTickers :: T.Tickers -> T.REIO ()
 savePaperHistoryTickers tix =
-  ask >>= \env ->
-  let
-    prms = T.getParams env
-    feed = PA.feed prms
-  in
-  liftIO $ forM_ tix (savePaperHistory feed)
+    ask >>= \env ->
+    let
+        prms = T.getParams env
+        feed = Params.feed prms
+        skipDownload = Params.skipDownloadStockPrices prms
+    in
+    case skipDownload of  
+        True -> pure ()
+        False -> liftIO $ forM_ tix (savePaperHistory feed)

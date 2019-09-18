@@ -5,21 +5,32 @@ import Options.Applicative (Parser,info,helper,showDefault,fullDesc,progDesc,(<*
 import Options.Applicative.Builder (strArgument,strOption,switch,metavar,long,short,value,help)
 import Options.Applicative.Extra (execParser)
 
+import qualified EtradeJanitor.Common.Misc as Misc
+
 data Params = 
     Params 
     { databaseIp :: String
     , feed :: String
-    , downloadOnly :: Bool
-    , updateDbOnly :: Bool
+    , skipDownloadStockPrices :: Bool
+    , skipDownloadDerivatives :: Bool
+    , skipDbUpdateStocks :: Bool
+    , skipIfDownloadFileExists :: Bool
+    , showStockTickers :: Bool
     } deriving (Show)
+
+defaultFeed :: String
+defaultFeed = Misc.feedRoot ++ "/feed2"
 
 mkParams :: Parser Params
 mkParams =
     Params
         <$> strArgument (metavar "IP"  <> help "Database ip address")
-        <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value "/home/rcs/opt/haskell/etradejanitor/feed2" <> showDefault)
-        <*> switch (long "download-only" <> short 'q' <> help "Download only, no update database" )
-        <*> switch (long "db-only" <> short 'Q' <> help "Update database only, no downloads" )
+        <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value defaultFeed <> showDefault)
+        <*> switch (long "skip-download-stocks" <> short 'q' <> help "Do not download stock prices from Euroinvestor" )
+        <*> switch (long "skip-download-derivatives" <> short 'Q' <> help "Do not download derivatives from Nordnet" )
+        <*> switch (long "skip-db-update-stocks" <> short 'r' <> help "Do not update database stock prices" )
+        <*> switch (long "skip-if-download-exists" <> short 'x' <> help "Do not download if file exists" )
+        <*> switch (long "show-stock-tickers" <> short 't' <> help "Show current stock tickers" )
 {-
 data Params = Params {
     databaseIp :: String
