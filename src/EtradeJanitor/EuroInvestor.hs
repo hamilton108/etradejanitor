@@ -50,6 +50,7 @@ https://www.euroinvestor.com/exchanges/oslo-stock-exchange/p-f-bakkafrost-dkk1/2
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/golden-ocean-group-com-usd001/482749/history   
 https://www.euroinvestor.com/exchanges/oslo-stock-exchange/norwegian-air-shut-nok010/432011/history  
 
+https://www.euroinvestor.com/exchanges/nasdaq-omx-first-north-stockholm/equinor/1985577
 -}
 
 data TickerUrl = 
