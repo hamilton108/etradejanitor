@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HASKELL_VER="8.4"
+HASKELL_VER="8.6.5"
 
 HOME="/home/rcs/opt/haskell/etradejanitor"
 

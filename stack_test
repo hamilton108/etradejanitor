@@ -1,0 +1,5 @@
+#!/bin/bash
+
+stack test --system-ghc
+
+exit 0
