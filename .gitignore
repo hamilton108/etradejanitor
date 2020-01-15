@@ -1,5 +1,4 @@
 *.swp
-*.csv
 *.html
 Sample.hs
 tmp/
