@@ -2,12 +2,19 @@
 
 module EtradeJanitor.Repos.Yahoo.PaperHistory where
 
+import qualified Control.Monad.Reader as Reader
+import Control.Monad.IO.Class (liftIO)
 import qualified Data.List as L
 import qualified Data.Time.Calendar as Cal
+import qualified Text.Printf as Printf
+
+import qualified System.FilePath as FilePath
+import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
 
 import qualified EtradeJanitor.Common.Types as T
+import qualified EtradeJanitor.Params as Params
+import EtradeJanitor.Common.Types (REIO)
 
-import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
 
 -- https://query1.finance.yahoo.com/v7/finance/download/EQNR.OL?period1=1547506517&period2=1579042517&interval=1d&events=history&crumb=gJXukxOba2X
 
@@ -40,12 +47,21 @@ parseCsv (T.Ticker _ _ _ dx) content =
     in
     (init . takeWhile (\x -> x > yahooDx)) lxx
 
-tickerCsv :: T.Ticker -> String
-tickerCsv ticker = ""
+csvPath :: T.Ticker -> REIO FilePath
+csvPath t = 
+    Reader.ask >>= \env ->
+    let 
+        ticker = T.ticker t
+        feed = (Params.feed . T.getParams) env
+    in
+    pure $ Printf.printf "%s/%s.csv" feed ticker
 
-fetchCsv :: T.Ticker -> IO [String]
+
+fetchCsv :: T.Ticker -> REIO [String]
 fetchCsv ticker =
-    openFile (tickerCsv ticker) ReadMode >>= \inputHandle ->
+    csvPath ticker >>= \tcsv ->
+    liftIO $    
+    openFile tcsv ReadMode >>= \inputHandle ->
     hSetEncoding inputHandle latin1 >> -- utf8
     hGetContents inputHandle >>= \theInput ->
     pure $ parseCsv ticker theInput
