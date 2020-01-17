@@ -20,13 +20,15 @@ import qualified EtradeJanitor.Common.Types as Types
 import qualified EtradeJanitor.Common.Misc as Misc
 import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
+import qualified EtradeJanitor.Repos.Yahoo.PaperHistory as PaperHistory 
+
 --import qualified Main 
 
 testParams :: Params.Params
 testParams = 
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
-    , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
+    , Params.feed = Misc.feedRoot ++ "/test/testfeed/paperhistory" 
     , Params.skipDownloadStockPrices = True
     , Params.skipDownloadDerivatives = False
     , Params.skipDbUpdateStocks = True
@@ -36,14 +38,17 @@ testParams =
 
 testDay :: Calendar.Day
 testDay = 
-    Calendar.fromGregorian 2019 9 16
+    Calendar.fromGregorian 2020 1 9
+
+testEnv :: Types.Env 
+testEnv = Types.Env testParams testDay
 
 -- testEnv :: IO Types.Env 
 -- testEnv = Types.Env testParams CalendarUtil.today
 
 testTicker :: Types.Ticker
 testTicker = 
-    Types.Ticker 1 "NHY" 1 testDay
+    Types.Ticker 1 "EQNR" 1 testDay
 
 testTickers :: Types.Tickers
 testTickers =
@@ -51,6 +56,19 @@ testTickers =
     [
           Types.Ticker 1 "NHY" 1 testDay
     ]
+
+
+demo :: IO ()
+demo = 
+    runReaderT (PaperHistory.fetchStockPrices testTicker) testEnv >>= \prices ->
+    mapM_ (putStrLn . show) prices
+
+prices = 
+    runReaderT (PaperHistory.fetchStockPrices testTicker) testEnv
+    
+showGreg :: String
+showGreg = 
+    PaperHistory.yahooDateFormat testDay
 
 {-
         , Types.Ticker 2 "EQNR" 1 testDay
@@ -106,7 +124,6 @@ testTickers =
     Ticker {oid = 27, ticker = "BAKKA", category = 1, date = 2019-09-13}
     Ticker {oid = 28, ticker = "GOGL", category = 1, date = 2019-09-13}
     Ticker {oid = 29, ticker = "NAS", category = 1, date = 2019-09-13}
--}
     
 
 demo :: IO ()
@@ -127,10 +144,12 @@ demo2 =
     in
     runReaderT (Derivative.downloadTickers testTickers) testEnv >>
     putStrLn "Done!" 
+-}
 
 --demo3 :: IO ()
 --demo3 = Main.work testParams
 
+ {-
 dtou = CalendarUtil.dayToUnixTime
 tmint = CalendarUtil.unixTimeToInt 
 psd = OptionExpiry.parseStringDate 
@@ -138,7 +157,6 @@ expt = OptionExpiry.expiryTimes
 pth = OptionExpiry.expiryFileName
 rfn = OptionExpiry.readExpiryFile
 
- {-
 main :: IO ()
 main = runReq defaultHttpConfig $ do
     -- This is an example of what to do when URL is given dynamically. Of

@@ -16,7 +16,7 @@ testParams :: Params.Params
 testParams = 
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
-    , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
+    , Params.feed = Misc.feedRoot ++ "/test/testfeed/paperhistory" 
     , Params.skipDownloadStockPrices = True
     , Params.skipDownloadDerivatives = True
     , Params.skipDbUpdateStocks = True
@@ -26,12 +26,8 @@ testParams =
 
 testDay :: Calendar.Day
 testDay = 
-    let 
-        year = 2020 :: Integer
-        month = 1 :: Int 
-        day = 14 :: Int
-    in 
-    Calendar.fromGregorian year month day
+    Calendar.fromGregorian 2019 12 30
+
 
 testEnv :: Types.Env 
 testEnv = Types.Env testParams testDay
@@ -41,16 +37,20 @@ testTicker =
     Types.Ticker 1 "EQNR" 1 testDay
 
 testCsvPath :: FilePath
-testCsvPath = Misc.feedRoot ++ "/test/testfeed/EQNR.csv"
+testCsvPath = Misc.feedRoot ++ "/test/testfeed/paperhistory/EQNR.csv"
 
 spec :: Spec
 spec = do
     describe "Yahoo Csv" $ do
-        context "when Csv date is 2020-01-14" $ do
+        context "when Csv date is 2019-12-30" $ do
             it "dates in UTC should be [..]" $ do
-                let result = PaperHistory.asDay "2020-01-14"
+                let result = PaperHistory.asDay "2019-12-30"
                 shouldBe result testDay 
         context "when ticker is EQNR" $ do
-            it "csv path name should be <top>/feed2/EQNR.csv" $ do
+            it ("csv path name should be " ++ testCsvPath) $ do
                 result <- runReaderT (PaperHistory.csvPath testTicker) testEnv
                 shouldBe result testCsvPath 
+        context "when ticker is EQNR" $ do
+            it "number of stock prices should be 3" $ do
+                result <- runReaderT (PaperHistory.fetchStockPrices testTicker) testEnv
+                shouldBe (length result) 9

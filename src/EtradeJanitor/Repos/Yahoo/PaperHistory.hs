@@ -2,6 +2,8 @@
 
 module EtradeJanitor.Repos.Yahoo.PaperHistory where
 
+import Data.Int (Int64)
+import qualified Data.List.Split as Split
 import qualified Control.Monad.Reader as Reader
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.List as L
@@ -45,7 +47,8 @@ parseCsv (T.Ticker _ _ _ dx) content =
     let
         lxx = tail $ L.lines content 
     in
-    (init . takeWhile (\x -> x > yahooDx)) lxx
+    -- (init . takeWhile (\x -> x > yahooDx)) lxx
+    (tail . dropWhile (\x -> x < yahooDx)) lxx 
 
 csvPath :: T.Ticker -> REIO FilePath
 csvPath t = 
@@ -65,3 +68,21 @@ fetchCsv ticker =
     hSetEncoding inputHandle latin1 >> -- utf8
     hGetContents inputHandle >>= \theInput ->
     pure $ parseCsv ticker theInput
+
+processLine :: T.Ticker -> String -> T.StockPrice
+processLine tikr line =
+        let
+          [dx',opn',hi',lo',cls',_,vol'] = Split.splitOn "," line
+          dxx = asDay dx' -- asDateString dx'
+          opnf = read opn' :: Float
+          hif = read hi' :: Float
+          lof = read lo' :: Float
+          clsf = read cls' :: Float
+          voli = read vol' :: Int64
+        in
+        T.StockPrice tikr dxx opnf hif lof clsf voli
+
+fetchStockPrices :: T.Ticker -> REIO [T.StockPrice]
+fetchStockPrices tikr =
+  fetchCsv tikr >>= \lx ->
+  pure $ map (processLine tikr) lx
