@@ -9,13 +9,17 @@ import Control.Monad.IO.Class (liftIO)
 
 --import qualified System.Directory as Dir
 --import qualified Data.Vector as V
+
 import qualified EtradeJanitor.Common.Types as Types
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
+
 --import qualified EtradeJanitor.Repos.Common as RC
 -- import qualified EtradeJanitor.Netfonds as NF
+
 import qualified EtradeJanitor.EuroInvestor as EuroInvestor
-import qualified EtradeJanitor.Repos.Stocks as Stocks
 import qualified EtradeJanitor.PaperHistory as PaperHistory
+
+import qualified EtradeJanitor.Repos.Stocks as Stocks
 import qualified EtradeJanitor.Params as PA
 import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 --import qualified Data.Dates as DT
@@ -53,9 +57,9 @@ work params =
     Stocks.tickers (PA.databaseIp params) >>= \tix ->
         case tix of
             Right result ->
-                runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
-                runReaderT (PaperHistory.updateStockPricesTickers result) env >>
                 runReaderT (showStockTickers result) env >>
+                --runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
+                --runReaderT (PaperHistory.updateStockPricesTickers result) env >>
                 runReaderT (Derivative.downloadTickers result) env
             Left err ->
                 putStrLn $ show err
