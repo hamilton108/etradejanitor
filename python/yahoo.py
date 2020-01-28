@@ -1,16 +1,38 @@
 
 import yfinance as y
 
-TICKERS = {
-    "EQNR": "EQNR.OL"
-}
+TICKERS = [
+    "AKERBP",
+    "AKSO",
+    "BAKKA",
+    "BWLPG",
+    "DNB",
+    "DNO",
+    # "EQNR",
+    "GJF",
+    "GOGL",
+    # "MHG",
+    "NAS",
+    "NHY",
+    "OBX",
+    "ORK",
+    "PGS",
+    "REC",
+    "SDRL",
+    "STB",
+    "SUBC",
+    "TEL",
+    "TGS",
+    "TOM",
+    "YAR"
+]
 
-PERIOD = "5d"
+PERIOD = "max"
 
-for t1, t2 in TICKERS.items():
-    print("%s -> %s" % (t1, t2))
-    f = open("%s.csv" % t1, "w")
-    t = y.Ticker(t2)
+for t in TICKERS:
+    print("%s" % t)
+    f = open("%s.csv" % t, "w")
+    t = y.Ticker("%s.OL" % t)
     h = t.history(period=PERIOD)
     csv = h.to_csv()
     f.write(csv)
