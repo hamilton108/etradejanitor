@@ -83,8 +83,8 @@ responseGET t unixTime =
         <> "underlyingSymbol" =: (optionName :: Text.Text) 
         <> "expireDate" =: (nordnetExpiry :: Int) 
 
-download_ :: T.Ticker -> FilePath -> Bool -> T.NordnetExpiry -> REIO ()
-download_ t filePath skipIfExists unixTime = 
+download' :: T.Ticker -> FilePath -> Bool -> T.NordnetExpiry -> REIO ()
+download' t filePath skipIfExists unixTime = 
     let
         fileName = Printf.printf "%s/%d.html" filePath unixTime -- expiryAsUnixTime
         doDownloadIO = (Directory.doesFileExist fileName >>= \fileExist ->
@@ -118,7 +118,7 @@ download ticker unixTimes =
     in
     mkDir ticker >>= \filePath ->
     let
-        dlfn = download_ ticker filePath skipIfExists 
+        dlfn = download' ticker filePath skipIfExists 
     in 
     mapM_ dlfn unixTimes
 

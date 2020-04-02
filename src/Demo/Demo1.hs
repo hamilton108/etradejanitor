@@ -28,7 +28,7 @@ testParams :: Params.Params
 testParams = 
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
-    , Params.feed = Misc.feedRoot ++ "/test/testfeed/paperhistory" 
+    , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
     , Params.skipDownloadStockPrices = True
     , Params.skipDownloadDerivatives = False
     , Params.skipDbUpdateStocks = True
@@ -38,7 +38,7 @@ testParams =
 
 testDay :: Calendar.Day
 testDay = 
-    Calendar.fromGregorian 2020 1 9
+    Calendar.fromGregorian 2020 1 19
 
 testEnv :: Types.Env 
 testEnv = Types.Env testParams testDay
@@ -62,6 +62,11 @@ demo :: IO ()
 demo = 
     runReaderT (PaperHistory.fetchStockPrices testTicker) testEnv >>= \prices ->
     mapM_ (putStrLn . show) prices
+
+--demo2 :: IO ()
+--demo2 = 
+--    runReaderT (PaperHistory.download testTicker) testEnv
+
 
 prices = 
     runReaderT (PaperHistory.fetchStockPrices testTicker) testEnv

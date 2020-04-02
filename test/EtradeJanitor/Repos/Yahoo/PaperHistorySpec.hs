@@ -51,6 +51,6 @@ spec = do
                 result <- runReaderT (PaperHistory.csvPath testTicker) testEnv
                 shouldBe result testCsvPath 
         context "when ticker is EQNR" $ do
-            it "number of stock prices should be 3" $ do
+            it "number of stock prices should be 9" $ do
                 result <- runReaderT (PaperHistory.fetchStockPrices testTicker) testEnv
                 shouldBe (length result) 9

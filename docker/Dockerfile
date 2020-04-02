@@ -6,7 +6,7 @@
 
 # RUN apt-get -y install libblas-dev libatlas-dev liblapack-dev libgsl0-dev libghc-postgresql-libpq-dev libicu-dev libssl-dev openssl wget
 
-FROM rcs/haskell:8.6.5
+FROM haskell:8.6.5
 
 ADD main.sh /
 

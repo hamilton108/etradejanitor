@@ -14,10 +14,11 @@ import qualified EtradeJanitor.Common.Types as Types
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
 
 --import qualified EtradeJanitor.Repos.Common as RC
--- import qualified EtradeJanitor.Netfonds as NF
+--import qualified EtradeJanitor.Netfonds as NF
 
-import qualified EtradeJanitor.EuroInvestor as EuroInvestor
-import qualified EtradeJanitor.PaperHistory as PaperHistory
+--import qualified EtradeJanitor.EuroInvestor as EuroInvestor
+--import qualified EtradeJanitor.PaperHistory as PaperHistory
+import qualified EtradeJanitor.Repos.Yahoo.PaperHistory as PaperHistory
 
 import qualified EtradeJanitor.Repos.Stocks as Stocks
 import qualified EtradeJanitor.Params as PA
@@ -30,6 +31,20 @@ import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 main :: IO ()
 main = PA.cmdLineParser >>= work
 
+main2 :: IO ()
+main2 = 
+    let
+        p = PA.Params { 
+              PA.databaseIp = "172.17.0.2"
+            , PA.feed = ""
+            , PA.skipDownloadStockPrices = True
+            , PA.skipDownloadDerivatives = True
+            , PA.skipDbUpdateStocks = True
+            , PA.skipIfDownloadFileExists = True
+            , PA.showStockTickers = True
+        }
+    in work p
+  
 {-
     case (PA.isMock cmd) of
       True -> mockWork cmd
@@ -58,9 +73,10 @@ work params =
         case tix of
             Right result ->
                 runReaderT (showStockTickers result) env >>
+                runReaderT (PaperHistory.updateStockPricesTickers result) env 
                 --runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
                 --runReaderT (PaperHistory.updateStockPricesTickers result) env >>
-                runReaderT (Derivative.downloadTickers result) env
+                --runReaderT (Derivative.downloadTickers result) env
             Left err ->
                 putStrLn $ show err
 
