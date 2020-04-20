@@ -1,7 +1,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main (main,work) where
+module Main (main) where
 
 import Control.Monad (forM_)
 import Control.Monad.Reader (runReaderT,ask)
@@ -31,19 +31,19 @@ import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 main :: IO ()
 main = PA.cmdLineParser >>= work
 
+{-
 main2 :: IO ()
 main2 = 
     let
         p = PA.Params { 
               PA.databaseIp = "172.17.0.2"
-            , PA.feed = ""
-            , PA.skipDownloadStockPrices = True
-            , PA.skipDownloadDerivatives = True
-            , PA.skipDbUpdateStocks = True
+            , PA.feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
+            , PA.skipDownloadDerivatives = False
             , PA.skipIfDownloadFileExists = True
             , PA.showStockTickers = True
         }
     in work p
+-}
   
 {-
     case (PA.isMock cmd) of
@@ -73,10 +73,10 @@ work params =
         case tix of
             Right result ->
                 runReaderT (showStockTickers result) env >>
-                runReaderT (PaperHistory.updateStockPricesTickers result) env 
+                --runReaderT (PaperHistory.updateStockPricesTickers result) env 
                 --runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
                 --runReaderT (PaperHistory.updateStockPricesTickers result) env >>
-                --runReaderT (Derivative.downloadTickers result) env
+                runReaderT (Derivative.downloadTickers result) env
             Left err ->
                 putStrLn $ show err
 

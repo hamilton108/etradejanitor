@@ -4,11 +4,13 @@ HASKELL_VER="8.6.5"
 
 HOME="/home/rcs/opt/haskell/etradejanitor"
 
-JANITOR_VER="1.0"
+JANITOR_VER="1.2"
 
 PG_VER="172.17.0.2"
 
 /usr/bin/docker run --user $(id -u):$(id -g)  -i --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER $PG_VER "$@"
+
+#/usr/bin/docker run --user $(id -u):$(id -g)  -i --rm rcs/etradejanitor:$JANITOR_VER $PG_VER "$@"
 
 exit 0
 
