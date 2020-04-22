@@ -9,6 +9,7 @@ import qualified Data.Text as Text
 import qualified Data.Time.Calendar as Calendar
 import qualified Data.Time.Clock.POSIX as POSIX
 import qualified Data.Time.Clock as Clock
+import qualified Data.Vector as Vector
 import qualified Text.Printf as Printf
 
 import Network.HTTP.Req ((/:),(=:))
@@ -122,6 +123,10 @@ download ticker unixTimes =
     in 
     mapM_ dlfn unixTimes
 
+downloadAbleTickers :: T.Tickers -> T.Tickers
+downloadAbleTickers allTix = 
+    Vector.filter (\x -> T.category x == 1) allTix
+
 downloadTickers :: T.Tickers -> REIO ()
 downloadTickers tix = 
     Reader.ask >>= \env ->
@@ -131,4 +136,7 @@ downloadTickers tix =
     case skipDownload of 
         True -> pure ()
         False -> nordNetExpiry >>= \expiry ->
-                    mapM_ (\t -> download t expiry) tix 
+                    let
+                        dt = downloadAbleTickers tix
+                    in
+                    mapM_ (\t -> download t expiry) dt

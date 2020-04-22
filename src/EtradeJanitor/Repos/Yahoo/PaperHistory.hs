@@ -47,12 +47,21 @@ parseCsv (T.Ticker _ _ _ dx) content =
     let
         yahooDx :: String
         yahooDx = yahooDateFormat dx
-    in
-    let
         lxx = tail $ L.lines content 
-    in
-    -- (init . takeWhile (\x -> x > yahooDx)) lxx
-    (tail . dropWhile (\x -> x < yahooDx)) lxx 
+        result = dropWhile (\x -> x < yahooDx) lxx 
+    in 
+    case result of 
+        [] -> result
+        _ ->
+            let 
+                resultDate = (take 10 . head) result
+            in
+            if resultDate == yahooDx then 
+                tail result
+            else
+                result
+
+    --(tail . dropWhile (\x -> x < yahooDx)) lxx 
 
 csvPath :: T.Ticker -> REIO FilePath
 csvPath t = 

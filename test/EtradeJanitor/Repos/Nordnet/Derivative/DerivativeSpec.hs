@@ -7,6 +7,8 @@ import Control.Monad.Reader (runReaderT)
 import Test.Hspec
 import qualified Data.Time.Calendar as Calendar
 import qualified Data.Time.Clock.POSIX as POSIX
+import qualified Data.Vector as Vector
+import qualified Data.Int as DI
 
 import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 import qualified EtradeJanitor.StockExchange.OptionExpiry as OptionExpiry 
@@ -50,7 +52,7 @@ testParams =
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
     , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
-    , Params.skipDownloadStockPrices = True
+    -- , Params.skipDownloadStockPrices = True
     , Params.skipDownloadDerivatives = True
     , Params.skipDbUpdateStocks = True
     , Params.skipIfDownloadFileExists = True
@@ -68,6 +70,22 @@ testTicker :: Types.Ticker
 testTicker = 
     Types.Ticker 1 "NHY" 1 testDay
 
+testTickers :: Types.Tickers
+testTickers =
+    let 
+        makeTik :: DI.Int64 -> DI.Int64 -> Types.Ticker
+        makeTik oid tickerCat = 
+            Types.Ticker oid "Demo" tickerCat testDay
+    in
+    Vector.fromList
+    [
+          makeTik 1 1
+        , makeTik 2 1
+        , makeTik 3 1
+        , makeTik 6 1
+        , makeTik 7 3
+    ]
+
 spec :: Spec
 spec = do
     describe "Nordnet URLs" $ do
@@ -80,6 +98,12 @@ spec = do
             it ("path name should be " ++ expectedPathName) $ do
                 testPathName <- runReaderT (Derivative.pathNameFor testTicker) testEnv
                 shouldBe testPathName expectedPathName
+    describe "Downloadable tickers" $ do
+        context "when tickers count == 5, and they contains 1 type 3 tickers" $ do
+            it ("count should be 4") $ do
+                let dt = Derivative.downloadAbleTickers testTickers
+                shouldBe (length dt) 4
+
         {-
         context "when download date is 2019-09-01 and option ticker is NHY" $ do
             it "urls should be [..]" $ do
