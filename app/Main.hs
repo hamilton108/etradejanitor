@@ -1,7 +1,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main (main,work) where
+module Main (main) where
 
 import Control.Monad (forM_)
 import Control.Monad.Reader (runReaderT,ask)
@@ -9,13 +9,18 @@ import Control.Monad.IO.Class (liftIO)
 
 --import qualified System.Directory as Dir
 --import qualified Data.Vector as V
+
 import qualified EtradeJanitor.Common.Types as Types
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
+
 --import qualified EtradeJanitor.Repos.Common as RC
--- import qualified EtradeJanitor.Netfonds as NF
-import qualified EtradeJanitor.EuroInvestor as EuroInvestor
+--import qualified EtradeJanitor.Netfonds as NF
+
+--import qualified EtradeJanitor.EuroInvestor as EuroInvestor
+--import qualified EtradeJanitor.PaperHistory as PaperHistory
+import qualified EtradeJanitor.Repos.Yahoo.PaperHistory as PaperHistory
+
 import qualified EtradeJanitor.Repos.Stocks as Stocks
-import qualified EtradeJanitor.PaperHistory as PaperHistory
 import qualified EtradeJanitor.Params as PA
 import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 --import qualified Data.Dates as DT
@@ -27,9 +32,19 @@ main :: IO ()
 main = PA.cmdLineParser >>= work
 
 {-
-    case (PA.isMock cmd) of
-      True -> mockWork cmd
-      False -> work cmd
+main2 :: IO ()
+main2 = 
+    let
+        p = PA.Params { 
+              PA.databaseIp = "172.17.0.2"
+            --, PA.feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
+            , PA.feed = "/home/rcs/opt/haskell/etradejanitor/python"
+            , PA.skipDownloadDerivatives = True 
+            , PA.skipDbUpdateStocks = False
+            , PA.skipIfDownloadFileExists = True
+            , PA.showStockTickers = True
+        }
+    in work p
 -}
 
 showStockTickers :: Types.Tickers -> Types.REIO ()
@@ -53,9 +68,10 @@ work params =
     Stocks.tickers (PA.databaseIp params) >>= \tix ->
         case tix of
             Right result ->
-                runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
-                runReaderT (PaperHistory.updateStockPricesTickers result) env >>
                 runReaderT (showStockTickers result) env >>
+                runReaderT (PaperHistory.updateStockPricesTickers result) env >>
+                --runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
+                --runReaderT (PaperHistory.updateStockPricesTickers result) env >>
                 runReaderT (Derivative.downloadTickers result) env
             Left err ->
                 putStrLn $ show err

@@ -8,6 +8,8 @@
 
 FROM rcs/haskell:8.6.5
 
-ADD main.sh /
+COPY main.sh /
+
+COPY etradejanitor-1.3 /
 
 ENTRYPOINT ["/bin/bash", "-c", "/main.sh ${*}", "--"]

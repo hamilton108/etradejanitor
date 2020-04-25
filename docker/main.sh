@@ -1,5 +1,5 @@
 #!/bin/bash
 
-/home/rcs/opt/haskell/etradejanitor/etradejanitor "$@"
+/etradejanitor-1.3 "$@"
 
 exit 0
