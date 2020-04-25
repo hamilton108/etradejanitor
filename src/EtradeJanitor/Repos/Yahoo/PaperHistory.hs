@@ -85,7 +85,7 @@ fetchCsv ticker =
 processLine :: T.Ticker -> String -> T.StockPrice
 processLine tikr line =
         let
-            [dx',opn',hi',lo',cls',_,vol'] = Split.splitOn "," line
+            [dx',opn',hi',lo',cls',vol',_,_] = Split.splitOn "," line
             dxx = asDay dx' -- asDateString dx'
             opnf = read opn' :: Float
             hif = read hi' :: Float
@@ -100,10 +100,15 @@ fetchStockPrices tikr =
     fetchCsv tikr >>= \lx ->
     pure $ map (processLine tikr) lx
 
-updateStockPrices :: T.Ticker -> T.REIO (Either C.SessionError ())
+printStockPrice :: T.StockPrice -> IO ()
+printStockPrice p = 
+    Printf.printf "%s\n" (yahooDateFormat (T.dx2 p))
+
+--updateStockPrices :: T.Ticker -> T.REIO (Either C.SessionError ())
 updateStockPrices tik =
     fetchStockPrices tik >>= \stockPrices ->
     Stocks.insertStockPrices stockPrices
+    --liftIO $ mapM_ printStockPrice stockPrices
 
 updateStockPricesTickers :: T.Tickers -> T.REIO ()
 updateStockPricesTickers tix = 

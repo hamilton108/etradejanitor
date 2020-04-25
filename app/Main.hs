@@ -37,18 +37,14 @@ main2 =
     let
         p = PA.Params { 
               PA.databaseIp = "172.17.0.2"
-            , PA.feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
-            , PA.skipDownloadDerivatives = False
+            --, PA.feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
+            , PA.feed = "/home/rcs/opt/haskell/etradejanitor/python"
+            , PA.skipDownloadDerivatives = True 
+            , PA.skipDbUpdateStocks = False
             , PA.skipIfDownloadFileExists = True
             , PA.showStockTickers = True
         }
     in work p
--}
-  
-{-
-    case (PA.isMock cmd) of
-      True -> mockWork cmd
-      False -> work cmd
 -}
 
 showStockTickers :: Types.Tickers -> Types.REIO ()
@@ -73,7 +69,7 @@ work params =
         case tix of
             Right result ->
                 runReaderT (showStockTickers result) env >>
-                --runReaderT (PaperHistory.updateStockPricesTickers result) env 
+                runReaderT (PaperHistory.updateStockPricesTickers result) env >>
                 --runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
                 --runReaderT (PaperHistory.updateStockPricesTickers result) env >>
                 runReaderT (Derivative.downloadTickers result) env

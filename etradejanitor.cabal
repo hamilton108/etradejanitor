@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 367a022758cf1d9bbcefc7a196830b2c33d082fe9e3205322fe155dc8abbf952
+-- hash: 7adac76d894b345939b692e8636d3777ac3422fdc7279a73c4b151f2473ef11f
 
 name:                etradejanitor
-version:             1.2
+version:             1.3
 description:         Please see the README on GitHub at <https://github.com/githubuser/demo3#readme>
 homepage:            https://github.com/githubuser/demo3#readme
 bug-reports:         https://github.com/githubuser/demo3/issues
@@ -63,7 +63,7 @@ library
     , vector
   default-language: Haskell2010
 
-executable etradejanitor-1.2
+executable etradejanitor-1.3
   main-is: Main.hs
   other-modules:
       Paths_etradejanitor

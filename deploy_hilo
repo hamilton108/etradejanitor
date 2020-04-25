@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+SRC=".stack-work/install/x86_64-linux/lts-14.0/8.6.5/bin/"
+
+FNAME="$SRC/etradejanitor-$1"
+
+TARGET="hilo:/home/rcs/opt/haskell/etradejanitor/docker/"
+
+echo "$FNAME"
+
+scp $FNAME $TARGET
+
+exit 0
