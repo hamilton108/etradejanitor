@@ -4,7 +4,7 @@ HASKELL_VER="8.6.5"
 
 HOME="/home/rcs/opt/haskell/etradejanitor"
 
-JANITOR_VER="1.3"
+JANITOR_VER="1.3.2"
 
 PG_VER="172.17.0.2"
 

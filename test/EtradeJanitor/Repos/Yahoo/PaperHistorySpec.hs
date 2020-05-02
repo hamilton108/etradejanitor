@@ -37,9 +37,9 @@ testDayNhy =
 testEnv :: Types.Env 
 testEnv = Types.Env testParams testDay
 
-testTicker :: Types.Ticker
-testTicker = 
-    Types.Ticker 1 "EQNR" 1 testDay
+testTicker :: Calendar.Day -> Types.Ticker
+testTicker dx = 
+    Types.Ticker 1 "EQNR" 1 dx
 
 testTickerNhy :: Calendar.Day -> Types.Ticker
 testTickerNhy dx = 
@@ -53,16 +53,22 @@ spec = do
     describe "Yahoo Csv" $ do
         context "when Csv date is 2019-12-30" $ do
             it "dates in UTC should be [..]" $ do
+                let curDate = Calendar.fromGregorian 2019 12 30 
                 let result = PaperHistory.asDay "2019-12-30"
-                shouldBe result testDay 
+                shouldBe result curDate 
         context "when ticker is EQNR" $ do
             it ("csv path name should be " ++ testCsvPath) $ do
-                result <- runReaderT (PaperHistory.csvPath testTicker) testEnv
+                result <- runReaderT (PaperHistory.csvPath (testTicker testDay)) testEnv
                 shouldBe result testCsvPath 
         context "when ticker is EQNR" $ do
             it "number of stock prices should be 9" $ do
-                result <- runReaderT (PaperHistory.fetchStockPrices testTicker) testEnv
+                result <- runReaderT (PaperHistory.fetchStockPrices (testTicker testDay)) testEnv
                 shouldBe (length result) 9
+        context "when ticker is EQNR and contains 3 faulty data" $ do
+            it "number of stock prices should be 12" $ do
+                let curDate = Calendar.fromGregorian 2019 12 17
+                result <- runReaderT (PaperHistory.fetchStockPrices (testTicker curDate)) testEnv
+                shouldBe (length result) 12
         context "when ticker is NHY and contains only one day" $ do
             it "number of stock prices should be 1" $ do
                 let curDate = Calendar.fromGregorian 2020 04 20

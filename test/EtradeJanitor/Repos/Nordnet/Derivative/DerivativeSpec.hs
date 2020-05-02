@@ -90,12 +90,12 @@ spec :: Spec
 spec = do
     describe "Nordnet URLs" $ do
         context "when download date is 2019-09-01" $ do
-            xit "expiry dates in UTC should be [..]" $ do
+            it "expiry dates in UTC should be [..]" $ do
                 testExpiryDates <- runReaderT (OptionExpiry.expiryTimes testDay) testEnv
                 shouldBe testExpiryDates expectedExpiryDates 
     describe "Derivative" $ do
         context "when download date is 2019-09-01 and option ticker is NHY" $ do
-            xit ("path name should be " ++ expectedPathName) $ do
+            it ("path name should be " ++ expectedPathName) $ do
                 testPathName <- runReaderT (Derivative.pathNameFor testTicker) testEnv
                 shouldBe testPathName expectedPathName
     describe "Downloadable tickers" $ do

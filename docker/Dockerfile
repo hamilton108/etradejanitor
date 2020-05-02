@@ -10,6 +10,6 @@ FROM rcs/haskell:8.6.5
 
 COPY main.sh /
 
-COPY etradejanitor-1.3 /
+COPY etradejanitor-1.3.2 /
 
 ENTRYPOINT ["/bin/bash", "-c", "/main.sh ${*}", "--"]

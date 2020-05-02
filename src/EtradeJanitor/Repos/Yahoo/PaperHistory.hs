@@ -9,6 +9,7 @@ import qualified Control.Monad.Reader as Reader
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.List as L
 import qualified Data.Time.Calendar as Cal
+import Data.Maybe (fromJust)
 import qualified Text.Printf as Printf
 
 import qualified System.FilePath as FilePath
@@ -82,23 +83,35 @@ fetchCsv ticker =
     hGetContents inputHandle >>= \theInput ->
     pure $ parseCsv ticker theInput
 
-processLine :: T.Ticker -> String -> T.StockPrice
+processLine :: T.Ticker -> String -> Maybe T.StockPrice
 processLine tikr line =
         let
-            [dx',opn',hi',lo',cls',vol',_,_] = Split.splitOn "," line
-            dxx = asDay dx' -- asDateString dx'
-            opnf = read opn' :: Float
-            hif = read hi' :: Float
-            lof = read lo' :: Float
-            clsf = read cls' :: Float
-            voli = read vol' :: Int64
+            --[dx',opn',hi',lo',cls',vol',_,_] = Split.splitOn "," line
+            splits = Split.splitOn "," line
         in
-        T.StockPrice tikr dxx opnf hif lof clsf voli
-
+        case splits of
+            [dx',opn',hi',lo',cls',vol',_,_] -> 
+                let 
+                    dxx = asDay dx' -- asDateString dx'
+                    opnf = read opn' :: Float
+                    hif = read hi' :: Float
+                    lof = read lo' :: Float
+                    clsf = read cls' :: Float
+                    voli = read vol' :: Int64
+                in
+                Just $ T.StockPrice tikr dxx opnf hif lof clsf voli
+            _ ->
+                --T.StockPrice tikr (Cal.fromGregorian 2020 3 15) 1.0 1.0 1.0 1.0 10 
+                Nothing
+    
 fetchStockPrices :: T.Ticker -> REIO [T.StockPrice]
 fetchStockPrices tikr =
     fetchCsv tikr >>= \lx ->
-    pure $ map (processLine tikr) lx
+    let 
+        lines = map (processLine tikr) lx
+        result = map fromJust $ filter (\x -> x /= Nothing) lines
+    in
+    pure $ result
 
 printStockPrice :: T.StockPrice -> IO ()
 printStockPrice p = 
