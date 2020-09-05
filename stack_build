@@ -1,5 +1,7 @@
 #!/bin/bash
 
-stack build --allow-different-user --system-ghc
+# stack build --allow-different-user --system-ghc
+
+stack build --allow-different-user 
 
 exit 0
