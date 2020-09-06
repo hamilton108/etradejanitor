@@ -6,7 +6,9 @@ JANITOR_VER="1.3.2"
 
 PG_VER="172.20.1.3"
 
-/usr/bin/docker run --user $(id -u):$(id -g)  -i --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER $PG_VER "$@"
+NETWORK="pgutil_lofsrud"
+
+/usr/bin/docker run --network $NETWORK --user $(id -u):$(id -g)  -i --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER $PG_VER "$@"
 
 exit 0
 
