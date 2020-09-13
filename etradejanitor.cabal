@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 615f73b4900c6e1151667cd35e6f8d14f8ad42e08e88a7b7a651ff17d93ae3b8
+-- hash: 29c2e4a1ff4f3a8bb21707153b69b5649aa99124251ab7b68e09574ed2ff7eac
 
 name:                etradejanitor
-version:             1.3.2
+version:             1.4.0
 description:         Please see the README on GitHub at <https://github.com/githubuser/demo3#readme>
 homepage:            https://github.com/githubuser/demo3#readme
 bug-reports:         https://github.com/githubuser/demo3/issues
@@ -50,6 +50,7 @@ library
     , either
     , filepath
     , hasql
+    , hedis
     , hspec
     , mtl
     , optparse-applicative
@@ -64,7 +65,7 @@ library
     , vector
   default-language: Haskell2010
 
-executable etradejanitor-1.3.2
+executable etradejanitor-1.4.0
   main-is: Main.hs
   other-modules:
       Paths_etradejanitor
@@ -83,6 +84,7 @@ executable etradejanitor-1.3.2
     , etradejanitor
     , filepath
     , hasql
+    , hedis
     , hspec
     , mtl
     , optparse-applicative
@@ -121,6 +123,7 @@ test-suite etradejanitor-test
     , etradejanitor
     , filepath
     , hasql
+    , hedis
     , hspec
     , mtl
     , optparse-applicative

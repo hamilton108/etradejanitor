@@ -10,6 +10,7 @@ import qualified EtradeJanitor.Common.Misc as Misc
 data Params = 
     Params 
     { databaseIp :: String
+    , redisHost :: String
     , feed :: String
     , skipDownloadDerivatives :: Bool
     , skipDbUpdateStocks :: Bool
@@ -24,6 +25,7 @@ mkParams :: Parser Params
 mkParams =
     Params
         <$> strArgument (metavar "IP"  <> help "Database ip address")
+        <*> strArgument (metavar "REDIS"  <> help "Redis ip address")
         <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value defaultFeed <> showDefault)
         <*> switch (long "skip-download-derivatives" <> short 'q' <> help "Do not download derivatives from Nordnet" )
         <*> switch (long "skip-db-update-stocks" <> short 'r' <> help "Do not update database stock prices" )
