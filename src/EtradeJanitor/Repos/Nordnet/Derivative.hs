@@ -67,22 +67,23 @@ mkDir ticker =
     liftIO (Directory.createDirectoryIfMissing True pn) >>
     pure pn
     
+{-
 unixTimeToNordnetExpireDate :: T.NordnetExpiry -> Int
 unixTimeToNordnetExpireDate unixTime =
     unixTime * 1000
-    -- (CalendarUtil.unixTimeToInt unixTime) * 1000
-
+-}
+    
 responseGET :: T.Ticker -> T.NordnetExpiry -> R.Req R.BsResponse
 responseGET t unixTime = 
     let
         myUrl = R.https "www.nordnet.no" /: "market" /: "options"
         optionName = T.ticker t
-        nordnetExpiry = unixTimeToNordnetExpireDate unixTime
+        -- nordnetExpiry = unixTimeToNordnetExpireDate unixTime
     in
     R.req R.GET myUrl R.NoReqBody R.bsResponse $ 
         "currency" =: ("NOK":: Text.Text) 
         <> "underlyingSymbol" =: (optionName :: Text.Text) 
-        <> "expireDate" =: (nordnetExpiry :: Int) 
+        <> "expireDate" =: (unixTime :: Int) 
 
 download' :: T.Ticker -> FilePath -> Bool -> T.NordnetExpiry -> REIO ()
 download' t filePath skipIfExists unixTime = 
@@ -101,27 +102,27 @@ download' t filePath skipIfExists unixTime =
                 Char8.writeFile fileName (R.responseBody bs)
 
 
-nordNetExpiry :: REIO [T.NordnetExpiry]
-nordNetExpiry =
+nordNetExpiry :: T.Ticker -> REIO [T.NordnetExpiry]
+nordNetExpiry ticker =
     Reader.ask >>= \env ->
     let
         expiry = 
-            CalendarUtil.today >>= \today -> 
-            Reader.runReaderT (OptionExpiry.expiryTimes today) env
+            Reader.runReaderT (OptionExpiry.expiryTimes ticker) env
     in
     liftIO expiry
 
-download :: T.Ticker -> [T.NordnetExpiry] -> REIO ()
-download ticker unixTimes = 
+download :: T.Ticker -> REIO ()
+download ticker = 
     Reader.ask >>= \env ->
     let
         skipIfExists = (Params.skipIfDownloadFileExists . getParams) env
     in
     mkDir ticker >>= \filePath ->
-    let
-        dlfn = download' ticker filePath skipIfExists 
-    in 
-    mapM_ dlfn unixTimes
+        nordNetExpiry ticker >>= \unixTimes -> 
+            let
+                dlfn = download' ticker filePath skipIfExists 
+            in 
+            mapM_ dlfn unixTimes
 
 downloadAbleTickers :: T.Tickers -> T.Tickers
 downloadAbleTickers allTix = 
@@ -135,8 +136,16 @@ downloadTickers tix =
     in
     case skipDownload of 
         True -> pure ()
+        False -> 
+            let
+                dt = downloadAbleTickers tix
+            in
+            mapM_ (\t -> download t) dt
+
+{-
         False -> nordNetExpiry >>= \expiry ->
                     let
                         dt = downloadAbleTickers tix
                     in
                     mapM_ (\t -> download t expiry) dt
+-}

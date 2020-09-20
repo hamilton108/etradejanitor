@@ -35,7 +35,6 @@ expectedExpiryDates =
     , 1584662400
     , 1592524800
     ]
--}
 
 expectedExpiryDates :: [Types.NordnetExpiry] 
 expectedExpiryDates = 
@@ -46,6 +45,7 @@ expectedExpiryDates =
     , 1584658800
     , 1592517600
     ]
+-}
     
 testParams :: Params.Params
 testParams = 
@@ -88,11 +88,13 @@ testTickers =
 
 spec :: Spec
 spec = do
+    {-
     describe "Nordnet URLs" $ do
         context "when download date is 2019-09-01" $ do
             it "expiry dates in UTC should be [..]" $ do
                 testExpiryDates <- runReaderT (OptionExpiry.expiryTimes testDay) testEnv
                 shouldBe testExpiryDates expectedExpiryDates 
+    -}
     describe "Derivative" $ do
         context "when download date is 2019-09-01 and option ticker is NHY" $ do
             it ("path name should be " ++ expectedPathName) $ do
