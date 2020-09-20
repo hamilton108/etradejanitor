@@ -107,8 +107,7 @@ nordNetExpiry ticker =
     Reader.ask >>= \env ->
     let
         expiry = 
-            CalendarUtil.today >>= \today -> 
-                Reader.runReaderT (OptionExpiry.expiryTimes ticker today) env
+            Reader.runReaderT (OptionExpiry.expiryTimes ticker) env
     in
     liftIO expiry
 

@@ -19,7 +19,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as BU
 import qualified Database.Redis as Redis
 
-import EtradeJanitor.Common.Types (REIO,NordnetExpiry,getParams,Ticker(..))
+import EtradeJanitor.Common.Types (REIO,NordnetExpiry,getParams,getDownloadDate,Ticker(..))
 import qualified EtradeJanitor.Params as Params
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
 
@@ -83,12 +83,12 @@ parseRedisItem curDay (datePart,timePart) =
         in
         Just result
 
-expiryTimes :: Ticker -> Calendar.Day -> REIO [NordnetExpiry] 
-expiryTimes ticker curDay = 
+expiryTimes :: Ticker -> REIO [NordnetExpiry] 
+expiryTimes ticker = 
     Reader.ask >>= \env ->
         let
             redisHost = (Params.redisHost . getParams) env
-            parseFn = parseRedisItem curDay 
+            parseFn = parseRedisItem (getDownloadDate env)
         in
         liftIO (fetchExpiryFromRedis redisHost ticker) >>= \items ->
             let 

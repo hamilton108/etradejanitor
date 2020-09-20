@@ -4,43 +4,84 @@ module EtradeJanitor.StockExchange.OptionExpirySpec (spec) where
 
 import Control.Monad.Reader (runReaderT)
 import Test.Hspec
+import Data.Sort (sort)
 import qualified Data.Time.Calendar as Calendar
-import qualified Data.Time.Clock.POSIX as POSIX
 
-import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
 import qualified EtradeJanitor.StockExchange.OptionExpiry as OptionExpiry 
-import qualified EtradeJanitor.Params as Params
-import qualified EtradeJanitor.Common.Types as Types
-import qualified EtradeJanitor.Common.Misc as Misc
-import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
+import qualified EtradeJanitor.Params as PA
+import qualified EtradeJanitor.Common.Types as T
 
-testDay :: Calendar.Day
-testDay = 
-    Calendar.fromGregorian 2019 9 1
 
-{-
-testParams :: Params.Params
-testParams = 
-    Params.Params 
-    { Params.databaseIp = "172.17.0.2"
-    , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
-    , Params.downloadOnly = True
-    , Params.updateDbOnly = True
-    }
+prms = PA.Params 
+        { PA.databaseIp = "172.20.1.3"
+        , PA.redisHost = "172.20.1.2"
+        , PA.feed = "/home/rcs/opt/haskell/etradejanitor/feedtmp"
+        , PA.skipDownloadDerivatives = False
+        , PA.skipDbUpdateStocks = False
+        , PA.skipIfDownloadFileExists = True
+        , PA.showStockTickers = False
+        }
 
-testEnv :: Types.Env 
-testEnv = Types.Env testParams
--}
+dx1 :: Calendar.Day
+dx1 = Calendar.fromGregorian 2020 7 24
 
-expectedExpiryDate :: Maybe Types.NordnetExpiry 
-expectedExpiryDate =
-    Just 1568937600
-    -- Just $ CalendarUtil.dayToUnixTime testDay
+dx2 :: Calendar.Day
+dx2 = Calendar.fromGregorian 2020 12 18
+
+dx3 :: Calendar.Day
+dx3 = Calendar.fromGregorian 2021 6 19
+
+nhy :: T.Ticker
+nhy = T.Ticker 
+        { T.oid = 1
+        , T.ticker = "NHY"
+        , T.category = 1
+        , T.date = dx1
+        }
+
+tel :: T.Ticker
+tel = T.Ticker 
+        { T.oid = 6
+        , T.ticker = "TEL"
+        , T.category = 1
+        , T.date = dx1
+        }
+
+expiry1 :: [T.NordnetExpiry]
+expiry1 = [1597960800000,1600380000000,1602799200000,1608246000000,1616108400000,1623967200000]
+
+expiry2 :: [T.NordnetExpiry]
+expiry2 = [1595541600000,1596146400000,1596751200000,1597356000000]
+
+expiry_all = sort $ expiry1 ++ expiry2
+
+expiry_2020_12_18 = drop 3 expiry1
 
 spec :: Spec
 spec = do
     describe "OptionExpiry" $ do
-        context "when string-date is 2019-09-20:1568937600" $ do
-            it "expiry date should be (Just 1568937600)" $ do
-                let testExpiryDate = OptionExpiry.parseStringDate testDay "2019-09-20:1568937600"
-                shouldBe testExpiryDate expectedExpiryDate
+        context "when date is 2020-07-24 and ticker is NHY" $ do
+            it "expiry dates should be all expirys" $ do
+                let env = T.Env prms dx1
+                actual <- runReaderT (OptionExpiry.expiryTimes  nhy) env
+                shouldBe (sort actual) expiry_all  
+        context "when date is 2020-07-24 and ticker is TEL" $ do
+            it "expiry dates should be all expiry-1" $ do
+                let env = T.Env prms dx1
+                actual <- runReaderT (OptionExpiry.expiryTimes tel) env
+                shouldBe (sort actual) expiry1 
+        context "when date is 2020-12-18 and ticker is NHY" $ do
+            it "expiry dates should be expiry_2020_12_18" $ do
+                let env = T.Env prms dx2
+                actual <- runReaderT (OptionExpiry.expiryTimes  nhy) env
+                shouldBe (sort actual) expiry_2020_12_18 
+        context "when date is 2020-12-18 and ticker is TEL" $ do
+            it "expiry dates should be expiry_2020_12_18" $ do
+                let env = T.Env prms dx2
+                actual <- runReaderT (OptionExpiry.expiryTimes  nhy) env
+                shouldBe (sort actual) expiry_2020_12_18 
+        context "when date is 2021-06-19 and ticker is NHY" $ do
+            it "expiry dates should be empty" $ do
+                let env = T.Env prms dx3
+                actual <- runReaderT (OptionExpiry.expiryTimes nhy) env
+                shouldBe actual [] 

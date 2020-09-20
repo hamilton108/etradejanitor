@@ -2,114 +2,48 @@
 
 module Demo where
 
-import qualified Data.ByteString as B
-import qualified Data.ByteString.UTF8 as BU
-import qualified Data.Text as T
-import Text.Printf (printf)
-import Control.Monad.IO.Class (liftIO)
+import qualified Data.Time.Calendar as Calendar
+import Control.Monad.Reader (runReaderT)
 
-import Data.Either (fromRight)
+import EtradeJanitor.StockExchange.OptionExpiry (expiryTimes) 
+import qualified EtradeJanitor.Params as PA
+import qualified EtradeJanitor.Common.Types as T
 
-import Database.Redis
+prms = PA.Params {
+    PA.databaseIp = "172.20.1.3"
+  , PA.redisHost = "172.20.1.2"
+  , PA.feed = "/home/rcs/opt/haskell/etradejanitor/feedtmp"
+  , PA.skipDownloadDerivatives = False
+  , PA.skipDbUpdateStocks = False
+  , PA.skipIfDownloadFileExists = True
+  , PA.showStockTickers = False
+  }
 
-ci = defaultConnectInfo { connectHost = "172.20.1.2", connectDatabase = 5 }
+dx = Calendar.fromGregorian 2021 6 18
 
-c = checkedConnect ci
+nhy = T.Ticker 
+        { T.oid = 1
+        , T.ticker = "NHY"
+        , T.category = 1
+        , T.date = dx
+        }
 
-expiryKey :: String -> B.ByteString
-expiryKey ticker = 
-    BU.fromString $ printf "expiry-%s" (ticker :: String)
+tel = T.Ticker 
+        { T.oid = 1
+        , T.ticker = "TEL"
+        , T.category = 1
+        , T.date = dx
+        }
 
-exp1 :: Redis (Either Reply [(B.ByteString, B.ByteString)])
-exp1 = 
-    hgetall (BU.fromString "expiry-1")
+env = T.Env prms dx
 
-exp2 :: Redis (Either Reply [(B.ByteString, B.ByteString)])
-exp2 = 
-    hgetall (BU.fromString "expiry-2")
-
--- x :: String -> Connection -> IO (Maybe (Either Reply [(B.ByteString, B.ByteString)]))
-x ticker conn = 
-    runRedis conn $
-        hget "expiry" (BU.fromString ticker) >>= \ex ->
-        case ex of 
-            Left err ->
-                pure [] 
-            Right result -> 
-                case result of 
-                    Nothing ->
-                        pure []
-                    Just result1 ->
-                        case result1 of
-                            "1" ->  
-                                liftIO (putStrLn "1") >>
-                                exp1 >>= \z -> 
-                                    pure [] -- $ Just z
-                            "2" -> 
-                                liftIO (putStrLn "2") >>
-                                exp1 >>= \z -> 
-                                    exp2 >>= \z2-> 
-                                        pure [] -- $ Just ((++) <$> z <*> z2)
-
---x2 :: String -> Connection -> IO (Maybe (Either Reply [(B.ByteString, B.ByteString)]))
-x2 ticker conn = 
-    runRedis conn $
-        hget "expiry" (BU.fromString ticker) >>= \ex ->
-            pure ex
-{-
-        case ex of 
-            Left err ->
-                pure [] 
-            Right result -> 
-                pure [] 
-                case result of 
-                    Nothing ->
-                        pure []
-                    Just result1 ->
-                        case result1 of
-                            "1" ->  
-                                liftIO (putStrLn "1") >>
-                                exp1 >>= \z -> 
-                                    pure [] -- $ Just z
-                            "2" -> 
-                                liftIO (putStrLn "2") >>
-                                exp1 >>= \z -> 
-                                    exp2 >>= \z2-> 
-                                        pure [] -- $ Just ((++) <$> z <*> z2)
-
--}
-
-
-
-xx = 
-    c >>= \c1 ->
-        runRedis c1 $
-            hget "expiry" (BU.fromString "NHY") >>= \ex ->
-                let 
-                    ex1 = fromRight Nothing ex
-                in
-                case ex1 of 
-                    Nothing -> pure []
-                    Just ex1 ->
-                        --liftIO (putStrLn (BU.toString "ex1")) >>
-                        case ex1 of
-                            "1" ->  
-                                exp1 >>= \z -> 
-                                    pure [] -- $ Just z
-                            "2" -> 
-                                exp1 >>= \z -> 
-                                    exp2 >>= \z2-> 
-                                        pure []
+work :: T.Ticker -> IO ()
+work tik = 
+    putStrLn (show prms) >>
+        runReaderT (expiryTimes tik) env >>= \x ->
+            putStrLn (show x)
 
 {-
-        x "NHYx" c1 -- >>= \result -> 
-            case result of 
-                Nothing -> putStrLn "OOP"
-                Just r1 -> 
-                    case r1 of 
-                        Left err -> putStrLn "JADDA ERR"
-                        Right _ -> putStrLn "JADDA OK"
-
 import Data.ByteString.Lazy as BL
 import Data.ByteString as BS
 import Data.Text as TS

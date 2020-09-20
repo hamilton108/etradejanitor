@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 29c2e4a1ff4f3a8bb21707153b69b5649aa99124251ab7b68e09574ed2ff7eac
+-- hash: 146ce59f2ac5a3aaaaa1b6d96bd5fb7aaab24c9f07cbe0f489b8bb174a212093
 
 name:                etradejanitor
 version:             1.4.0
@@ -57,6 +57,7 @@ library
     , process
     , regex-tdfa
     , req
+    , sort
     , split
     , tagsoup
     , text
@@ -91,6 +92,7 @@ executable etradejanitor-1.4.0
     , process
     , regex-tdfa
     , req
+    , sort
     , split
     , tagsoup
     , text
@@ -130,6 +132,7 @@ test-suite etradejanitor-test
     , process
     , regex-tdfa
     , req
+    , sort
     , split
     , tagsoup
     , text
