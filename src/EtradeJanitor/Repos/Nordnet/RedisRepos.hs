@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module EtradeJanitor.StockExchange.OptionExpiry (expiryTimes) where 
+module EtradeJanitor.Repos.Nordnet.RedisRepos (expiryTimes) where 
     
 import qualified Control.Monad.Reader as Reader
 import Control.Monad.IO.Class (liftIO)

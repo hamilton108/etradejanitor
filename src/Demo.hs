@@ -5,9 +5,13 @@ module Demo where
 import qualified Data.Time.Calendar as Calendar
 import Control.Monad.Reader (runReaderT)
 
-import EtradeJanitor.StockExchange.OptionExpiry (expiryTimes) 
+import Data.Vector (fromList)
+import EtradeJanitor.Repos.Nordnet.RedisRepos (expiryTimes) 
+import qualified EtradeJanitor.Repos.Nordnet.Derivative as D 
+
 import qualified EtradeJanitor.Params as PA
 import qualified EtradeJanitor.Common.Types as T
+
 
 prms = PA.Params {
     PA.databaseIp = "172.20.1.3"
@@ -17,6 +21,7 @@ prms = PA.Params {
   , PA.skipDbUpdateStocks = False
   , PA.skipIfDownloadFileExists = True
   , PA.showStockTickers = False
+  , PA.openingPricesToRedis = False
   }
 
 dx = Calendar.fromGregorian 2021 6 18
@@ -42,6 +47,18 @@ work tik =
     putStrLn (show prms) >>
         runReaderT (expiryTimes tik) env >>= \x ->
             putStrLn (show x)
+
+work2 :: IO ()
+work2 = 
+    let 
+        tix = fromList [nhy,tel]
+    in
+        runReaderT (D.downloadOpeningPrices tix) env 
+
+work3 :: IO ()
+work3 = 
+    runReaderT (D.openingPriceFileName nhy) env >>= \s ->
+        putStrLn s
 
 {-
 import Data.ByteString.Lazy as BL

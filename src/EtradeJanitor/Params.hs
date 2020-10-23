@@ -16,6 +16,7 @@ data Params =
     , skipDbUpdateStocks :: Bool
     , skipIfDownloadFileExists :: Bool
     , showStockTickers :: Bool
+    , openingPricesToRedis :: Bool
     } deriving (Show)
 
 defaultFeed :: String
@@ -31,6 +32,7 @@ mkParams =
         <*> switch (long "skip-db-update-stocks" <> short 'r' <> help "Do not update database stock prices" )
         <*> switch (long "skip-if-download-exists" <> short 'x' <> help "Do not download if file exists" )
         <*> switch (long "show-stock-tickers" <> short 't' <> help "Show current stock tickers" )
+        <*> switch (long "opening-prices-to-redis" <> short 'o' <> help "Download and save opening prices to Redis" )
 {-
 data Params = Params {
     databaseIp :: String

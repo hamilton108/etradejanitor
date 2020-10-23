@@ -16,12 +16,14 @@ testParams :: Params.Params
 testParams = 
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
+    , Params.redisHost = "172.20.1.2"
     , Params.feed = Misc.feedRoot ++ "/test/testfeed/paperhistory" 
     --, Params.skipDownloadStockPrices = True
     , Params.skipDownloadDerivatives = True
     , Params.skipDbUpdateStocks = True
     , Params.skipIfDownloadFileExists = True
     , Params.showStockTickers = False
+    , Params.openingPricesToRedis = False
     }
 
 testDay :: Calendar.Day

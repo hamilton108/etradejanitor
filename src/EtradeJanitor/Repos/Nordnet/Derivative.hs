@@ -24,7 +24,7 @@ import EtradeJanitor.Common.Types (REIO,getParams,getDownloadDate)
 import qualified EtradeJanitor.Common.Misc as Misc
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
-import qualified EtradeJanitor.StockExchange.OptionExpiry as OptionExpiry 
+import qualified EtradeJanitor.Repos.Nordnet.RedisRepos as RedisRepos 
 
 -- import qualified EtradeJanitor.Common.Types as Types
 
@@ -50,6 +50,21 @@ t = Ticker "NHY"
 env = Types.Env testParams
 -}
 
+
+pathNameOpeningPrices :: REIO FilePath
+pathNameOpeningPrices = 
+    Reader.ask >>= \env ->
+    let 
+        feed = (Params.feed . getParams) env
+    in
+    pure $ Printf.printf "%s/openingprices" feed 
+
+mkDirOpeningPrices :: REIO String
+mkDirOpeningPrices = 
+    pathNameOpeningPrices >>= \pn ->
+    liftIO (Directory.createDirectoryIfMissing True pn) >>
+    pure pn
+
 pathNameFor :: T.Ticker -> REIO FilePath
 pathNameFor t = 
     Reader.ask >>= \env ->
@@ -66,8 +81,14 @@ mkDir ticker =
     pathNameFor ticker >>= \pn ->
     liftIO (Directory.createDirectoryIfMissing True pn) >>
     pure pn
-    
+
 {-
+mkDir :: T.Ticker -> REIO String
+mkDir ticker = 
+    pathNameFor ticker >>= \pn ->
+    liftIO (Directory.createDirectoryIfMissing True pn) >>
+    pure pn
+    
 unixTimeToNordnetExpireDate :: T.NordnetExpiry -> Int
 unixTimeToNordnetExpireDate unixTime =
     unixTime * 1000
@@ -101,15 +122,26 @@ download' t filePath skipIfExists unixTime =
                 R.runReq R.defaultHttpConfig (responseGET t unixTime) >>= \bs -> 
                 Char8.writeFile fileName (R.responseBody bs)
 
-
 nordNetExpiry :: T.Ticker -> REIO [T.NordnetExpiry]
 nordNetExpiry ticker =
     Reader.ask >>= \env ->
     let
         expiry = 
-            Reader.runReaderT (OptionExpiry.expiryTimes ticker) env
+            Reader.runReaderT (RedisRepos.expiryTimes ticker) env
     in
     liftIO expiry
+
+{-
+willDownload :: FilePath -> T.NordnetExpiry -> REIO Bool 
+willDownload filePath unixTime = 
+    Reader.ask >>= \env ->
+    let
+        fileName = Printf.printf "%s/%d.html" filePath unixTime -- expiryAsUnixTime
+        skipIfExists = (Params.skipIfDownloadFileExists . getParams) env
+    in
+    liftIO ((Directory.doesFileExist fileName >>= \fileExist ->
+             pure $ not $ skipIfExists && fileExist) :: IO Bool)
+-}
 
 download :: T.Ticker -> REIO ()
 download ticker = 
@@ -120,9 +152,28 @@ download ticker =
     mkDir ticker >>= \filePath ->
         nordNetExpiry ticker >>= \unixTimes -> 
             let
-                dlfn = download' ticker filePath skipIfExists 
+                dlfn = download' ticker filePath skipIfExists
             in 
             mapM_ dlfn unixTimes
+
+openingPriceFileName :: T.Ticker -> REIO String
+openingPriceFileName t = 
+    Reader.ask >>= \env ->
+        pathNameOpeningPrices >>= \pathName ->
+        pure $ Printf.printf "%s/%s.html" pathName (T.ticker t)
+
+downloadOpeningPrice :: T.Ticker -> REIO ()
+downloadOpeningPrice t = 
+    mkDirOpeningPrices >>= \filePath ->
+        nordNetExpiry t >>= \unixTimes -> 
+            let 
+                unixTime = head unixTimes
+                fileName = Printf.printf "%s/%s.html" filePath (T.ticker t) 
+            in
+            liftIO $
+            putStrLn (Printf.printf "Downloading %s" fileName) >> 
+            R.runReq R.defaultHttpConfig (responseGET t unixTime) >>= \bs -> 
+            Char8.writeFile fileName (R.responseBody bs)
 
 downloadAbleTickers :: T.Tickers -> T.Tickers
 downloadAbleTickers allTix = 
@@ -141,6 +192,13 @@ downloadTickers tix =
                 dt = downloadAbleTickers tix
             in
             mapM_ (\t -> download t) dt
+
+downloadOpeningPrices :: T.Tickers -> REIO ()
+downloadOpeningPrices tix = 
+    let 
+        dt = downloadAbleTickers tix
+    in
+    mapM_ (\t -> downloadOpeningPrice t) dt
 
 {-
         False -> nordNetExpiry >>= \expiry ->

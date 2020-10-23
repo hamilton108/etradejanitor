@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 146ce59f2ac5a3aaaaa1b6d96bd5fb7aaab24c9f07cbe0f489b8bb174a212093
+-- hash: e32bcb94672de689eb5b47305260be3da27402bc1c912bfe2d0a5a00e9e58c76
 
 name:                etradejanitor
 version:             1.4.0
@@ -31,10 +31,10 @@ library
       EtradeJanitor.Params
       EtradeJanitor.Repos.Common
       EtradeJanitor.Repos.Nordnet.Derivative
+      EtradeJanitor.Repos.Nordnet.RedisRepos
       EtradeJanitor.Repos.PaperHistoryCsv
       EtradeJanitor.Repos.Stocks
       EtradeJanitor.Repos.Yahoo.PaperHistory
-      EtradeJanitor.StockExchange.OptionExpiry
   other-modules:
       Paths_etradejanitor
   hs-source-dirs:
@@ -107,8 +107,8 @@ test-suite etradejanitor-test
   other-modules:
       EtradeJanitor.Common.CalendarUtilSpec
       EtradeJanitor.Repos.Nordnet.Derivative.DerivativeSpec
+      EtradeJanitor.Repos.Nordnet.RedisReposSpec
       EtradeJanitor.Repos.Yahoo.PaperHistorySpec
-      EtradeJanitor.StockExchange.OptionExpirySpec
       Paths_etradejanitor
   hs-source-dirs:
       test

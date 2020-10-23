@@ -11,7 +11,6 @@ import qualified Data.Vector as Vector
 import qualified Data.Int as DI
 
 import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
-import qualified EtradeJanitor.StockExchange.OptionExpiry as OptionExpiry 
 import qualified EtradeJanitor.Params as Params
 import qualified EtradeJanitor.Common.Types as Types
 import qualified EtradeJanitor.Common.Misc as Misc
@@ -51,12 +50,14 @@ testParams :: Params.Params
 testParams = 
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
+    , Params.redisHost = "172.20.1.2"
     , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
     -- , Params.skipDownloadStockPrices = True
     , Params.skipDownloadDerivatives = True
     , Params.skipDbUpdateStocks = True
     , Params.skipIfDownloadFileExists = True
     , Params.showStockTickers = False
+    , Params.openingPricesToRedis = False
     }
 
 testEnv :: Types.Env 
