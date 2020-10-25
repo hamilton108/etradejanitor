@@ -129,12 +129,13 @@ downloadDerivativePrices :: T.Tickers -> REIO ()
 downloadDerivativePrices tix = 
     Reader.ask >>= \env ->
     let 
-        skipDownload = (Params.skipDownloadDerivatives . T.getParams) env
+        doDownload = (Params.downloadDerivatives . T.getParams) env
     in
-    case skipDownload of 
-        True -> pure ()
-        False -> 
+    case doDownload of 
+        True -> 
             let
                 dt = downloadAbleTickers tix
             in
             mapM_ (\t -> download (DerivativePrices t)) dt
+        False -> 
+            pure ()

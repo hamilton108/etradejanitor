@@ -127,12 +127,13 @@ updateStockPricesTickers :: T.Tickers -> T.REIO ()
 updateStockPricesTickers tix = 
     Reader.ask >>= \env ->
     let
-        skipUpdate = (Params.skipDbUpdateStocks . T.getParams) env
+        doUpdate = (Params.dbUpdateStocks . T.getParams) env
     in
-    case skipUpdate of  
-      True -> pure ()
-      False -> forM_ tix updateStockPrices
-
+    case doUpdate of  
+      True -> 
+          forM_ tix updateStockPrices
+      False -> 
+          pure ()
 {-
 responseGET :: T.Ticker -> R.Req R.BsResponse
 responseGET t = 
