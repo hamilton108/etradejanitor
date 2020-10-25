@@ -50,6 +50,9 @@ t = Ticker "NHY"
 env = Types.Env testParams
 -}
 
+data Price = 
+      DerivativePrice T.Ticker T.NordnetExpiry
+    | OpeningPrice T.NordnetExpiry
 
 pathNameOpeningPrices :: REIO FilePath
 pathNameOpeningPrices = 
