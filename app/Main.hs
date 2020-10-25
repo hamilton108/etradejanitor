@@ -22,7 +22,7 @@ import qualified EtradeJanitor.Repos.Yahoo.PaperHistory as PaperHistory
 
 import qualified EtradeJanitor.Repos.Stocks as Stocks
 import qualified EtradeJanitor.Params as PA
-import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
+import qualified EtradeJanitor.Repos.Nordnet as Nordnet
 --import qualified Data.Dates as DT
 --import qualified Data.Time.Calendar as Cal
 --import Text.Printf (printf)
@@ -69,7 +69,7 @@ work params =
         case tix of
             Right result ->
                 runReaderT (showStockTickers result) env >>
-                runReaderT (Derivative.downloadTickers result) env >>
+                runReaderT (Nordnet.downloadDerivativePrices result) env >>
                 runReaderT (PaperHistory.updateStockPricesTickers result) env 
                 --runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
                 --runReaderT (PaperHistory.updateStockPricesTickers result) env >>

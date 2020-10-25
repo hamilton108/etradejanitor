@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module EtradeJanitor.Repos.Nordnet.Derivative.DerivativeSpec (spec) where
+module EtradeJanitor.Repos.NordnetSpec (spec) where
 
 
 import Control.Monad.Reader (runReaderT)
@@ -10,7 +10,8 @@ import qualified Data.Time.Clock.POSIX as POSIX
 import qualified Data.Vector as Vector
 import qualified Data.Int as DI
 
-import qualified EtradeJanitor.Repos.Nordnet.Derivative as Derivative
+import EtradeJanitor.Repos.Nordnet (Prices(..)) 
+import qualified EtradeJanitor.Repos.Nordnet as Nordnet
 import qualified EtradeJanitor.Params as Params
 import qualified EtradeJanitor.Common.Types as Types
 import qualified EtradeJanitor.Common.Misc as Misc
@@ -96,15 +97,15 @@ spec = do
                 testExpiryDates <- runReaderT (OptionExpiry.expiryTimes testDay) testEnv
                 shouldBe testExpiryDates expectedExpiryDates 
     -}
-    describe "Derivative" $ do
+    describe "Derviative Prices" $ do
         context "when download date is 2019-09-01 and option ticker is NHY" $ do
             it ("path name should be " ++ expectedPathName) $ do
-                testPathName <- runReaderT (Derivative.pathNameFor testTicker) testEnv
+                testPathName <- runReaderT (Nordnet.pathName (DerivativePrices testTicker)) testEnv
                 shouldBe testPathName expectedPathName
     describe "Downloadable tickers" $ do
         context "when tickers count == 5, and they contains 1 type 3 tickers" $ do
             it ("count should be 4") $ do
-                let dt = Derivative.downloadAbleTickers testTickers
+                let dt = Nordnet.downloadAbleTickers testTickers
                 shouldBe (length dt) 4
 
         {-
