@@ -69,10 +69,9 @@ work params =
         case tix of
             Right result ->
                 runReaderT (showStockTickers result) env >>
+                runReaderT (Nordnet.downloadOpeningPrices result) env >>
                 runReaderT (Nordnet.downloadDerivativePrices result) env >>
                 runReaderT (PaperHistory.updateStockPricesTickers result) env 
-                --runReaderT (EuroInvestor.savePaperHistoryTickers result) env >>
-                --runReaderT (PaperHistory.updateStockPricesTickers result) env >>
             Left err ->
                 putStrLn $ show err
 

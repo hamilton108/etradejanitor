@@ -25,6 +25,7 @@ import EtradeJanitor.Common.Types
     , REIO 
     )
 
+import EtradeJanitor.Params (Params)
 
 data Prices = 
       DerivativePrices Ticker
@@ -120,22 +121,23 @@ download p@(DerivativePrices t) =
 
 downloadOpeningPrices :: Tickers -> REIO ()
 downloadOpeningPrices tix = 
-    let 
-        dt = downloadAbleTickers tix
-    in
-    mapM_ (\t -> download (OpeningPrices t)) dt
+    dl Params.openingPricesToRedis (\t -> download (OpeningPrices t)) tix
 
-downloadDerivativePrices :: T.Tickers -> REIO ()
+downloadDerivativePrices :: Tickers -> REIO ()
 downloadDerivativePrices tix = 
+    dl Params.downloadDerivatives (\t -> download (DerivativePrices t)) tix
+
+dl :: (Params -> Bool) -> (Ticker -> REIO ()) -> Tickers -> REIO ()
+dl fn tixFn tix = 
     Reader.ask >>= \env ->
     let 
-        doDownload = (Params.downloadDerivatives . T.getParams) env
+        doDownload = (fn . T.getParams) env
     in
     case doDownload of 
         True -> 
             let
                 dt = downloadAbleTickers tix
             in
-            mapM_ (\t -> download (DerivativePrices t)) dt
+            mapM_ tixFn dt
         False -> 
             pure ()
