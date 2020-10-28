@@ -16,7 +16,6 @@ import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Repos.Nordnet as Nordnet
 --import qualified EtradeJanitor.Repos.Nordnet (Prices(..)) 
 import qualified EtradeJanitor.Common.Html as Html
-import EtradeJanitor.Common.Html (StringSoup)
 
 prms = Params.Params 
         { Params.databaseIp = "172.20.1.3"
@@ -58,7 +57,7 @@ work2 =
     runReaderT (Nordnet.downloadDerivativePrices tix) env 
 
 
-work3 :: IO (Tag String)
+--work3 :: IO String
 work3 = 
     runReaderT (Html.close nhy) env 
 
