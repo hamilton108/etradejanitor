@@ -73,6 +73,14 @@ pathName (DerivativePrices t) =
     in
     pure $ Printf.printf "%s/%d/%d/%d/%s" feed y m d ticker
 
+fileName :: Prices -> REIO String
+fileName p@(OpeningPrices t) = 
+    pathName p >>= \pn -> 
+        pure (Printf.printf "%s/%s.html" pn (T.ticker t))
+fileName _ = 
+    pure "N/A"
+
+
 mkDir :: FilePath -> REIO ()
 mkDir fp = 
     liftIO (Directory.createDirectoryIfMissing True fp) 
@@ -113,6 +121,7 @@ download p@(DerivativePrices t) =
     in
     pathName p >>= \pn ->
         nordNetExpiry t >>= \unixTimes -> 
+            mkDir pn >>
             let
                 dlfn = download' t pn skipIfExists
             in 

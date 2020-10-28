@@ -2,6 +2,8 @@
 
 # stack build --allow-different-user --system-ghc
 
+mv src/Demo.hs src/Demo.hs.x
+
 stack build --allow-different-user 
 
 exit 0
