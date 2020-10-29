@@ -15,9 +15,12 @@ import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Repos.Nordnet as Nordnet
 --import qualified EtradeJanitor.Repos.Nordnet (Prices(..)) 
 
+import qualified EtradeJanitor.Repos.Nordnet.RedisRepos as RedisRepos -- (expiryTimes,saveOpeningPricesToRedis) where 
+
 prms = Params.Params 
         { Params.databaseIp = "172.20.1.3"
         , Params.redisHost = "172.20.1.2"
+        , Params.redisDatabase = "5"
         , Params.feed = "/home/rcs/opt/haskell/etradejanitor/feedtmp"
         , Params.downloadDerivatives = False
         , Params.dbUpdateStocks = False
@@ -67,7 +70,8 @@ work3 =
     runReaderT (reioInt) env
 
 work4 = 
-    runReaderT (Nordnet.closingPrice nhy) env 
+    runReaderT (Nordnet.openingPrice nhy) env >>= \p ->
+    runReaderT (RedisRepos.saveOpeningPricesToRedis [p]) env
 
 {-
 stock :: IO StringSoup

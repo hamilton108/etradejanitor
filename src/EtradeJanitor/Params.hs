@@ -11,6 +11,7 @@ data Params =
     Params 
     { databaseIp :: String
     , redisHost :: String
+    , redisDatabase :: String
     , feed :: String
     , downloadDerivatives :: Bool
     , dbUpdateStocks :: Bool
@@ -22,11 +23,15 @@ data Params =
 defaultFeed :: String
 defaultFeed = Misc.feedRoot ++ "/feed2"
 
+defaultRedisDatabase :: String
+defaultRedisDatabase = "0"
+
 mkParams :: Parser Params
 mkParams =
     Params
         <$> strArgument (metavar "IP"  <> help "Database ip address")
         <*> strArgument (metavar "REDIS"  <> help "Redis ip address")
+        <*> strOption (long "redis-database" <> short 'd' <> help "Redis database" <> value defaultRedisDatabase <> showDefault)
         <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value defaultFeed <> showDefault)
         <*> switch (long "download-derivatives" <> short 'q' <> help "Download derivatives from Nordnet" )
         <*> switch (long "db-update-stocks" <> short 'r' <> help "Update database stock prices" )

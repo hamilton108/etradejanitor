@@ -29,6 +29,7 @@ import EtradeJanitor.Common.Types
     , Tickers
     , NordnetExpiry
     , REIO 
+    , OpeningPrice(..)
     )
 
 import EtradeJanitor.Params (Params)
@@ -144,6 +145,10 @@ downloadDerivativePrices :: Tickers -> REIO ()
 downloadDerivativePrices tix = 
     dl Params.downloadDerivatives (\t -> download (DerivativePrices t)) tix
 
+openingPricesToRedis :: Tickers -> REIO ()
+openingPricesToRedis = 
+    undefined
+
 dl :: (Params -> Bool) -> (Ticker -> REIO ()) -> Tickers -> REIO ()
 dl fn tixFn tix = 
     Reader.ask >>= \env ->
@@ -172,11 +177,11 @@ tr t =
             in
             pure $ dropWhile (~/= ("<tr>" :: String)) tbody
 
-closingPrice :: Ticker -> REIO Float
-closingPrice t = 
+openingPrice :: Ticker -> REIO OpeningPrice
+openingPrice t = 
     tr t >>= \trx ->
         let 
             td = dropWhile (~/= TagOpen ("td" :: String) [("data-title","Siste")]) trx
             txt = (TS.fromTagText . head . drop 1) $ dropWhile (~/= TagOpen ("span" :: String) [("aria-hidden","true")]) td
         in
-        pure $ decimalStrToFloat txt 
+        pure $ OpeningPrice (T.ticker t) (decimalStrToFloat txt)

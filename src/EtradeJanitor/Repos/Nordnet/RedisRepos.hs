@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module EtradeJanitor.Repos.Nordnet.RedisRepos (expiryTimes) where 
+module EtradeJanitor.Repos.Nordnet.RedisRepos (expiryTimes,saveOpeningPricesToRedis) where 
     
 import qualified Control.Monad.Reader as Reader
 import Control.Monad.IO.Class (liftIO)
@@ -16,10 +16,19 @@ import qualified Data.Time.Clock.POSIX as POSIX
 import qualified Data.Text.Encoding as TE
 
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Conversion as BC
 import qualified Data.ByteString.UTF8 as BU
 import qualified Database.Redis as Redis
 
-import EtradeJanitor.Common.Types (REIO,NordnetExpiry,getParams,getDownloadDate,Ticker(..))
+import EtradeJanitor.Common.Types 
+    ( REIO
+    , NordnetExpiry
+    , getParams
+    , getDownloadDate
+    , Ticker(..)
+    , OpeningPrice(..)
+    )
+
 import qualified EtradeJanitor.Params as Params
 import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
 
@@ -90,8 +99,43 @@ expiryTimes ticker =
             redisHost = (Params.redisHost . getParams) env
             parseFn = parseRedisItem (getDownloadDate env)
         in
-        liftIO (fetchExpiryFromRedis redisHost ticker) >>= \items ->
+        (liftIO $ fetchExpiryFromRedis redisHost ticker) >>= \items ->
             let 
                 result = map parseFn items  
             in
             pure $ map (\y -> Maybe.fromJust y) $ filter (\x -> x /= Nothing) result
+
+{-
+saveOpeningPriceToRedis :: OpeningPrice -> REIO ()
+saveOpeningPriceToRedis = 
+    undefined
+-}
+
+
+saveOpeningPricesToRedis' :: String -> [(B.ByteString,B.ByteString)] -> IO (Either Redis.Reply Redis.Status)
+saveOpeningPricesToRedis' host prices = 
+    conn host >>= \c1 ->
+        Redis.runRedis c1 $
+            Redis.hmset "openingprices" prices
+
+openingPriceToRedisFormat :: OpeningPrice -> (B.ByteString,B.ByteString)
+openingPriceToRedisFormat (OpeningPrice ticker price)=
+    (TE.encodeUtf8 ticker, BC.toByteString' price )
+
+saveOpeningPricesToRedis :: [OpeningPrice] -> REIO ()
+saveOpeningPricesToRedis prices = 
+    Reader.ask >>= \env ->
+        let
+            redisHost = (Params.redisHost . getParams) env
+            redisPrices = map openingPriceToRedisFormat prices
+        in
+        (liftIO $ saveOpeningPricesToRedis' redisHost redisPrices) >> 
+            pure ()
+
+{-
+        >>= \result ->
+            let 
+                result1 = fromRight Redis.Ok result
+            in
+            pure result1 
+-}

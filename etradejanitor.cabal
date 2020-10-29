@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7824c946eb46282e46c38c9f8ff6c64fd2eedf3d250e330b62353a35c5c58b8d
+-- hash: ab3aa36e56044534a7a72b1d409cb021400a1743cffbbf5fc1c41f76b1fecec0
 
 name:                etradejanitor
 version:             1.4.0
@@ -23,6 +23,7 @@ source-repository head
 
 library
   exposed-modules:
+      Demo
       EtradeJanitor.Common.CalendarUtil
       EtradeJanitor.Common.Html
       EtradeJanitor.Common.Misc
@@ -42,6 +43,7 @@ library
       aeson
     , base >=4.7 && <5
     , bytestring
+    , bytestring-conversion
     , containers
     , contravariant
     , data-default-class
@@ -76,6 +78,7 @@ executable etradejanitor-1.4.0
       aeson
     , base >=4.7 && <5
     , bytestring
+    , bytestring-conversion
     , containers
     , contravariant
     , data-default-class
@@ -116,6 +119,7 @@ test-suite etradejanitor-test
       aeson
     , base >=4.7 && <5
     , bytestring
+    , bytestring-conversion
     , containers
     , contravariant
     , data-default-class

@@ -109,9 +109,9 @@ spec = do
                 shouldBe (length dt) 4
     describe "Opening Prices" $ do
         context "when ticker is NHY" $ do
-            it ("closing price should be 28.26") $ do
-                openingPrice <- runReaderT (Nordnet.closingPrice testTicker) testEnv
-                shouldBe openingPrice 28.26
+            it ("opening price should be 28.26") $ do
+                openingPrice <- runReaderT (Nordnet.openingPrice testTicker) testEnv
+                shouldBe openingPrice (OpeningPrice "NHY" 28.26)
 
 
         {-

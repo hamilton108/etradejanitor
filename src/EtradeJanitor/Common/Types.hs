@@ -3,6 +3,7 @@ module EtradeJanitor.Common.Types where
 import qualified Text.Printf as TP -- (formatString,PrintfArg(..))
 import qualified Data.Int as DI
 import qualified Data.Text as Tx
+import Data.Text (Text)
 import qualified Data.Vector as DV
 import qualified Data.Time.Calendar as Cal
 import qualified Data.Time.Clock.POSIX as POSIX
@@ -35,10 +36,17 @@ isDownloadOnly env =
   (PA.downloadOnly . getParams) env
 -}
 
+data OpeningPrice = 
+    OpeningPrice 
+    { opTicker :: Text 
+    , price :: Float 
+    }
+    deriving (Eq,Show)
+  
 data Ticker = 
     Ticker 
     { oid :: DI.Int64
-    , ticker :: Tx.Text
+    , ticker :: Text
     , category :: DI.Int64
     , date :: Cal.Day 
     } deriving (Eq,Show)
@@ -46,7 +54,7 @@ data Ticker =
 type Tickers = DV.Vector Ticker
 
 instance TP.PrintfArg Ticker where
-  formatArg (Ticker _ t _ _) fmt = TP.formatString (Tx.unpack t) fmt
+    formatArg (Ticker _ t _ _) fmt = TP.formatString (Tx.unpack t) fmt
 
 data IsoDate = 
     IsoDate 
