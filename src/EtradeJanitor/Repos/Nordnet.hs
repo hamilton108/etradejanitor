@@ -14,9 +14,15 @@ import Network.HTTP.Req ((/:),(=:))
 import qualified Network.HTTP.Req as R
 import qualified Data.ByteString.Char8 as Char8
 
+import qualified Text.HTML.TagSoup as TS
+import Text.HTML.TagSoup (Tag(..),(~/=))
+
 import qualified EtradeJanitor.Repos.Nordnet.RedisRepos as RedisRepos 
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Params as Params
+
+import EtradeJanitor.Common.Html (soup)
+import EtradeJanitor.Common.Misc (decimalStrToFloat)
 
 import EtradeJanitor.Common.Types 
     ( Ticker
@@ -73,12 +79,14 @@ pathName (DerivativePrices t) =
     in
     pure $ Printf.printf "%s/%d/%d/%d/%s" feed y m d ticker
 
+{-
 fileName :: Prices -> REIO String
 fileName p@(OpeningPrices t) = 
     pathName p >>= \pn -> 
         pure (Printf.printf "%s/%s.html" pn (T.ticker t))
 fileName _ = 
     pure "N/A"
+ -}
 
 
 mkDir :: FilePath -> REIO ()
@@ -150,3 +158,25 @@ dl fn tixFn tix =
             mapM_ tixFn dt
         False -> 
             pure ()
+
+tr :: Ticker -> REIO [Tag String]
+tr t = 
+    pathName (OpeningPrices t) >>= \pn -> 
+        let 
+            fname = Printf.printf "%s/%s.html" pn (T.ticker t)
+        in
+        (liftIO $ soup fname) >>= \soupx ->
+            let
+                table = dropWhile (~/= ("<table>" :: String)) soupx
+                tbody = dropWhile (~/= ("<tbody>" :: String)) table
+            in
+            pure $ dropWhile (~/= ("<tr>" :: String)) tbody
+
+closingPrice :: Ticker -> REIO Float
+closingPrice t = 
+    tr t >>= \trx ->
+        let 
+            td = dropWhile (~/= TagOpen ("td" :: String) [("data-title","Siste")]) trx
+            txt = (TS.fromTagText . head . drop 1) $ dropWhile (~/= TagOpen ("span" :: String) [("aria-hidden","true")]) td
+        in
+        pure $ decimalStrToFloat txt 

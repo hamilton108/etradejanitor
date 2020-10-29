@@ -3,19 +3,17 @@
 module Demo where
 
 import Control.Monad.Reader (runReaderT)
+import Control.Monad.IO.Class (liftIO)
 import qualified Data.Time.Calendar as Calendar
 import qualified Data.Vector as Vector
 
-import qualified Text.HTML.TagSoup as TS
-import Text.HTML.TagSoup (Tag(..),(~==),(~/=))
 
 import qualified EtradeJanitor.Repos.Nordnet.RedisRepos as RedisRepos 
 import qualified EtradeJanitor.Params as Params
-import EtradeJanitor.Common.Types (Env(..),Ticker(..),Tickers)
+import EtradeJanitor.Common.Types (Env(..),Ticker(..),Tickers,REIO)
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Repos.Nordnet as Nordnet
 --import qualified EtradeJanitor.Repos.Nordnet (Prices(..)) 
-import qualified EtradeJanitor.Common.Html as Html
 
 prms = Params.Params 
         { Params.databaseIp = "172.20.1.3"
@@ -36,7 +34,7 @@ env = Env prms dx1
 nhy :: Ticker
 nhy = Ticker 
         { T.oid = 1
-        , T.ticker = "NHY2"
+        , T.ticker = "NHY"
         , T.category = 1
         , T.date = dx1
         }
@@ -57,9 +55,19 @@ work2 =
     runReaderT (Nordnet.downloadDerivativePrices tix) env 
 
 
---work3 :: IO String
+ioInt :: IO Int
+ioInt = pure 12
+
+reioInt :: REIO Int
+reioInt =
+    (liftIO $ ioInt) >>= \t ->
+        pure t
+
 work3 = 
-    runReaderT (Html.close nhy) env 
+    runReaderT (reioInt) env
+
+work4 = 
+    runReaderT (Nordnet.closingPrice nhy) env 
 
 {-
 stock :: IO StringSoup

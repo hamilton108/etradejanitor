@@ -4,19 +4,17 @@ module EtradeJanitor.Common.Html where
 
 import qualified System.IO as IO
 import Control.Monad.IO.Class (liftIO)
-
 import qualified Text.HTML.TagSoup as TS
-import Text.HTML.TagSoup (Tag(..),(~==),(~/=))
-import qualified Network.HTTP.Req as R
-import qualified Data.ByteString.Char8 as B
+import Text.HTML.TagSoup (Tag(..))
 
-import EtradeJanitor.Common.Misc (decimalStrToFloat)
-import EtradeJanitor.Common.Types (REIO,Ticker)
-import qualified EtradeJanitor.Common.Types as T
-
-import EtradeJanitor.Repos.Nordnet (Prices(..))
-import qualified EtradeJanitor.Repos.Nordnet as Nordnet
-
+soup :: FilePath -> IO [Tag String]
+soup fname = 
+    IO.openFile fname IO.ReadMode >>= \inputHandle ->
+    IO.hSetEncoding inputHandle IO.latin1 >> -- utf8
+    IO.hGetContents inputHandle >>= \theInput ->
+      (pure . TS.parseTags) theInput
+      
+{-
 html :: Ticker -> REIO String
 html t =
     Nordnet.fileName (OpeningPrices t) >>= \tickerHtml ->
@@ -47,6 +45,7 @@ close t =
             txt = (TS.fromTagText . head . drop 1) $ dropWhile (~/= TagOpen ("span" :: String) [("aria-hidden","true")]) td
         in
         pure $ decimalStrToFloat txt 
+-}
 
 {-
 save :: String -> T.Ticker -> (T.Ticker -> R.Req R.BsResponse) -> IO ()

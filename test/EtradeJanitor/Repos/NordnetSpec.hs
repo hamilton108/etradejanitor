@@ -107,6 +107,12 @@ spec = do
             it ("count should be 4") $ do
                 let dt = Nordnet.downloadAbleTickers testTickers
                 shouldBe (length dt) 4
+    describe "Opening Prices" $ do
+        context "when ticker is NHY" $ do
+            it ("closing price should be 28.26") $ do
+                openingPrice <- runReaderT (Nordnet.closingPrice testTicker) testEnv
+                shouldBe openingPrice 28.26
+
 
         {-
         context "when download date is 2019-09-01 and option ticker is NHY" $ do
