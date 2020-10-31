@@ -120,7 +120,7 @@ saveOpeningPricesToRedis' host prices =
 
 openingPriceToRedisFormat :: OpeningPrice -> (B.ByteString,B.ByteString)
 openingPriceToRedisFormat (OpeningPrice ticker price)=
-    (TE.encodeUtf8 ticker, BC.toByteString' price )
+    (TE.encodeUtf8 ticker, BC.toByteString' price)
 
 saveOpeningPricesToRedis :: [OpeningPrice] -> REIO ()
 saveOpeningPricesToRedis prices = 

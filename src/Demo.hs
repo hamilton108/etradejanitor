@@ -54,7 +54,7 @@ work =
 
 work2 :: IO ()
 work2 = 
-    runReaderT (Nordnet.downloadOpeningPrices tix) env >> 
+    runReaderT (Nordnet.downloadOpeningPrices tix) env >>= \t ->
     runReaderT (Nordnet.downloadDerivativePrices tix) env 
 
 

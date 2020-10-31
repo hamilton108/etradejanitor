@@ -15,6 +15,7 @@ import qualified EtradeJanitor.Common.Types as T
 prms = PA.Params 
         { PA.databaseIp = "172.20.1.3"
         , PA.redisHost = "172.20.1.2"
+        , PA.redisDatabase = "5"
         , PA.feed = "/home/rcs/opt/haskell/etradejanitor/feedtmp"
         , PA.downloadDerivatives = False
         , PA.dbUpdateStocks = False

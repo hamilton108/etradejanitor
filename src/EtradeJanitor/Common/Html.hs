@@ -5,7 +5,7 @@ module EtradeJanitor.Common.Html where
 import qualified System.IO as IO
 import Control.Monad.IO.Class (liftIO)
 import qualified Text.HTML.TagSoup as TS
-import Text.HTML.TagSoup (Tag(..))
+import Text.HTML.TagSoup (Tag)
 
 soup :: FilePath -> IO [Tag String]
 soup fname = 

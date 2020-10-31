@@ -1,5 +1,6 @@
 module EtradeJanitor.Common.Types where
 
+import Data.ByteString (ByteString)
 import qualified Text.Printf as TP -- (formatString,PrintfArg(..))
 import qualified Data.Int as DI
 import qualified Data.Text as Tx
@@ -39,7 +40,7 @@ isDownloadOnly env =
 data OpeningPrice = 
     OpeningPrice 
     { opTicker :: Text 
-    , price :: Float 
+    , price :: String
     }
     deriving (Eq,Show)
   

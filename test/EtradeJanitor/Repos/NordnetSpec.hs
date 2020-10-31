@@ -13,7 +13,7 @@ import qualified Data.Int as DI
 import EtradeJanitor.Repos.Nordnet (Prices(..)) 
 import qualified EtradeJanitor.Repos.Nordnet as Nordnet
 import qualified EtradeJanitor.Params as Params
-import qualified EtradeJanitor.Common.Types as Types
+import EtradeJanitor.Common.Types (Env(..),OpeningPrice(..),Ticker(..),Tickers)
 import qualified EtradeJanitor.Common.Misc as Misc
 
 testDay :: Calendar.Day
@@ -52,8 +52,8 @@ testParams =
     Params.Params 
     { Params.databaseIp = "172.17.0.2"
     , Params.redisHost = "172.20.1.2"
+    , Params.redisDatabase = "5"
     , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
-    -- , Params.skipDownloadStockPrices = True
     , Params.downloadDerivatives = True
     , Params.dbUpdateStocks = True
     , Params.skipIfDownloadFileExists = True
@@ -61,23 +61,23 @@ testParams =
     , Params.openingPricesToRedis = False
     }
 
-testEnv :: Types.Env 
-testEnv = Types.Env testParams testDay
+testEnv :: Env 
+testEnv = Env testParams testDay
 
 expectedPathName :: String 
 expectedPathName = 
     "/home/rcs/opt/haskell/etradejanitor/test/testfeed/2019/9/1/NHY"
 
-testTicker :: Types.Ticker
+testTicker :: Ticker
 testTicker = 
-    Types.Ticker 1 "NHY" 1 testDay
+    Ticker 1 "NHY" 1 testDay
 
-testTickers :: Types.Tickers
+testTickers :: Tickers
 testTickers =
     let 
-        makeTik :: DI.Int64 -> DI.Int64 -> Types.Ticker
+        makeTik :: DI.Int64 -> DI.Int64 -> Ticker
         makeTik oid tickerCat = 
-            Types.Ticker oid "Demo" tickerCat testDay
+            Ticker oid "Demo" tickerCat testDay
     in
     Vector.fromList
     [
@@ -111,7 +111,7 @@ spec = do
         context "when ticker is NHY" $ do
             it ("opening price should be 28.26") $ do
                 openingPrice <- runReaderT (Nordnet.openingPrice testTicker) testEnv
-                shouldBe openingPrice (OpeningPrice "NHY" 28.26)
+                shouldBe openingPrice (OpeningPrice "NHY" "28.26")
 
 
         {-

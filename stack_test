@@ -1,6 +1,13 @@
 #!/bin/bash
 
-mv src/Demo.hs src/Demo.hs.x
+FILE="src/Demo.hs.x"
+
+if [ ! -f "$FILE" ]; then
+    # echo "$FILE does not exist."
+    mv src/Demo.hs src/Demo.hs.x
+
+    hpack
+fi
 
 stack test --system-ghc
 

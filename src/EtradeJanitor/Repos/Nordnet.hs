@@ -22,7 +22,7 @@ import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Params as Params
 
 import EtradeJanitor.Common.Html (soup)
-import EtradeJanitor.Common.Misc (decimalStrToFloat)
+import EtradeJanitor.Common.Misc (decimalStrToAscii)
 
 import EtradeJanitor.Common.Types 
     ( Ticker
@@ -184,4 +184,4 @@ openingPrice t =
             td = dropWhile (~/= TagOpen ("td" :: String) [("data-title","Siste")]) trx
             txt = (TS.fromTagText . head . drop 1) $ dropWhile (~/= TagOpen ("span" :: String) [("aria-hidden","true")]) td
         in
-        pure $ OpeningPrice (T.ticker t) (decimalStrToFloat txt)
+        pure $ OpeningPrice (T.ticker t) (decimalStrToAscii txt)

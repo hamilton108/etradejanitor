@@ -8,10 +8,21 @@ import Data.List.Split (splitOn)
 feedRoot :: String
 feedRoot = "/home/rcs/opt/haskell/etradejanitor"
 
+decimalStrToAscii :: String -> String
+decimalStrToAscii s = 
+    let 
+        txtSplit = splitOn "," s
+    in 
+    intercalate "." txtSplit
+
 decimalStrToFloat :: String -> Float
-decimalStrToFloat s =
+decimalStrToFloat =
+    read . decimalStrToAscii 
+{-
     let 
         txtSplit = splitOn "," s
         txtNum = intercalate "." txtSplit
     in 
     read txtNum
+-}
+

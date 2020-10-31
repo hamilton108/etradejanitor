@@ -1,5 +1,5 @@
 name:                etradejanitor 
-version:             1.4.0
+version:             1.5.0
 github:              "githubuser/demo3"
 license:             BSD3
 author:              "Rolf C Stadheim"
@@ -21,7 +21,6 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- bytestring-conversion
 - containers
 - hasql
 - mtl
