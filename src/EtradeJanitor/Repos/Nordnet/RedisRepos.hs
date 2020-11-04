@@ -3,6 +3,7 @@
 
 module EtradeJanitor.Repos.Nordnet.RedisRepos (expiryTimes,saveOpeningPricesToRedis) where 
     
+--import qualified Data.Vector as Vector
 import qualified Control.Monad.Reader as Reader
 import Control.Monad.IO.Class (liftIO)
 import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))

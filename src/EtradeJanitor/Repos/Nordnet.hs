@@ -146,8 +146,16 @@ downloadDerivativePrices tix =
     dl Params.downloadDerivatives (\t -> download (DerivativePrices t)) tix
 
 openingPricesToRedis :: Tickers -> REIO ()
-openingPricesToRedis = 
-    undefined
+openingPricesToRedis tix = 
+    Reader.ask >>= \env ->
+    let
+        opr = (Params.openingPricesToRedis . T.getParams) env
+    in
+    if opr == True then 
+        mapM openingPrice tix >>= \tixx ->
+        RedisRepos.saveOpeningPricesToRedis $ Vector.toList tixx
+    else
+        pure ()
 
 dl :: (Params -> Bool) -> (Ticker -> REIO ()) -> Tickers -> REIO ()
 dl fn tixFn tix = 

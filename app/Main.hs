@@ -1,6 +1,48 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
+{-
+AutoDeriveTypeable
+BangPatterns
+BinaryLiterals
+ConstraintKinds
+DataKinds
+DefaultSignatures
+DeriveDataTypeable
+DeriveFoldable
+DeriveFunctor
+DeriveGeneric
+DeriveTraversable
+DoAndIfThenElse
+EmptyDataDecls
+ExistentialQuantification
+FlexibleContexts
+FlexibleInstances
+FunctionalDependencies
+GADTs
+GeneralizedNewtypeDeriving
+InstanceSigs
+KindSignatures
+LambdaCase
+MonadFailDesugaring
+MultiParamTypeClasses
+MultiWayIf
+NamedFieldPuns
+NoImplicitPrelude
+OverloadedStrings
+PartialTypeSignatures
+PatternGuards
+PolyKinds
+RankNTypes
+RecordWildCards
+ScopedTypeVariables
+StandaloneDeriving
+TupleSections
+TypeFamilies
+TypeSynonymInstances
+ViewPatterns
+-}
+
 module Main (main) where
 
 import Control.Monad (forM_)
@@ -70,6 +112,7 @@ work params =
             Right result ->
                 runReaderT (showStockTickers result) env >>
                 runReaderT (Nordnet.downloadOpeningPrices result) env >>
+                runReaderT (Nordnet.openingPricesToRedis result) env >>
                 runReaderT (Nordnet.downloadDerivativePrices result) env >>
                 runReaderT (PaperHistory.updateStockPricesTickers result) env 
             Left err ->

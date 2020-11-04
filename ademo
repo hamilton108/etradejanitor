@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [[ -z $1 ]]; then
+    mv src/Demo.hs.x src/Demo.hs
+else
+    mv src/Demo.hs src/Demo.hs.x
+fi
+
+exit 0
+

@@ -2,6 +2,7 @@
 
 module Demo where
 
+import Control.Monad.State (runState)
 import Control.Monad.Reader (runReaderT)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Time.Calendar as Calendar
@@ -46,6 +47,7 @@ tix :: Tickers
 tix =
     Vector.fromList [nhy] 
 
+{-
 work :: IO ()
 work = 
     runReaderT (RedisRepos.expiryTimes nhy) env >>= \expiryTimes ->
@@ -73,7 +75,6 @@ work4 =
     runReaderT (Nordnet.openingPrice nhy) env >>= \p ->
     runReaderT (RedisRepos.saveOpeningPricesToRedis [p]) env
 
-{-
 stock :: IO StringSoup
 stock =
     work3 >>= \soup ->

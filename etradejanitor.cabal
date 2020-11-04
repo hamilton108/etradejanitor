@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4257b8bf13caf111b0ff13ed3f513d3bd1fa688ffffe31a231f1d9f366735dbf
+-- hash: a395a0a4a8341f9abbc433965f15ed22ea6e727355c1b174568453af47a08e68
 
 name:                etradejanitor
 version:             1.5.0
@@ -66,13 +66,13 @@ library
     , vector
   default-language: Haskell2010
 
-executable etradejanitor-1.4.0
+executable etradejanitor-1.5.0
   main-is: Main.hs
   other-modules:
       Paths_etradejanitor
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wcompat -Widentities -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
     , base >=4.7 && <5

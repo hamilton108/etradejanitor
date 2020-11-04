@@ -2,15 +2,57 @@
 
 # stack build --allow-different-user --system-ghc
 
+DIST_PATH=".stack-work/dist/x86_64-linux-tinfo6/Cabal-3.0.1.0/build"
+
+ETRADEJANITOR_VER=
+
 FILE="src/Demo.hs.x"
 
+DOCKER=0
+
+usage()
+{
+cat << EOF
+usage: $0 options
+
+OPTIONS:
+   -h      Show this message
+   -d      Copy bin file to docker 
+   -v      bin file version (e.g. 1.5.0)
+EOF
+}
+while getopts “hdv:” OPTION
+do
+     case $OPTION in
+         h)
+             usage
+             exit 1
+             ;;
+         d)
+             DOCKER=1
+             ;;
+         v)
+             ETRADEJANITOR_VER=$OPTARG
+             ;;
+         ?)
+             usage
+             exit
+             ;;
+     esac
+done
+
 if [ ! -f "$FILE" ]; then
-    # echo "$FILE does not exist."
     mv src/Demo.hs src/Demo.hs.x
 
     hpack
 fi
 
 stack build --allow-different-user 
+
+if [[ $DOCKER -eq 1 ]]; then
+    SRC="$DIST_PATH/etradejanitor-$ETRADEJANITOR_VER/etradejanitor-$ETRADEJANITOR_VER"
+    cp $SRC docker/
+fi
+
 
 exit 0
