@@ -1,6 +1,5 @@
 module EtradeJanitor.Params where
 
-import Data.Semigroup ((<>))
 import Options.Applicative (Parser,info,helper,showDefault,fullDesc,progDesc,(<**>))
 import Options.Applicative.Builder (strArgument,strOption,switch,metavar,long,short,value,help)
 import Options.Applicative.Extra (execParser)

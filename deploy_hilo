@@ -1,7 +1,9 @@
 #!/bin/bash
 
 
-SRC=".stack-work/install/x86_64-linux/lts-14.0/8.6.5/bin/"
+# SRC=".stack-work/install/x86_64-linux/lts-14.0/8.6.5/bin/"
+
+SRC=".stack-work/dist/x86_64-linux-tinfo6/Cabal-3.0.1.0/build/etradejanitor-$1"
 
 FNAME="$SRC/etradejanitor-$1"
 

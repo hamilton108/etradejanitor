@@ -6,14 +6,11 @@ module EtradeJanitor.Repos.Nordnet.RedisRepos (expiryTimes,saveOpeningPricesToRe
 --import qualified Data.Vector as Vector
 import qualified Control.Monad.Reader as Reader
 import Control.Monad.IO.Class (liftIO)
-import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
 
 import Data.Either (fromRight)
 import qualified Data.Maybe as Maybe
 import qualified Data.List.Split as Split
 import qualified Data.Time.Calendar as Calendar
-import qualified Data.Time.Clock as Clock
-import qualified Data.Time.Clock.POSIX as POSIX
 import qualified Data.Text.Encoding as TE
 
 import qualified Data.ByteString as B
@@ -31,15 +28,19 @@ import EtradeJanitor.Common.Types
     )
 
 import qualified EtradeJanitor.Params as Params
-import qualified EtradeJanitor.Common.CalendarUtil as CalendarUtil
 
-ci ::String -> Redis.ConnectInfo 
-ci host = 
-    Redis.defaultConnectInfo { Redis.connectHost = host, Redis.connectDatabase = 5 }
+ci ::String -> Integer -> Redis.ConnectInfo 
+ci host redisDatabase = 
+    Redis.defaultConnectInfo { Redis.connectHost = host, Redis.connectDatabase = redisDatabase }
 
-conn :: String -> IO Redis.Connection
-conn host = 
-    Redis.checkedConnect $ ci host
+conn :: REIO Redis.Connection
+conn = 
+    Reader.ask >>= \env ->
+    let
+        redisHost = (Params.redisHost . getParams) env
+        redisDatabase = (read . Params.redisDatabase . getParams) env
+    in
+    liftIO $ Redis.checkedConnect $ ci redisHost redisDatabase 
 
 exp1 :: Redis.Redis (Either Redis.Reply [(B.ByteString, B.ByteString)])
 exp1 = 
@@ -49,10 +50,10 @@ exp2 :: Redis.Redis (Either Redis.Reply [(B.ByteString, B.ByteString)])
 exp2 = 
     Redis.hgetall (BU.fromString "expiry-2")
 
-fetchExpiryFromRedis :: String -> Ticker -> IO [(B.ByteString,B.ByteString)]
-fetchExpiryFromRedis host (Ticker { ticker }) = 
-    conn host >>= \c1 ->
-        Redis.runRedis c1 $
+fetchExpiryFromRedis :: Ticker -> REIO [(B.ByteString,B.ByteString)]
+fetchExpiryFromRedis (Ticker { ticker }) = 
+    conn >>= \c1 ->
+        liftIO $ Redis.runRedis c1 $
             Redis.hget "expiry" (TE.encodeUtf8 ticker) >>= \ex ->
                 let 
                     ex1 = fromRight Nothing ex
@@ -60,8 +61,8 @@ fetchExpiryFromRedis host (Ticker { ticker }) =
                 case ex1 of 
                     Nothing -> 
                         pure []
-                    Just ex1 ->
-                        case ex1 of
+                    Just ex2 ->
+                        case ex2 of
                             "1" ->  
                                 exp1 >>= \z -> 
                                     pure (fromRight [] z) 
@@ -97,26 +98,19 @@ expiryTimes :: Ticker -> REIO [NordnetExpiry]
 expiryTimes ticker = 
     Reader.ask >>= \env ->
         let
-            redisHost = (Params.redisHost . getParams) env
             parseFn = parseRedisItem (getDownloadDate env)
         in
-        (liftIO $ fetchExpiryFromRedis redisHost ticker) >>= \items ->
+        fetchExpiryFromRedis ticker >>= \items ->
             let 
                 result = map parseFn items  
             in
             pure $ map (\y -> Maybe.fromJust y) $ filter (\x -> x /= Nothing) result
 
-{-
-saveOpeningPriceToRedis :: OpeningPrice -> REIO ()
-saveOpeningPriceToRedis = 
-    undefined
--}
 
-
-saveOpeningPricesToRedis' :: String -> [(B.ByteString,B.ByteString)] -> IO (Either Redis.Reply Redis.Status)
-saveOpeningPricesToRedis' host prices = 
-    conn host >>= \c1 ->
-        Redis.runRedis c1 $
+saveOpeningPricesToRedis' :: [(B.ByteString,B.ByteString)] -> REIO (Either Redis.Reply Redis.Status)
+saveOpeningPricesToRedis' prices = 
+    conn >>= \c1 ->
+        liftIO $ Redis.runRedis c1 $
             Redis.hmset "openingprices" prices
 
 openingPriceToRedisFormat :: OpeningPrice -> (B.ByteString,B.ByteString)
@@ -125,18 +119,8 @@ openingPriceToRedisFormat (OpeningPrice ticker price)=
 
 saveOpeningPricesToRedis :: [OpeningPrice] -> REIO ()
 saveOpeningPricesToRedis prices = 
-    Reader.ask >>= \env ->
-        let
-            redisHost = (Params.redisHost . getParams) env
-            redisPrices = map openingPriceToRedisFormat prices
-        in
-        (liftIO $ saveOpeningPricesToRedis' redisHost redisPrices) >> 
-            pure ()
-
-{-
-        >>= \result ->
-            let 
-                result1 = fromRight Redis.Ok result
-            in
-            pure result1 
--}
+    let
+        redisPrices = map openingPriceToRedisFormat prices
+    in
+    saveOpeningPricesToRedis' redisPrices >> 
+        pure ()

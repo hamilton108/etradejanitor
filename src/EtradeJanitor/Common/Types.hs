@@ -1,13 +1,11 @@
 module EtradeJanitor.Common.Types where
 
-import Data.ByteString (ByteString)
 import qualified Text.Printf as TP -- (formatString,PrintfArg(..))
 import qualified Data.Int as DI
 import qualified Data.Text as Tx
 import Data.Text (Text)
 import qualified Data.Vector as DV
 import qualified Data.Time.Calendar as Cal
-import qualified Data.Time.Clock.POSIX as POSIX
 import Control.Monad.Reader (ReaderT)
 
 import qualified EtradeJanitor.Params as PA

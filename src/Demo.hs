@@ -43,9 +43,21 @@ nhy = Ticker
         , T.date = dx1
         }
 
+sdrl :: Ticker
+sdrl = Ticker 
+        { T.oid = 4
+        , T.ticker = "SDRL"
+        , T.category = 1
+        , T.date = dx1
+        }
+
 tix :: Tickers
 tix =
-    Vector.fromList [nhy] 
+    Vector.fromList [sdrl] 
+
+work2 :: IO ()
+work2 = 
+    runReaderT (Nordnet.downloadOpeningPrices tix) env 
 
 {-
 work :: IO ()

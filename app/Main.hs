@@ -45,7 +45,6 @@ ViewPatterns
 
 module Main (main) where
 
-import Control.Monad (forM_)
 import Control.Monad.Reader (runReaderT,ask)
 import Control.Monad.IO.Class (liftIO)
 
@@ -94,9 +93,9 @@ showStockTickers tix =
     ask >>= \env ->
     let
         prms = Types.getParams env
-        showStockTickers = PA.showStockTickers prms
+        doShow = PA.showStockTickers prms
     in
-    case showStockTickers of  
+    case doShow of  
       True -> liftIO $ mapM_ (putStrLn . show) tix
       False -> pure () 
 

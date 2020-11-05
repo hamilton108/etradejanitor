@@ -12,7 +12,7 @@ import qualified Data.Time.Calendar as Cal
 import Data.Maybe (fromJust)
 import qualified Text.Printf as Printf
 
-import qualified System.FilePath as FilePath
+--import System.FilePath 
 import System.IO (openFile,hSetEncoding,hGetContents,latin1,IOMode(..))
 
 import qualified EtradeJanitor.Repos.Common as C
@@ -108,8 +108,8 @@ fetchStockPrices :: T.Ticker -> REIO [T.StockPrice]
 fetchStockPrices tikr =
     fetchCsv tikr >>= \lx ->
     let 
-        lines = map (processLine tikr) lx
-        result = map fromJust $ filter (\x -> x /= Nothing) lines
+        lx1 = map (processLine tikr) lx
+        result = map fromJust $ filter (\x -> x /= Nothing) lx1
     in
     pure $ result
 
@@ -117,7 +117,7 @@ printStockPrice :: T.StockPrice -> IO ()
 printStockPrice p = 
     Printf.printf "%s\n" (yahooDateFormat (T.dx2 p))
 
---updateStockPrices :: T.Ticker -> T.REIO (Either C.SessionError ())
+updateStockPrices :: T.Ticker -> T.REIO (Either C.SessionError ())
 updateStockPrices tik =
     fetchStockPrices tik >>= \stockPrices ->
     Stocks.insertStockPrices stockPrices
