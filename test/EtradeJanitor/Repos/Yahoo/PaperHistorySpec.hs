@@ -60,24 +60,24 @@ spec = do
                 shouldBe result curDate 
         context "when ticker is EQNR" $ do
             it ("csv path name should be " ++ testCsvPath) $ do
-                result <- runReaderT (PaperHistory.csvPath (testTicker testDay)) testEnv
+                result <- runReaderT (Types.runApp $ PaperHistory.csvPath (testTicker testDay)) testEnv
                 shouldBe result testCsvPath 
         context "when ticker is EQNR" $ do
             it "number of stock prices should be 9" $ do
-                result <- runReaderT (PaperHistory.fetchStockPrices (testTicker testDay)) testEnv
+                result <- runReaderT (Types.runApp $ PaperHistory.fetchStockPrices (testTicker testDay)) testEnv
                 shouldBe (length result) 9
         context "when ticker is EQNR and contains 3 faulty data" $ do
             it "number of stock prices should be 12" $ do
                 let curDate = Calendar.fromGregorian 2019 12 17
-                result <- runReaderT (PaperHistory.fetchStockPrices (testTicker curDate)) testEnv
+                result <- runReaderT (Types.runApp $ PaperHistory.fetchStockPrices (testTicker curDate)) testEnv
                 shouldBe (length result) 12
         context "when ticker is NHY and contains only one day" $ do
             it "number of stock prices should be 1" $ do
                 let curDate = Calendar.fromGregorian 2020 04 20
-                result <- runReaderT (PaperHistory.fetchStockPrices (testTickerNhy curDate)) testEnv
+                result <- runReaderT (Types.runApp $ PaperHistory.fetchStockPrices (testTickerNhy curDate)) testEnv
                 shouldBe (length result) 1
         context "when ticker is NHY and contains only one day and ticker date greater than csv date" $ do
             it "number of stock prices should be 0" $ do
                 let curDate = Calendar.fromGregorian 2020 04 22
-                result <- runReaderT (PaperHistory.fetchStockPrices (testTickerNhy curDate)) testEnv
+                result <- runReaderT (Types.runApp $ PaperHistory.fetchStockPrices (testTickerNhy curDate)) testEnv
                 shouldBe (length result) 0

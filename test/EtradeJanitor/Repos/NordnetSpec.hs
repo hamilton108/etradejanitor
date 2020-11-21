@@ -13,7 +13,7 @@ import qualified Data.Int as DI
 import EtradeJanitor.Repos.Nordnet (Prices(..)) 
 import qualified EtradeJanitor.Repos.Nordnet as Nordnet
 import qualified EtradeJanitor.Params as Params
-import EtradeJanitor.Common.Types (Env(..),OpeningPrice(..),Ticker(..),Tickers)
+import EtradeJanitor.Common.Types (Env(..),OpeningPrice(..),Ticker(..),Tickers,runApp)
 import qualified EtradeJanitor.Common.Misc as Misc
 
 testDay :: Calendar.Day
@@ -100,7 +100,7 @@ spec = do
     describe "Derviative Prices" $ do
         context "when download date is 2019-09-01 and option ticker is NHY" $ do
             it ("path name should be " ++ expectedPathName) $ do
-                testPathName <- runReaderT (Nordnet.pathName (DerivativePrices testTicker)) testEnv
+                testPathName <- runReaderT (runApp $ Nordnet.pathName (DerivativePrices testTicker)) testEnv
                 shouldBe testPathName expectedPathName
     describe "Downloadable tickers" $ do
         context "when tickers count == 5, and they contains 1 type 3 tickers" $ do
@@ -110,7 +110,7 @@ spec = do
     describe "Opening Prices" $ do
         context "when ticker is NHY" $ do
             it ("opening price should be 28.26") $ do
-                openingPrice <- runReaderT (Nordnet.openingPrice testTicker) testEnv
+                openingPrice <- runReaderT (runApp $ Nordnet.openingPrice testTicker) testEnv
                 shouldBe openingPrice (OpeningPrice "NHY" "28.26")
 
 

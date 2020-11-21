@@ -51,7 +51,7 @@ tix :: Tickers
 tix = Vector.fromList [sdrl]
 
 work2 :: IO ()
-work2 = runReaderT (Nordnet.downloadOpeningPrices tix) env
+work2 = runReaderT (T.runApp $ Nordnet.downloadOpeningPrices tix) env
 
 {-
 work :: IO ()

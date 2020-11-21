@@ -65,31 +65,31 @@ spec = do
         context "when date is 2020-07-24 and ticker is NHY" $ do
             it "expiry dates should be all expirys" $ do
                 let env = T.Env prmsRdb5 dx1
-                actual <- runReaderT (RedisRepos.expiryTimes  nhy) env
+                actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes  nhy) env
                 shouldBe (sort actual) expiry_all  
         context "when date is 2020-07-24 and ticker is NHY and redis database is 6" $ do
             it "expiry dates should be empty" $ do
                 let prms = prmsRdb5 { PA.redisDatabase = "6 "}
                 let env = T.Env prms dx1
-                actual <- runReaderT (RedisRepos.expiryTimes  nhy) env
+                actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes  nhy) env
                 shouldBe (sort actual) [] 
         context "when date is 2020-07-24 and ticker is TEL" $ do
             it "expiry dates should be all expiry-1" $ do
                 let env = T.Env prmsRdb5 dx1
-                actual <- runReaderT (RedisRepos.expiryTimes tel) env
+                actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes tel) env
                 shouldBe (sort actual) expiry1 
         context "when date is 2020-12-18 and ticker is NHY" $ do
             it "expiry dates should be expiry_2020_12_18" $ do
                 let env = T.Env prmsRdb5 dx2
-                actual <- runReaderT (RedisRepos.expiryTimes  nhy) env
+                actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes  nhy) env
                 shouldBe (sort actual) expiry_2020_12_18 
         context "when date is 2020-12-18 and ticker is TEL" $ do
             it "expiry dates should be expiry_2020_12_18" $ do
                 let env = T.Env prmsRdb5 dx2
-                actual <- runReaderT (RedisRepos.expiryTimes  nhy) env
+                actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes  nhy) env
                 shouldBe (sort actual) expiry_2020_12_18 
         context "when date is 2021-06-19 and ticker is NHY" $ do
             it "expiry dates should be empty" $ do
                 let env = T.Env prmsRdb5 dx3
-                actual <- runReaderT (RedisRepos.expiryTimes nhy) env
+                actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes nhy) env
                 shouldBe actual [] 

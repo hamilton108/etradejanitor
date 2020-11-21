@@ -70,7 +70,7 @@ responseGET t unixTime =
 
 nordNetExpiry :: Ticker -> REIO [NordnetExpiry]
 nordNetExpiry ticker = Reader.ask >>= \env ->
-  let expiry = Reader.runReaderT (RedisRepos.expiryTimes ticker) env
+  let expiry = Reader.runReaderT (T.runApp $ RedisRepos.expiryTimes ticker) env
   in  liftIO expiry
 
 downloadAbleTickers :: Tickers -> Tickers

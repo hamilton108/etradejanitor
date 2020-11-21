@@ -24,7 +24,7 @@ import qualified EtradeJanitor.Params          as PA
 
 type NordnetExpiry = Int -- POSIX.POSIXTime
 
-type REIO = ReaderT Env IO
+-- type REIO = ReaderT Env IO
 
 -- newtype DbIP = DbIP { getIp :: String }
 
@@ -34,8 +34,8 @@ data Env =
   , getDownloadDate :: Cal.Day
   } deriving (Show)
 
-newtype MyApp a =
-  MyApp
+newtype REIO a =
+  REIO 
   {
     runApp :: ReaderT Env IO a
   }
