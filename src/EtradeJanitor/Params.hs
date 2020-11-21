@@ -1,13 +1,28 @@
 module EtradeJanitor.Params where
 
-import Options.Applicative (Parser,info,helper,showDefault,fullDesc,progDesc,(<**>))
-import Options.Applicative.Builder (strArgument,strOption,switch,metavar,long,short,value,help)
-import Options.Applicative.Extra (execParser)
+import           Options.Applicative            ( Parser
+                                                , info
+                                                , helper
+                                                , showDefault
+                                                , fullDesc
+                                                , progDesc
+                                                , (<**>)
+                                                )
+import           Options.Applicative.Builder    ( strArgument
+                                                , strOption
+                                                , switch
+                                                , metavar
+                                                , long
+                                                , short
+                                                , value
+                                                , help
+                                                )
+import           Options.Applicative.Extra      ( execParser )
 
-import qualified EtradeJanitor.Common.Misc as Misc
+import qualified EtradeJanitor.Common.Misc     as Misc
 
-data Params = 
-    Params 
+data Params =
+    Params
     { databaseIp :: String
     , redisHost :: String
     , redisDatabase :: String
@@ -27,16 +42,43 @@ defaultRedisDatabase = "0"
 
 mkParams :: Parser Params
 mkParams =
-    Params
-        <$> strArgument (metavar "IP"  <> help "Database ip address")
-        <*> strArgument (metavar "REDIS"  <> help "Redis ip address")
-        <*> strOption (long "redis-database" <> short 'd' <> help "Redis database" <> value defaultRedisDatabase <> showDefault)
-        <*> strOption (long "feed" <> short 'f' <> help "Feed path" <> value defaultFeed <> showDefault)
-        <*> switch (long "download-derivatives" <> short 'q' <> help "Download derivatives from Nordnet" )
-        <*> switch (long "db-update-stocks" <> short 'r' <> help "Update database stock prices" )
-        <*> switch (long "skip-if-download-exists" <> short 'x' <> help "Do not download if file exists" )
-        <*> switch (long "show-stock-tickers" <> short 't' <> help "Show current stock tickers" )
-        <*> switch (long "opening-prices-to-redis" <> short 'o' <> help "Download and save opening prices to Redis" )
+  Params
+    <$> strArgument (metavar "IP" <> help "Database ip address")
+    <*> strArgument (metavar "REDIS" <> help "Redis ip address")
+    <*> strOption
+          (  long "redis-database"
+          <> short 'd'
+          <> help "Redis database"
+          <> value defaultRedisDatabase
+          <> showDefault
+          )
+    <*> strOption
+          (  long "feed"
+          <> short 'f'
+          <> help "Feed path"
+          <> value defaultFeed
+          <> showDefault
+          )
+    <*> switch
+          (long "download-derivatives" <> short 'q' <> help
+            "Download derivatives from Nordnet"
+          )
+    <*> switch
+          (long "db-update-stocks" <> short 'r' <> help
+            "Update database stock prices"
+          )
+    <*> switch
+          (long "skip-if-download-exists" <> short 'x' <> help
+            "Do not download if file exists"
+          )
+    <*> switch
+          (long "show-stock-tickers" <> short 't' <> help
+            "Show current stock tickers"
+          )
+    <*> switch
+          (long "opening-prices-to-redis" <> short 'o' <> help
+            "Download and save opening prices to Redis"
+          )
 {-
 data Params = Params {
     databaseIp :: String
@@ -58,7 +100,5 @@ mkParams =
 
 cmdLineParser :: IO Params
 cmdLineParser =
-    let opts = info (mkParams <**> helper)
-                    (fullDesc <> progDesc "EtradeJanitor")
-    in
-    execParser opts
+  let opts = info (mkParams <**> helper) (fullDesc <> progDesc "EtradeJanitor")
+  in  execParser opts

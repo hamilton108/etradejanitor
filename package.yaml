@@ -21,31 +21,33 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- aeson
+- bytestring
 - bytestring-conversion
 - containers
-- hasql
-- mtl
-- utf8-string
-- optparse-applicative 
-- tagsoup
-- req 
-- aeson
-- data-default-class
-- text
-- bytestring
-- split
 - contravariant
-- either
-- vector
-- time
+- data-default-class
 - directory
+- directory
+- either
+- exceptions
+- filepath
+- hasql
+- hedis
+- hspec
+- mtl
+- optparse-applicative 
 - process
 - regex-tdfa
-- directory
-- filepath
-- hspec
-- hedis
+- req 
 - sort 
+- split
+- tagsoup
+- text
+- time
+- unliftio
+- utf8-string
+- vector
 
 library:
   source-dirs: src
