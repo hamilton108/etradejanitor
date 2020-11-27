@@ -5,6 +5,8 @@ module EtradeJanitor.Common.Types where
 import           Control.Monad.Reader           ( MonadIO
                                                 , MonadReader
                                                 )
+import           Control.Monad.State            ( MonadState
+                                                )
 import           Control.Monad.Catch            ( MonadThrow
                                                 , MonadCatch
                                                 , MonadMask
@@ -40,7 +42,7 @@ newtype REIO a =
     runApp :: ReaderT Env IO a
   }
   deriving (Functor, Applicative, Monad, MonadIO,
-                MonadThrow, MonadCatch, MonadMask,
+                MonadThrow, MonadCatch, MonadMask, 
                 MonadReader Env)
 
 {-

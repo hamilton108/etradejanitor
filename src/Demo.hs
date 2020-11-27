@@ -2,7 +2,7 @@
 
 module Demo where
 
-import           Control.Monad.State            ( runState )
+--import           Control.Monad.State            ( runState )
 import           Control.Monad.Reader           ( runReaderT )
 import           Control.Monad.IO.Class         ( liftIO )
 import qualified Data.Time.Calendar            as Calendar
@@ -53,7 +53,80 @@ tix = Vector.fromList [sdrl]
 work2 :: IO ()
 work2 = runReaderT (T.runApp $ Nordnet.downloadOpeningPrices tix) env
 
+data State s a = State { runState :: s -> (s, a) }
+
+--fmap :: (a -> b) -> State s a -> State s b
+
+instance Functor (State s) where
+  fmap f (State stateFn) = State (\s ->
+    let (s', result) = stateFn s
+    in (s', f result))
+
+instance Applicative (State s) where
+  pure x = State (\s -> (s, x))
+  (<*>) (State stateFx) (State stateX) = State (\s ->
+    let (s', fx) = stateFx s
+        (s'', x) = stateX s'
+    in (s'', fx x))
+
+instance Monad (State s) where
+  return = pure
+  (>>=) (State stateX) nextFn = State (\s ->
+    let (s', x) = stateX s
+    in runState (nextFn x) s')
+
+get :: State s s
+get = State (\s -> (s, s))
+
+put :: s -> State s ()
+put s = State (\_ -> (s, ()))
+
+modify :: (s -> s) -> State s ()
+modify f = get >>= (\s -> put (f s))
+
+reverseWithCount :: [a] -> State Int [a]
+reverseWithCount list = 
+  modify (+1) >>
+  pure (reverse list)
+
+
+append3ReversedWithCount :: [a] -> [a] -> [a] -> State Int [a]
+append3ReversedWithCount list1 list2 list3 = 
+  reverseWithCount list1 >>= \revList1 ->
+  reverseWithCount list2 >>= \revList2 ->
+  reverseWithCount list3 >>= \revList3 ->
+  modify (+1) >>
+  pure (revList1 ++ revList2 ++ revList3)
+
+runState1 :: State Int Int
+runState1 =
+    get >>= \x ->
+    put (10 + x) >> pure 123
+
+sx :: State Int Int
+sx = State (\s -> (s,3))
+
+sx2 :: State Int (Int -> Int)
+sx2 = 
+    let fx v = 2 * v
+    in
+    State (\s -> (s,fx))
+
+demo1 = 
+    runState (append3ReversedWithCount [1..5] [6..10] [11..15]) 0
+
+demo2 = 
+    runState runState1 100
 {-
+demos = 
+    let 
+        f v = v * 100
+        sx2 = fmap f sx
+        sx3 = fmap f sx2
+    in
+    runState sx 34
+    
+
 work :: IO ()
 work = 
     runReaderT (RedisRepos.expiryTimes nhy) env >>= \expiryTimes ->

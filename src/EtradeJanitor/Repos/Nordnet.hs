@@ -43,6 +43,7 @@ data Prices =
     | OpeningPrices Ticker
 
 
+{-
 responseGETx :: R.Req R.BsResponse
 responseGETx =
   let
@@ -52,9 +53,9 @@ responseGETx =
 
 demoReq :: IO ()
 demoReq =
-    --liftIO $ 
           R.runReq R.defaultHttpConfig (responseGETx)
   >>= \bs -> Char8.writeFile "demoreq" (R.responseBody bs)
+-}
 
 responseGET :: Ticker -> NordnetExpiry -> R.Req R.BsResponse
 responseGET t unixTime =
