@@ -2,7 +2,7 @@
 
 module Demo where
 
---import           Control.Monad.State            ( runState )
+import           Control.Monad.State            ( runStateT, put, get, modify )
 import           Control.Monad.Reader           ( runReaderT )
 import           Control.Monad.IO.Class         ( liftIO )
 import qualified Data.Time.Calendar            as Calendar
@@ -16,6 +16,7 @@ import           EtradeJanitor.Common.Types     ( Env(..)
                                                 , Ticker(..)
                                                 , Tickers
                                                 , REIO
+                                                , REIO2
                                                 )
 import qualified EtradeJanitor.Common.Types    as T
 import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
@@ -51,11 +52,21 @@ tix :: Tickers
 tix = Vector.fromList [sdrl]
 
 work2 :: IO ()
-work2 = runReaderT (T.runApp $ Nordnet.downloadOpeningPrices tix) env
+work2 = undefined -- runReaderT (T.runApp $ Nordnet.downloadOpeningPrices tix) env
 
+rio :: REIO2 Int
+rio = 
+    modify (2:) >>
+    modify (3:) >>
+    modify (4:) >>
+    pure 3
+
+runRio =
+    runStateT (runReaderT (T.runApp2 rio) env) []
+{-
 data State s a = State { runState :: s -> (s, a) }
 
---fmap :: (a -> b) -> State s a -> State s b
+fmap :: (a -> b) -> State s a -> State s b
 
 instance Functor (State s) where
   fmap f (State stateFn) = State (\s ->
@@ -117,7 +128,7 @@ demo1 =
 
 demo2 = 
     runState runState1 100
-{-
+
 demos = 
     let 
         f v = v * 100

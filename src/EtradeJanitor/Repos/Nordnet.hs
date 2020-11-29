@@ -2,6 +2,7 @@
 
 module EtradeJanitor.Repos.Nordnet where
 
+import           Control.Monad.State            ( modify )
 import qualified Control.Monad.Reader          as Reader
 import qualified Data.Vector                   as Vector
 import qualified Text.Printf                   as Printf
@@ -67,12 +68,7 @@ responseGET t unixTime =
         <> "underlyingSymbol"
         =: (optionName :: Text.Text)
         <> "expireDate"
-        =: (unixTime :: Int)
-
-nordNetExpiry :: Ticker -> REIO [NordnetExpiry]
-nordNetExpiry ticker = Reader.ask >>= \env ->
-  let expiry = Reader.runReaderT (T.runApp $ RedisRepos.expiryTimes ticker) env
-  in  liftIO expiry
+        =: (unixTime :: Int) 
 
 downloadAbleTickers :: Tickers -> Tickers
 downloadAbleTickers allTix = Vector.filter (\x -> T.category x == 1) allTix
@@ -118,17 +114,18 @@ download' t filePath skipIfExists unixTime =
 
 download :: Prices -> REIO ()
 download p@(OpeningPrices t) = pathName p >>= \pn ->
-  nordNetExpiry t >>= \unixTimes ->
+  RedisRepos.expiryTimes t >>= \unixTimes ->
     mkDir pn
       >> let unixTime = head unixTimes
              fileName = Printf.printf "%s/%s.html" pn (T.ticker t)
-         in  liftIO
+         in  (liftIO
              $   putStrLn (Printf.printf "Downloading %s" fileName)
              >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
-             >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
+             >>= \bs -> Char8.writeFile fileName (R.responseBody bs))
+             >> modify (t:)
 download p@(DerivativePrices t) = Reader.ask >>= \env ->
   let skipIfExists = (Params.skipIfDownloadFileExists . T.getParams) env
-  in  pathName p >>= \pn -> nordNetExpiry t >>= \unixTimes ->
+  in  pathName p >>= \pn -> RedisRepos.expiryTimes t >>= \unixTimes ->
         mkDir pn
           >> let dlfn = download' t pn skipIfExists in mapM_ dlfn unixTimes
 

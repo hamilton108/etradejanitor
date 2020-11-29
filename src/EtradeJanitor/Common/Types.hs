@@ -5,7 +5,8 @@ module EtradeJanitor.Common.Types where
 import           Control.Monad.Reader           ( MonadIO
                                                 , MonadReader
                                                 )
-import           Control.Monad.State            ( MonadState
+import           Control.Monad.State            ( StateT
+                                                , MonadState
                                                 )
 import           Control.Monad.Catch            ( MonadThrow
                                                 , MonadCatch
@@ -36,14 +37,33 @@ data Env =
   , getDownloadDate :: Cal.Day
   } deriving (Show)
 
+data OpeningPrice =
+    OpeningPrice
+    { opTicker :: Text
+    , price :: String
+    }
+    deriving (Eq,Show)
+
+type AppState = [OpeningPrice]
+
 newtype REIO a =
   REIO 
   {
-    runApp :: ReaderT Env IO a
+    runApp :: ReaderT Env (StateT AppState IO) a
+    -- runApp :: ReaderT Env IO a
   }
   deriving (Functor, Applicative, Monad, MonadIO,
                 MonadThrow, MonadCatch, MonadMask, 
-                MonadReader Env)
+                MonadReader Env, MonadState AppState )
+
+newtype REIO2 a =
+  REIO2 
+  {
+    runApp2 :: ReaderT Env (StateT AppState IO) a
+  }
+  deriving (Functor, Applicative, Monad, MonadIO,
+                MonadThrow, MonadCatch,
+                MonadReader Env, MonadState AppState )
 
 {-
 isHtmlOnly :: Env -> Bool
@@ -54,13 +74,6 @@ isDownloadOnly :: Env -> Bool
 isDownloadOnly env =
   (PA.downloadOnly . getParams) env
 -}
-
-data OpeningPrice =
-    OpeningPrice
-    { opTicker :: Text
-    , price :: String
-    }
-    deriving (Eq,Show)
 
 data Ticker =
     Ticker
