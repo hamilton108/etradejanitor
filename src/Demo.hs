@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Demo where
 
-import           Control.Monad.State            ( runStateT, put, get, modify )
-import           Control.Monad.Reader           ( runReaderT )
+import           Control.Monad.State            ( MonadState, runStateT, put, get, modify )
+import           Control.Monad.Reader           ( MonadReader, ask, runReaderT )
 import           Control.Monad.IO.Class         ( liftIO )
 import qualified Data.Time.Calendar            as Calendar
 import qualified Data.Vector                   as Vector
@@ -18,6 +19,7 @@ import           EtradeJanitor.Common.Types     ( Env(..)
                                                 , REIO
                                                 , REIO2
                                                 , OpeningPrice(..)
+                                                , AppState
                                                 , 
                                                 )
 import qualified EtradeJanitor.Common.Types    as T
@@ -56,14 +58,36 @@ tix = Vector.fromList [sdrl]
 work2 :: IO ()
 work2 = undefined -- runReaderT (T.runApp $ Nordnet.downloadOpeningPrices tix) env
 
+riox2 :: (MonadReader Env m) => m ()
+riox2 =
+    ask >>= \x ->
+    pure ()
+
+riox1 :: (MonadState AppState m) => m ()
+riox1 =
+    modify (nhy:) >>
+    modify (sdrl:) >> 
+    pure ()
+    
+--rio :: (MonadState AppState m, MonadReader Env m) => m Int
 rio :: REIO2 Int
 rio = 
-    modify (nhy:) >>
-    modify (sdrl:) >>
+    riox1 >>
+    riox2 >>
     pure 3
+
 
 runRio =
     runStateT (runReaderT (T.runApp2 rio) env) []
+
+
+
+
+
+
+
+
+
 {-
 data State s a = State { runState :: s -> (s, a) }
 

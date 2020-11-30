@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module EtradeJanitor.Repos.Nordnet.RedisRepos
   ( expiryTimes
@@ -9,6 +10,9 @@ where
 
 --import qualified Data.Vector as Vector
 import qualified Control.Monad.Reader          as Reader
+import           Control.Monad.Reader           ( MonadReader
+                                                , MonadIO
+                                                )
 import           Control.Monad.IO.Class         ( liftIO )
 
 import           Data.Either                    ( fromRight )
@@ -22,7 +26,7 @@ import qualified Data.ByteString.Conversion    as BC
 import qualified Data.ByteString.UTF8          as BU
 import qualified Database.Redis                as Redis
 
-import           EtradeJanitor.Common.Types     ( REIO
+import           EtradeJanitor.Common.Types     ( Env
                                                 , NordnetExpiry
                                                 , getParams
                                                 , getDownloadDate
@@ -38,7 +42,7 @@ ci host redisDatabase = Redis.defaultConnectInfo
   , Redis.connectDatabase = redisDatabase
   }
 
-conn :: REIO Redis.Connection
+conn :: (MonadIO m, MonadReader Env m) => m Redis.Connection
 conn = Reader.ask >>= \env ->
   let redisHost     = (Params.redisHost . getParams) env
       redisDatabase = (read . Params.redisDatabase . getParams) env
@@ -50,7 +54,10 @@ exp1 = Redis.hgetall (BU.fromString "expiry-1")
 exp2 :: Redis.Redis (Either Redis.Reply [(B.ByteString, B.ByteString)])
 exp2 = Redis.hgetall (BU.fromString "expiry-2")
 
-fetchExpiryFromRedis :: Ticker -> REIO [(B.ByteString, B.ByteString)]
+fetchExpiryFromRedis
+  :: (MonadIO m, MonadReader Env m)
+  => Ticker
+  -> m [(B.ByteString, B.ByteString)]
 fetchExpiryFromRedis (Ticker { ticker }) = conn >>= \c1 ->
   liftIO
     $   Redis.runRedis c1
@@ -84,7 +91,7 @@ parseRedisItem curDay (datePart, timePart) =
               result = read (BU.toString timePart)
           in  Just result
 
-expiryTimes :: Ticker -> REIO [NordnetExpiry]
+expiryTimes :: (MonadIO m, MonadReader Env m) => Ticker -> m [NordnetExpiry]
 expiryTimes ticker = Reader.ask >>= \env ->
   let parseFn = parseRedisItem (getDownloadDate env)
   in  fetchExpiryFromRedis ticker >>= \items ->
@@ -94,7 +101,9 @@ expiryTimes ticker = Reader.ask >>= \env ->
 
 
 saveOpeningPricesToRedis'
-  :: [(B.ByteString, B.ByteString)] -> REIO (Either Redis.Reply Redis.Status)
+  :: (MonadIO m, MonadReader Env m)
+  => [(B.ByteString, B.ByteString)]
+  -> m (Either Redis.Reply Redis.Status)
 saveOpeningPricesToRedis' prices = conn
   >>= \c1 -> liftIO $ Redis.runRedis c1 $ Redis.hmset "openingprices" prices
 
@@ -102,7 +111,8 @@ openingPriceToRedisFormat :: OpeningPrice -> (B.ByteString, B.ByteString)
 openingPriceToRedisFormat (OpeningPrice ticker price) =
   (TE.encodeUtf8 ticker, BC.toByteString' price)
 
-saveOpeningPricesToRedis :: [OpeningPrice] -> REIO ()
+saveOpeningPricesToRedis
+  :: (MonadIO m, MonadReader Env m) => [OpeningPrice] -> m ()
 saveOpeningPricesToRedis prices =
   let redisPrices = map openingPriceToRedisFormat prices
   in  saveOpeningPricesToRedis' redisPrices >> pure ()
