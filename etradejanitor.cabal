@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5865c33287139a4ed59e3178b04782f05c206194a229854a6f6bf8e8a508a26c
+-- hash: 3000ebc6739c1cdaf7a578b47af1d814c32336296b2e87247bc40063d84a4ae6
 
 name:                etradejanitor
 version:             1.5.1
@@ -23,6 +23,7 @@ source-repository head
 
 library
   exposed-modules:
+      Demo
       EtradeJanitor.Common.CalendarUtil
       EtradeJanitor.Common.Html
       EtradeJanitor.Common.Misc

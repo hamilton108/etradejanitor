@@ -7,7 +7,9 @@ import           Data.List                      ( sortBy )
 import           Data.Ord                       ( Down(..)
                                                 , comparing
                                                 )
-import           Control.Monad.State            ( MonadState )
+import           Control.Monad.State            ( MonadState
+                                                , modify
+                                                )
 import           Control.Monad.Reader           ( MonadReader
                                                 , MonadIO
                                                 )
@@ -43,9 +45,10 @@ import           EtradeJanitor.Common.Types     ( Ticker
                                                 , NordnetExpiry
                                                 , OpeningPrice(..)
                                                 , Env
+                                                , AppState
                                                 )
 
-import           EtradeJanitor.Params           ( Params )
+-- import           EtradeJanitor.Params           ( Params )
 
 data Prices =
       DerivativePrices Ticker
@@ -123,8 +126,9 @@ download' t filePath skipIfExists unixTime =
 unixTimesDesc :: [NordnetExpiry] -> [NordnetExpiry]
 unixTimesDesc unixTimes = sortBy (comparing Down) unixTimes
 
-download :: (MonadIO m, MonadReader Env m) => Prices -> m ()
-download p@(OpeningPrices t) = pathName p >>= \pn ->
+downloadOpeningPrices'
+  :: (MonadIO m, MonadReader Env m, MonadState AppState m) => Ticker -> m ()
+downloadOpeningPrices' t = pathName (OpeningPrices t) >>= \pn ->
   RedisRepos.expiryTimes t >>= \unixTimes ->
     mkDir pn
       >> let unixTime = head $ unixTimesDesc unixTimes
@@ -134,39 +138,41 @@ download p@(OpeningPrices t) = pathName p >>= \pn ->
              >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
              >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
              )
-download p@(DerivativePrices t) = Reader.ask >>= \env ->
-  let skipIfExists = (Params.skipIfDownloadFileExists . T.getParams) env
-  in  pathName p >>= \pn -> RedisRepos.expiryTimes t >>= \unixTimes ->
-        mkDir pn
-          >> let dlfn = download' t pn skipIfExists in mapM_ dlfn unixTimes
+               >> modify (t :)
 
-downloadOpeningPrices :: (MonadIO m, MonadReader Env m) => Tickers -> m ()
-downloadOpeningPrices tix =
-  dl Params.openingPricesToRedis (\t -> download (OpeningPrices t)) tix
+downloadOpeningPrices
+  :: (MonadIO m, MonadReader Env m, MonadState AppState m) => Tickers -> m ()
+downloadOpeningPrices tix = Reader.ask >>= \env ->
+  let doDownload = (Params.openingPricesToRedis . T.getParams) env
+  in  case doDownload of
+        True ->
+          let dt = downloadAbleTickers tix in mapM_ downloadOpeningPrices' dt
+        False -> pure ()
 
-downloadDerivativePrices :: (MonadIO m, MonadReader Env m) => Tickers -> m ()
-downloadDerivativePrices tix =
-  dl Params.downloadDerivatives (\t -> download (DerivativePrices t)) tix
-
-openingPricesToRedis :: (MonadIO m, MonadReader Env m) => Tickers -> m ()
+openingPricesToRedis :: (MonadIO m, MonadReader Env m) => [Ticker] -> m ()
 openingPricesToRedis tix = Reader.ask >>= \env ->
   let opr = (Params.openingPricesToRedis . T.getParams) env
   in  if opr == True
-        then mapM openingPrice tix >>= \tixx ->
-          RedisRepos.saveOpeningPricesToRedis $ Vector.toList tixx
+        then mapM openingPrice tix
+          >>= \tixx -> RedisRepos.saveOpeningPricesToRedis tixx
         else pure ()
 
-dl
-  :: (MonadIO m, MonadReader Env m)
-  => (Params -> Bool)
-  -> (Ticker -> m ())
-  -> Tickers
-  -> m ()
-dl fn tixFn tix = Reader.ask >>= \env ->
-  let doDownload = (fn . T.getParams) env
-  in  case doDownload of
-        True  -> let dt = downloadAbleTickers tix in mapM_ tixFn dt
-        False -> pure ()
+downloadDerivativePrices' :: (MonadIO m, MonadReader Env m) => Ticker -> m ()
+downloadDerivativePrices' t = Reader.ask >>= \env ->
+  let skipIfExists = (Params.skipIfDownloadFileExists . T.getParams) env
+  in  pathName (DerivativePrices t) >>= \pn ->
+        RedisRepos.expiryTimes t >>= \unixTimes ->
+          mkDir pn
+            >> let dlfn = download' t pn skipIfExists in mapM_ dlfn unixTimes
+
+downloadDerivativePrices :: (MonadIO m, MonadReader Env m) => Tickers -> m ()
+downloadDerivativePrices tix = Reader.ask >>= \env ->
+  let doDownload = (Params.downloadDerivatives . T.getParams) env
+  in
+    case doDownload of
+      True ->
+        let dt = downloadAbleTickers tix in mapM_ downloadDerivativePrices' dt
+      False -> pure ()
 
 tr :: (MonadIO m, MonadReader Env m) => Ticker -> m [Tag String]
 tr t = pathName (OpeningPrices t) >>= \pn ->
