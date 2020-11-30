@@ -17,6 +17,8 @@ import           EtradeJanitor.Common.Types     ( Env(..)
                                                 , Tickers
                                                 , REIO
                                                 , REIO2
+                                                , OpeningPrice(..)
+                                                , 
                                                 )
 import qualified EtradeJanitor.Common.Types    as T
 import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
@@ -56,9 +58,8 @@ work2 = undefined -- runReaderT (T.runApp $ Nordnet.downloadOpeningPrices tix) e
 
 rio :: REIO2 Int
 rio = 
-    modify (2:) >>
-    modify (3:) >>
-    modify (4:) >>
+    modify (nhy:) >>
+    modify (sdrl:) >>
     pure 3
 
 runRio =

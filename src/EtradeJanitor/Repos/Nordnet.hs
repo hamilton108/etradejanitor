@@ -2,7 +2,8 @@
 
 module EtradeJanitor.Repos.Nordnet where
 
-import           Control.Monad.State            ( modify )
+import           Data.List                      ( sortBy )
+import           Data.Ord                       ( Down(..), comparing )
 import qualified Control.Monad.Reader          as Reader
 import qualified Data.Vector                   as Vector
 import qualified Text.Printf                   as Printf
@@ -112,17 +113,20 @@ download' t filePath skipIfExists unixTime =
             >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
             >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
 
+unixTimesDesc :: [NordnetExpiry] -> [NordnetExpiry]
+unixTimesDesc unixTimes = 
+  sortBy (comparing Down) unixTimes
+
 download :: Prices -> REIO ()
 download p@(OpeningPrices t) = pathName p >>= \pn ->
   RedisRepos.expiryTimes t >>= \unixTimes ->
     mkDir pn
-      >> let unixTime = head unixTimes
+      >> let unixTime = head $ unixTimesDesc unixTimes
              fileName = Printf.printf "%s/%s.html" pn (T.ticker t)
          in  (liftIO
              $   putStrLn (Printf.printf "Downloading %s" fileName)
              >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
              >>= \bs -> Char8.writeFile fileName (R.responseBody bs))
-             >> modify (t:)
 download p@(DerivativePrices t) = Reader.ask >>= \env ->
   let skipIfExists = (Params.skipIfDownloadFileExists . T.getParams) env
   in  pathName p >>= \pn -> RedisRepos.expiryTimes t >>= \unixTimes ->

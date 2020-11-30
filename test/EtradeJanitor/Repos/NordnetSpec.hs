@@ -1,29 +1,35 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module EtradeJanitor.Repos.NordnetSpec (spec) where
+module EtradeJanitor.Repos.NordnetSpec
+  ( spec
+  )
+where
 
 
-import Control.Monad.Reader (runReaderT)
-import Test.Hspec
-import qualified Data.Time.Calendar as Calendar
-import qualified Data.Time.Clock.POSIX as POSIX
-import qualified Data.Vector as Vector
-import qualified Data.Int as DI
+import           Control.Monad.Reader           ( runReaderT )
+import           Test.Hspec
+import qualified Data.Time.Calendar            as Calendar
+import qualified Data.Time.Clock.POSIX         as POSIX
+import qualified Data.Vector                   as Vector
+import qualified Data.Int                      as DI
 
-import EtradeJanitor.Repos.Nordnet (Prices(..)) 
-import qualified EtradeJanitor.Repos.Nordnet as Nordnet
-import qualified EtradeJanitor.Params as Params
-import EtradeJanitor.Common.Types (Env(..),OpeningPrice(..),Ticker(..),Tickers,runApp)
-import qualified EtradeJanitor.Common.Misc as Misc
+import           EtradeJanitor.Repos.Nordnet    ( Prices(..) )
+import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
+import qualified EtradeJanitor.Params          as Params
+import           EtradeJanitor.Common.Types     ( Env(..)
+                                                , OpeningPrice(..)
+                                                , Ticker(..)
+                                                , Tickers
+                                                , runApp
+                                                )
+import qualified EtradeJanitor.Common.Misc     as Misc
 
 testDay :: Calendar.Day
-testDay = 
-    let 
-        year = 2019 :: Integer
-        month = 9 :: Int 
-        day = 1 :: Int
-    in 
-    Calendar.fromGregorian year month day
+testDay =
+  let year  = 2019 :: Integer
+      month = 9 :: Int
+      day   = 1 :: Int
+  in  Calendar.fromGregorian year month day
 
 {-
 expectedExpiryDates :: [Types.NordnetExpiry] 
@@ -46,47 +52,35 @@ expectedExpiryDates =
     , 1592517600
     ]
 -}
-    
-testParams :: Params.Params
-testParams = 
-    Params.Params 
-    { Params.databaseIp = "172.17.0.2"
-    , Params.redisHost = "172.20.1.2"
-    , Params.redisDatabase = "5"
-    , Params.feed = Misc.feedRoot ++ "/test/testfeed" 
-    , Params.downloadDerivatives = True
-    , Params.dbUpdateStocks = True
-    , Params.skipIfDownloadFileExists = True
-    , Params.showStockTickers = False
-    , Params.openingPricesToRedis = False
-    }
 
-testEnv :: Env 
+testParams :: Params.Params
+testParams = Params.Params { Params.databaseIp               = "172.17.0.2"
+                           , Params.redisHost                = "172.20.1.2"
+                           , Params.redisDatabase            = "5"
+                           , Params.feed = Misc.feedRoot ++ "/test/testfeed"
+                           , Params.downloadDerivatives      = True
+                           , Params.dbUpdateStocks           = True
+                           , Params.skipIfDownloadFileExists = True
+                           , Params.showStockTickers         = False
+                           , Params.openingPricesToRedis     = False
+                           }
+
+testEnv :: Env
 testEnv = Env testParams testDay
 
-expectedPathName :: String 
-expectedPathName = 
-    "/home/rcs/opt/haskell/etradejanitor/test/testfeed/2019/9/1/NHY"
+expectedPathName :: String
+expectedPathName =
+  "/home/rcs/opt/haskell/etradejanitor/test/testfeed/2019/9/1/NHY"
 
 testTicker :: Ticker
-testTicker = 
-    Ticker 1 "NHY" 1 testDay
+testTicker = Ticker 1 "NHY" 1 testDay
 
 testTickers :: Tickers
 testTickers =
-    let 
-        makeTik :: DI.Int64 -> DI.Int64 -> Ticker
-        makeTik oid tickerCat = 
-            Ticker oid "Demo" tickerCat testDay
-    in
-    Vector.fromList
-    [
-          makeTik 1 1
-        , makeTik 2 1
-        , makeTik 3 1
-        , makeTik 6 1
-        , makeTik 7 3
-    ]
+  let makeTik :: DI.Int64 -> DI.Int64 -> Ticker
+      makeTik oid tickerCat = Ticker oid "Demo" tickerCat testDay
+  in  Vector.fromList
+        [makeTik 1 1, makeTik 2 1, makeTik 3 1, makeTik 6 1, makeTik 7 3]
 
 spec :: Spec
 spec = do
@@ -97,21 +91,24 @@ spec = do
                 testExpiryDates <- runReaderT (OptionExpiry.expiryTimes testDay) testEnv
                 shouldBe testExpiryDates expectedExpiryDates 
     -}
-    describe "Derviative Prices" $ do
-        context "when download date is 2019-09-01 and option ticker is NHY" $ do
-            it ("path name should be " ++ expectedPathName) $ do
-                testPathName <- runReaderT (runApp $ Nordnet.pathName (DerivativePrices testTicker)) testEnv
-                shouldBe testPathName expectedPathName
-    describe "Downloadable tickers" $ do
-        context "when tickers count == 5, and they contains 1 type 3 tickers" $ do
-            it ("count should be 4") $ do
-                let dt = Nordnet.downloadAbleTickers testTickers
-                shouldBe (length dt) 4
-    describe "Opening Prices" $ do
-        context "when ticker is NHY" $ do
-            it ("opening price should be 28.26") $ do
-                openingPrice <- runReaderT (runApp $ Nordnet.openingPrice testTicker) testEnv
-                shouldBe openingPrice (OpeningPrice "NHY" "28.26")
+  describe "Derviative Prices" $ do
+    context "when download date is 2019-09-01 and option ticker is NHY" $ do
+      it ("path name should be " ++ expectedPathName) $ do
+        testPathName <- runReaderT
+          (runApp $ Nordnet.pathName (DerivativePrices testTicker))
+          testEnv
+        shouldBe testPathName expectedPathName
+  describe "Downloadable tickers" $ do
+    context "when tickers count == 5, and they contains 1 type 3 tickers" $ do
+      it ("count should be 4") $ do
+        let dt = Nordnet.downloadAbleTickers testTickers
+        shouldBe (length dt) 4
+  describe "Opening Prices" $ do
+    context "when ticker is NHY" $ do
+      it ("opening price should be 28.26") $ do
+        openingPrice <- runReaderT (runApp $ Nordnet.openingPrice testTicker)
+                                   testEnv
+        shouldBe openingPrice (OpeningPrice "NHY" "28.26")
 
 
         {-

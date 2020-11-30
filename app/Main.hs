@@ -50,7 +50,6 @@ module Main
   )
 where
 
-import           Control.Monad.State            ( runStateT )
 import           Control.Monad.Reader           ( runReaderT
                                                 , ask
                                                 )
@@ -59,7 +58,10 @@ import           Control.Monad.IO.Class         ( liftIO )
 --import qualified System.Directory as Dir
 --import qualified Data.Vector as V
 
-import           EtradeJanitor.Common.Types     ( REIO, AppState, Tickers, Env(..) )
+import           EtradeJanitor.Common.Types     ( REIO
+                                                , Tickers
+                                                , Env(..)
+                                                )
 import qualified EtradeJanitor.Common.Types    as Types
 import qualified EtradeJanitor.Common.CalendarUtil
                                                as CalendarUtil
@@ -113,13 +115,15 @@ work params = putStrLn (show params) >> CalendarUtil.today >>= \today ->
   in
     Stocks.tickers (PA.databaseIp params) >>= \tix -> case tix of
       Right result ->
-        runStateT (runReaderT (Types.runApp $ showStockTickers result) env) []
-          >> runStateT (runReaderT (Types.runApp $ Nordnet.downloadOpeningPrices result) env) []
-          >> runStateT (runReaderT (Types.runApp $ Nordnet.openingPricesToRedis result) env) []
-          >> runStateT (runReaderT
-               (Types.runApp $ Nordnet.downloadDerivativePrices result) env) []
-          >> runStateT (runReaderT
-               (Types.runApp $ PaperHistory.updateStockPricesTickers result) env) []
+        runReaderT (Types.runApp $ showStockTickers result) env
+          >> runReaderT (Types.runApp $ Nordnet.downloadOpeningPrices result)
+                        env
+          >> runReaderT (Types.runApp $ Nordnet.openingPricesToRedis result) env
+          >> runReaderT
+               (Types.runApp $ Nordnet.downloadDerivativePrices result)
+               env
+          >> runReaderT
+               (Types.runApp $ PaperHistory.updateStockPricesTickers result)
+               env
           >> pure ()
-      Left err -> 
-        putStrLn $ show err
+      Left err -> putStrLn $ show err

@@ -44,17 +44,16 @@ data OpeningPrice =
     }
     deriving (Eq,Show)
 
-type AppState = [OpeningPrice]
+type AppState = [Ticker]
 
 newtype REIO a =
   REIO 
   {
-    runApp :: ReaderT Env (StateT AppState IO) a
-    -- runApp :: ReaderT Env IO a
+    runApp :: ReaderT Env IO a
   }
   deriving (Functor, Applicative, Monad, MonadIO,
                 MonadThrow, MonadCatch, MonadMask, 
-                MonadReader Env, MonadState AppState )
+                MonadReader Env)
 
 newtype REIO2 a =
   REIO2 
