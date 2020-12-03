@@ -1,10 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Demo where
 
 import           Control.Monad.State            ( MonadState, runStateT, put, get, modify )
-import           Control.Monad.Reader           ( MonadReader, ask, runReaderT )
+import           Control.Monad.Reader           ( MonadReader, MonadIO, ask, runReaderT )
+import           Control.Monad.Catch            ( MonadThrow
+                                                , MonadCatch
+                                                , MonadMask
+                                                , catch
+                                                )
 import           Control.Monad.IO.Class         ( liftIO )
 import qualified Data.Time.Calendar            as Calendar
 import qualified Data.Vector                   as Vector
@@ -28,6 +34,49 @@ import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
 
 import qualified EtradeJanitor.Repos.Nordnet.RedisRepos
                                                as RedisRepos -- (expiryTimes,saveOpeningPricesToRedis) where 
+                                                
+import           Control.Exception (try, SomeException, IOException)
+import           System.IO                      ( openFile 
+                                                , hSetEncoding
+                                                , hGetContents
+                                                , latin1
+                                                , IOMode(..)
+                                                )
+
+exdemo :: (MonadIO m) => m Bool 
+exdemo = 
+    liftIO (
+    (try (openFile "xstack.yaml" ReadMode >>= \handle -> 
+        putStrLn "Hi") :: IO (Either IOException ())) >>= \result ->
+    case result of 
+        Left ex -> 
+            print (ex :: IOException) >>
+            pure False
+        Right ok ->
+            putStrLn "Ok" >> 
+            pure True)
+
+exdemo2 :: (MonadIO m, MonadState AppState m) => m String
+exdemo2 = 
+    exdemo >>= \b ->
+        if b == True then
+            modify (nhy :) >>
+            pure "YESSSSSS"
+        else
+            modify (sdrl :) >>
+            pure "NOPE!!!!!"
+
+
+runExdemo :: IO (String, AppState)
+runExdemo = 
+    runStateT exdemo2 []
+
+{-
+exdemo2 :: (MonadIO m, MonadCatch m) => m ()
+exdemo2 = 
+    catch (liftIO $ openFile "xtack.yaml" ReadMode >>= \handle -> pure ()) 
+          (\(e :: IOException) -> pure ())
+--}
 
 prms = Params.Params
   { Params.databaseIp               = "172.20.1.3"
@@ -79,6 +128,7 @@ rio =
 
 runRio =
     runStateT (runReaderT (T.runApp2 rio) env) []
+
 
 
 

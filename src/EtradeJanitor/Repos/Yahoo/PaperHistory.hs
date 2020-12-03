@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module EtradeJanitor.Repos.Yahoo.PaperHistory where
 
@@ -6,6 +7,9 @@ import           Control.Monad                  ( forM_ )
 import           Data.Int                       ( Int64 )
 import qualified Data.List.Split               as Split
 import qualified Control.Monad.Reader          as Reader
+import           Control.Monad.Reader           ( MonadReader
+                                                , MonadIO
+                                                )
 import           Control.Monad.IO.Class         ( liftIO )
 import qualified Data.List                     as L
 import qualified Data.Time.Calendar            as Cal
@@ -23,8 +27,12 @@ import           System.IO                      ( openFile
 import qualified EtradeJanitor.Repos.Common    as C
 import qualified EtradeJanitor.Repos.Stocks    as Stocks
 import qualified EtradeJanitor.Common.Types    as T
+import           EtradeJanitor.Common.Types     ( Env
+                                                , StockPrice
+                                                , Ticker
+                                                , Tickers
+                                                )
 import qualified EtradeJanitor.Params          as Params
-import           EtradeJanitor.Common.Types     ( REIO )
 
 
 -- https://query1.finance.yahoo.com/v7/finance/download/EQNR.OL?period1=1547506517&period2=1579042517&interval=1d&events=history&crumb=gJXukxOba2X
@@ -60,14 +68,14 @@ parseCsv (T.Ticker _ _ _ dx) content =
 
     --(tail . dropWhile (\x -> x < yahooDx)) lxx 
 
-csvPath :: T.Ticker -> REIO FilePath
+csvPath :: (MonadReader Env m) => T.Ticker -> m FilePath
 csvPath t = Reader.ask >>= \env ->
   let ticker = T.ticker t
       feed   = (Params.feed . T.getParams) env
   in  pure $ Printf.printf "%s/%s.csv" feed ticker
 
 
-fetchCsv :: T.Ticker -> REIO [String]
+fetchCsv :: (MonadIO m, MonadReader Env m) => Ticker -> m [String]
 fetchCsv ticker = csvPath ticker >>= \tcsv ->
   liftIO $ openFile tcsv ReadMode >>= \inputHandle ->
     hSetEncoding inputHandle latin1
@@ -75,7 +83,7 @@ fetchCsv ticker = csvPath ticker >>= \tcsv ->
           hGetContents inputHandle
       >>= \theInput -> pure $ parseCsv ticker theInput
 
-processLine :: T.Ticker -> String -> Maybe T.StockPrice
+processLine :: Ticker -> String -> Maybe StockPrice
 processLine tikr line =
   let
       --[dx',opn',hi',lo',cls',vol',_,_] = Split.splitOn "," line
@@ -93,67 +101,24 @@ processLine tikr line =
             --T.StockPrice tikr (Cal.fromGregorian 2020 3 15) 1.0 1.0 1.0 1.0 10 
           Nothing
 
-fetchStockPrices :: T.Ticker -> REIO [T.StockPrice]
+fetchStockPrices :: (MonadIO m, MonadReader Env m) => Ticker -> m [StockPrice]
 fetchStockPrices tikr = fetchCsv tikr >>= \lx ->
   let lx1    = map (processLine tikr) lx
       result = map fromJust $ filter (\x -> x /= Nothing) lx1
   in  pure $ result
 
-printStockPrice :: T.StockPrice -> IO ()
+printStockPrice :: StockPrice -> IO ()
 printStockPrice p = Printf.printf "%s\n" (yahooDateFormat (T.dx2 p))
 
-updateStockPrices :: T.Ticker -> T.REIO (Either C.SessionError ())
+updateStockPrices
+  :: (MonadIO m, MonadReader Env m) => Ticker -> m (Either C.SessionError ())
 updateStockPrices tik =
   fetchStockPrices tik >>= \stockPrices -> Stocks.insertStockPrices stockPrices
     --liftIO $ mapM_ printStockPrice stockPrices
 
-updateStockPricesTickers :: T.Tickers -> T.REIO ()
+updateStockPricesTickers :: (MonadIO m, MonadReader Env m) => Tickers -> m ()
 updateStockPricesTickers tix = Reader.ask >>= \env ->
   let doUpdate = (Params.dbUpdateStocks . T.getParams) env
   in  case doUpdate of
         True  -> forM_ tix updateStockPrices
         False -> pure ()
-{-
-responseGET :: T.Ticker -> R.Req R.BsResponse
-responseGET t = 
-    let
-        -- https://query1.finance.yahoo.com/v7/finance/download/EQNR.OL?period1=1577901600&period2=1579042517&interval=1d&events=history&crumb=gJXukxOba2X
-        -- ?period1=1577901600&period2=1579042517&interval=1d&events=history&crumb=gJXukxOba2X
-        myUrl = R.https "query1.finance.yahoo.com" /: "v7" /: "finance" /: "download" /: "EQNR.OL" 
-    in
-    R.req R.GET myUrl R.NoReqBody R.bsResponse $ 
-        "period1" =: (1577901600 :: Int) 
-        <> "period2" =: (1579042517 :: Int) 
-        <> "interval" =: ("1d" :: Text.Text) 
-        <> "events" =: ("history" :: Text.Text) 
-        <> "crumb" =: ("gJXukxOba2X" :: Text.Text) 
-
-download :: T.Ticker ->  REIO ()
-download ticker = 
-    Reader.ask >>= \env ->
-    csvPath ticker >>= \fileName ->
-    let
-        skipIfExists = (Params.skipIfDownloadFileExists . T.getParams) env
-        doDownloadIO = (Directory.doesFileExist fileName >>= \fileExist ->
-                        pure $ not $ skipIfExists && fileExist) :: IO Bool
-    in
-    liftIO $ 
-    doDownloadIO >>= \doDownload -> 
-        case doDownload of 
-            False -> putStrLn (Printf.printf "Skipping download of %s" fileName) >> pure ()
-            True -> 
-                putStrLn (Printf.printf "Downloading %s" fileName) >> 
-                R.runReq R.defaultHttpConfig (responseGET ticker) >>= \bs -> 
-                Char8.writeFile fileName (R.responseBody bs)
-
-downloadTickers :: T.Tickers -> REIO ()
-downloadTickers tix = 
-    Reader.ask >>= \env ->
-    let 
-        skipDownload = (Params.skipDownloadStockPrices . T.getParams) env
-    in
-    case skipDownload of 
-        True -> pure ()
-        False -> 
-            mapM_ (\t -> download t) tix 
--}

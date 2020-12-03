@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3000ebc6739c1cdaf7a578b47af1d814c32336296b2e87247bc40063d84a4ae6
+-- hash: 7705ccd83f5a019168128a8f6ffa689a9e3361c21522b23c687f2fbc73c9daee
 
 name:                etradejanitor
-version:             1.5.1
+version:             1.6.0
 description:         Please see the README on GitHub at <https://github.com/githubuser/demo3#readme>
 homepage:            https://github.com/githubuser/demo3#readme
 bug-reports:         https://github.com/githubuser/demo3/issues
@@ -23,7 +23,6 @@ source-repository head
 
 library
   exposed-modules:
-      Demo
       EtradeJanitor.Common.CalendarUtil
       EtradeJanitor.Common.Html
       EtradeJanitor.Common.Misc
@@ -69,7 +68,7 @@ library
     , vector
   default-language: Haskell2010
 
-executable etradejanitor-1.5.1
+executable etradejanitor-1.6.0
   main-is: Main.hs
   other-modules:
       Paths_etradejanitor

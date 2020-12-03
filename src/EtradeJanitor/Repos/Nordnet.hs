@@ -7,11 +7,17 @@ import           Data.List                      ( sortBy )
 import           Data.Ord                       ( Down(..)
                                                 , comparing
                                                 )
+import           Control.Monad.Catch            ( MonadThrow
+                                                , MonadCatch
+                                                )
 import           Control.Monad.State            ( MonadState
                                                 , modify
                                                 )
 import           Control.Monad.Reader           ( MonadReader
                                                 , MonadIO
+                                                )
+import           Control.Exception              ( try
+                                                , IOException
                                                 )
 import qualified Control.Monad.Reader          as Reader
 import qualified Data.Vector                   as Vector
@@ -23,6 +29,7 @@ import qualified System.Directory              as Directory
 
 import           Network.HTTP.Req               ( (/:)
                                                 , (=:)
+                                                , HttpException
                                                 )
 import qualified Network.HTTP.Req              as R
 import qualified Data.ByteString.Char8         as Char8
@@ -95,16 +102,6 @@ pathName (DerivativePrices t) = Reader.ask >>= \env ->
       (y, m, d) = Calendar.toGregorian curDay
   in  pure $ Printf.printf "%s/%d/%d/%d/%s" feed y m d ticker
 
-{-
-fileName :: Prices -> REIO String
-fileName p@(OpeningPrices t) = 
-    pathName p >>= \pn -> 
-        pure (Printf.printf "%s/%s.html" pn (T.ticker t))
-fileName _ = 
-    pure "N/A"
- -}
-
-
 mkDir :: (MonadIO m) => FilePath -> m ()
 mkDir fp = liftIO (Directory.createDirectoryIfMissing True fp)
 
@@ -126,19 +123,25 @@ download' t filePath skipIfExists unixTime =
 unixTimesDesc :: [NordnetExpiry] -> [NordnetExpiry]
 unixTimesDesc unixTimes = sortBy (comparing Down) unixTimes
 
-downloadOpeningPrices'
-  :: (MonadIO m, MonadReader Env m, MonadState AppState m) => Ticker -> m ()
-downloadOpeningPrices' t = pathName (OpeningPrices t) >>= \pn ->
+tryDownloadOpeningPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m Bool
+tryDownloadOpeningPrice t = pathName (OpeningPrices t) >>= \pn ->
   RedisRepos.expiryTimes t >>= \unixTimes ->
     mkDir pn
       >> let unixTime = head $ unixTimesDesc unixTimes
              fileName = Printf.printf "%s/%s.html" pn (T.ticker t)
-         in  (   liftIO
-             $   putStrLn (Printf.printf "Downloading %s" fileName)
-             >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
-             >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
-             )
-               >> modify (t :)
+             reqFn =
+               putStrLn (Printf.printf "Downloading %s" fileName)
+                 >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
+                 >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
+         in  liftIO (try reqFn :: IO (Either HttpException ())) >>= \result ->
+               case result of
+                 Left  _ -> pure False
+                 Right _ -> pure True
+
+downloadOpeningPrice
+  :: (MonadIO m, MonadReader Env m, MonadState AppState m) => Ticker -> m ()
+downloadOpeningPrice t = tryDownloadOpeningPrice t
+  >>= \result -> if result == True then modify (t :) else pure ()
 
 downloadOpeningPrices
   :: (MonadIO m, MonadReader Env m, MonadState AppState m) => Tickers -> m ()
@@ -146,7 +149,7 @@ downloadOpeningPrices tix = Reader.ask >>= \env ->
   let doDownload = (Params.openingPricesToRedis . T.getParams) env
   in  case doDownload of
         True ->
-          let dt = downloadAbleTickers tix in mapM_ downloadOpeningPrices' dt
+          let dt = downloadAbleTickers tix in mapM_ downloadOpeningPrice dt
         False -> pure ()
 
 openingPricesToRedis :: (MonadIO m, MonadReader Env m) => [Ticker] -> m ()
