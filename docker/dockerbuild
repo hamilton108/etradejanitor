@@ -1,5 +1,5 @@
 #!/bin/bash
 
-docker build -t rcs/etradejanitor:1.6.0 . 
+docker build -t rcs/etradejanitor:1.6.1 . 
 
 exit 0

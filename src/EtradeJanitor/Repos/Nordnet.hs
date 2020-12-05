@@ -7,18 +7,13 @@ import           Data.List                      ( sortBy )
 import           Data.Ord                       ( Down(..)
                                                 , comparing
                                                 )
-import           Control.Monad.Catch            ( MonadThrow
-                                                , MonadCatch
-                                                )
 import           Control.Monad.State            ( MonadState
                                                 , modify
                                                 )
 import           Control.Monad.Reader           ( MonadReader
                                                 , MonadIO
                                                 )
-import           Control.Exception              ( try
-                                                , IOException
-                                                )
+import           Control.Exception              ( try )
 import qualified Control.Monad.Reader          as Reader
 import qualified Data.Vector                   as Vector
 import qualified Text.Printf                   as Printf
@@ -105,8 +100,8 @@ pathName (DerivativePrices t) = Reader.ask >>= \env ->
 mkDir :: (MonadIO m) => FilePath -> m ()
 mkDir fp = liftIO (Directory.createDirectoryIfMissing True fp)
 
-download' :: (MonadIO m) => Ticker -> FilePath -> Bool -> NordnetExpiry -> m ()
-download' t filePath skipIfExists unixTime =
+download :: (MonadIO m) => Ticker -> FilePath -> Bool -> NordnetExpiry -> m ()
+download t filePath skipIfExists unixTime =
   let fileName = Printf.printf "%s/%d.html" filePath unixTime -- expiryAsUnixTime
       doDownloadIO =
           (   Directory.doesFileExist fileName
@@ -116,9 +111,14 @@ download' t filePath skipIfExists unixTime =
         False ->
           putStrLn (Printf.printf "Skipping download of %s" fileName) >> pure ()
         True ->
-          putStrLn (Printf.printf "Downloading %s" fileName)
-            >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
-            >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
+          let reqFn =
+                  putStrLn (Printf.printf "Downloading %s" fileName)
+                    >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
+                    >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
+          in  (try reqFn :: IO (Either HttpException ())) >>= \result ->
+                case result of
+                  Left  e -> putStrLn (show e) >> pure ()
+                  Right _ -> pure ()
 
 unixTimesDesc :: [NordnetExpiry] -> [NordnetExpiry]
 unixTimesDesc unixTimes = sortBy (comparing Down) unixTimes
@@ -133,9 +133,9 @@ tryDownloadOpeningPrice t = pathName (OpeningPrices t) >>= \pn ->
                putStrLn (Printf.printf "Downloading %s" fileName)
                  >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
                  >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
-         in  liftIO (try reqFn :: IO (Either HttpException ())) >>= \result ->
+         in  liftIO $ (try reqFn :: IO (Either HttpException ())) >>= \result ->
                case result of
-                 Left  _ -> pure False
+                 Left  e -> putStrLn (show e) >> pure False
                  Right _ -> pure True
 
 downloadOpeningPrice
@@ -166,7 +166,7 @@ downloadDerivativePrices' t = Reader.ask >>= \env ->
   in  pathName (DerivativePrices t) >>= \pn ->
         RedisRepos.expiryTimes t >>= \unixTimes ->
           mkDir pn
-            >> let dlfn = download' t pn skipIfExists in mapM_ dlfn unixTimes
+            >> let dlfn = download t pn skipIfExists in mapM_ dlfn unixTimes
 
 downloadDerivativePrices :: (MonadIO m, MonadReader Env m) => Tickers -> m ()
 downloadDerivativePrices tix = Reader.ask >>= \env ->

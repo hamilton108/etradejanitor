@@ -83,7 +83,7 @@ prms = Params.Params
   , Params.redisHost                = "172.20.1.2"
   , Params.redisDatabase            = "5"
   , Params.feed = "/home/rcs/opt/haskell/etradejanitor/feedtmp"
-  , Params.downloadDerivatives      = False
+  , Params.downloadDerivatives      = True 
   , Params.dbUpdateStocks           = False
   , Params.skipIfDownloadFileExists = False
   , Params.showStockTickers         = False
@@ -102,7 +102,7 @@ sdrl :: Ticker
 sdrl = Ticker { T.oid = 4, T.ticker = "SDRL", T.category = 1, T.date = dx1 }
 
 tix :: Tickers
-tix = Vector.fromList [sdrl]
+tix = Vector.fromList [nhy]
 
 work2 :: IO ()
 work2 = undefined -- runReaderT (T.runApp $ Nordnet.downloadOpeningPrices tix) env
@@ -130,7 +130,24 @@ runRio =
     runStateT (runReaderT (T.runApp2 rio) env) []
 
 
+runOp = 
+    runStateT
+        (runReaderT
+            (T.runApp2 $ Nordnet.downloadOpeningPrices tix)
+            env
+        )
+        []
 
+
+runRedis = 
+    runReaderT
+        (T.runApp $ Nordnet.openingPricesToRedis [nhy])
+        env
+
+runD = 
+    runReaderT
+        (T.runApp $ Nordnet.downloadDerivativePrices tix)
+        env
 
 
 

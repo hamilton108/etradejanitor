@@ -1,5 +1,5 @@
 name:                etradejanitor 
-version:             1.6.0
+version:             1.6.1
 github:              "githubuser/demo3"
 license:             BSD3
 author:              "Rolf C Stadheim"
@@ -22,6 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - aeson
+- amqp
 - bytestring
 - bytestring-conversion
 - containers
@@ -53,7 +54,7 @@ library:
   source-dirs: src
 
 executables:
-  etradejanitor-1.6.0:
+  etradejanitor-1.6.1:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

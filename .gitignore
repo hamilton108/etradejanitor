@@ -1,5 +1,4 @@
 *.swp
-*.html
 Sample.hs
 tmp/
 src/demo
