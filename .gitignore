@@ -20,3 +20,4 @@ feed/
 feed2/
 feedtmp/
 docker/etradejanitor-*
+__pycache__/

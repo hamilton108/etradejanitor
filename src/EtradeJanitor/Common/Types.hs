@@ -20,6 +20,7 @@ import qualified Data.Vector                   as DV
 import qualified Data.Time.Calendar            as Cal
 import           Control.Monad.Reader           ( ReaderT )
 
+import           Network.AMQP                   ( Connection )
 import qualified EtradeJanitor.Params          as PA
 
 --feed :: FilePath
@@ -35,7 +36,8 @@ data Env =
   Env
   { getParams :: PA.Params
   , getDownloadDate :: Cal.Day
-  } deriving (Show)
+  , getRabbitConnection :: Connection
+  } --deriving (Show)
 
 data OpeningPrice =
     OpeningPrice
@@ -47,16 +49,16 @@ data OpeningPrice =
 type AppState = [Ticker]
 
 newtype REIO a =
-  REIO 
+  REIO
   {
     runApp :: ReaderT Env IO a
   }
   deriving (Functor, Applicative, Monad, MonadIO,
-                MonadThrow, MonadCatch, MonadMask, 
+                MonadThrow, MonadCatch, MonadMask,
                 MonadReader Env)
 
 newtype REIO2 a =
-  REIO2 
+  REIO2
   {
     runApp2 :: ReaderT Env (StateT AppState IO) a
   }

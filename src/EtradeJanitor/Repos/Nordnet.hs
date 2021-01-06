@@ -34,6 +34,7 @@ import           Text.HTML.TagSoup              ( Tag(..)
                                                 , (~/=)
                                                 )
 
+import           Data.Text                      ( Text )
 import qualified EtradeJanitor.Repos.Nordnet.RedisRepos
                                                as RedisRepos
 import qualified EtradeJanitor.Common.Types    as T
@@ -49,6 +50,13 @@ import           EtradeJanitor.Common.Types     ( Ticker
                                                 , Env
                                                 , AppState
                                                 )
+import           EtradeJanitor.AMQP.RabbitMQ    ( Payload(..)
+                                                , RoutingKey
+                                                , rkInfo
+                                                , rkError
+                                                , publish
+                                                )
+import           Data.Time.Clock.POSIX          ( getPOSIXTime )
 
 -- import           EtradeJanitor.Params           ( Params )
 
@@ -73,7 +81,7 @@ demoReq =
 
 responseGET :: Ticker -> NordnetExpiry -> R.Req R.BsResponse
 responseGET t unixTime =
-  let myUrl      = R.https "www.nordnet.no" /: "market" /: "options"
+  let myUrl      = R.https "www.nordnet.nox" /: "market" /: "options"
       optionName = T.ticker t
   in  R.req R.GET myUrl R.NoReqBody R.bsResponse
         $  "currency"
@@ -100,25 +108,16 @@ pathName (DerivativePrices t) = Reader.ask >>= \env ->
 mkDir :: (MonadIO m) => FilePath -> m ()
 mkDir fp = liftIO (Directory.createDirectoryIfMissing True fp)
 
-download :: (MonadIO m) => Ticker -> FilePath -> Bool -> NordnetExpiry -> m ()
-download t filePath skipIfExists unixTime =
-  let fileName = Printf.printf "%s/%d.html" filePath unixTime -- expiryAsUnixTime
-      doDownloadIO =
-          (   Directory.doesFileExist fileName
-          >>= \fileExist -> pure $ not $ skipIfExists && fileExist
-          ) :: IO Bool
-  in  liftIO $ doDownloadIO >>= \doDownload -> case doDownload of
-        False ->
-          putStrLn (Printf.printf "Skipping download of %s" fileName) >> pure ()
-        True ->
-          let reqFn =
-                  putStrLn (Printf.printf "Downloading %s" fileName)
-                    >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
-                    >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
-          in  (try reqFn :: IO (Either HttpException ())) >>= \result ->
-                case result of
-                  Left  e -> putStrLn (show e) >> pure ()
-                  Right _ -> pure ()
+currentPosixTime :: IO Int
+currentPosixTime = getPOSIXTime >>= \t -> pure (round t :: Int)
+
+payloadStd :: Ticker -> NordnetExpiry -> IO Payload
+payloadStd ticker unixTime =
+  currentPosixTime >>= \t -> pure $ PayloadStd t unixTime
+
+payloadErr :: Ticker -> NordnetExpiry -> HttpException -> IO Payload
+payloadErr ticker unixTime httpEx =
+  currentPosixTime >>= \t -> pure $ PayloadErr t unixTime
 
 unixTimesDesc :: [NordnetExpiry] -> [NordnetExpiry]
 unixTimesDesc unixTimes = sortBy (comparing Down) unixTimes
@@ -133,10 +132,11 @@ tryDownloadOpeningPrice t = pathName (OpeningPrices t) >>= \pn ->
                putStrLn (Printf.printf "Downloading %s" fileName)
                  >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
                  >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
-         in  liftIO $ (try reqFn :: IO (Either HttpException ())) >>= \result ->
-               case result of
-                 Left  e -> putStrLn (show e) >> pure False
-                 Right _ -> pure True
+         in  liftIO
+             $   (try reqFn :: IO (Either HttpException ()))
+             >>= \result -> case result of
+                   Left  e -> putStrLn (show e) >> pure False
+                   Right _ -> pure True
 
 downloadOpeningPrice
   :: (MonadIO m, MonadReader Env m, MonadState AppState m) => Ticker -> m ()
@@ -159,6 +159,36 @@ openingPricesToRedis tix = Reader.ask >>= \env ->
         then mapM openingPrice tix
           >>= \tixx -> RedisRepos.saveOpeningPricesToRedis tixx
         else pure ()
+
+download
+  :: (MonadIO m, MonadReader Env m)
+  => Ticker
+  -> FilePath
+  -> Bool
+  -> NordnetExpiry
+  -> m ()
+download t filePath skipIfExists unixTime =
+  let fileName = Printf.printf "%s/%d.html" filePath unixTime
+      doDownloadIO :: IO Bool
+      doDownloadIO =
+          (   Directory.doesFileExist fileName
+          >>= \fileExist -> pure $ not $ skipIfExists && fileExist
+          )
+      downloadWithPayload :: IO (Payload, RoutingKey)
+      downloadWithPayload = doDownloadIO >>= \doDownload -> case doDownload of
+        False ->
+          --msg = (Printf.printf "Skipping download of %s" fileName) :: Text
+          payloadStd t unixTime >>= \p -> pure (p, rkError)
+        True ->
+          let reqFn =
+                  putStrLn (Printf.printf "Downloading %s" fileName)
+                    >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
+                    >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
+          in  (try reqFn :: IO (Either HttpException ())) >>= \result ->
+                case result of
+                  Left  e -> payloadErr t unixTime e >>= \p -> pure (p, rkError)
+                  Right _ -> payloadStd t unixTime >>= \p -> pure (p, rkInfo)
+  in  (liftIO $ downloadWithPayload) >>= \(x, y) -> publish x y
 
 downloadDerivativePrices' :: (MonadIO m, MonadReader Env m) => Ticker -> m ()
 downloadDerivativePrices' t = Reader.ask >>= \env ->

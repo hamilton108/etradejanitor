@@ -59,6 +59,9 @@ import           Control.Monad.Reader           ( runReaderT
                                                 )
 import           Control.Monad.IO.Class         ( liftIO )
 
+import           Network.AMQP                   ( Connection
+                                                , closeConnection
+                                                )
 --import qualified System.Directory as Dir
 --import qualified Data.Vector as V
 
@@ -84,9 +87,12 @@ import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
 --import qualified Data.Time.Calendar as Cal
 --import Text.Printf (printf)
 --import Control.Monad.IO.Class (liftIO)
+import           EtradeJanitor.AMQP.RabbitMQ    ( myConnection )
 
 main :: IO ()
-main = PA.cmdLineParser >>= work
+main = PA.cmdLineParser
+  >>= \prm -> myConnection >>= \conn -> work prm conn >> closeConnection conn
+
 
 {-
 main2 :: IO ()
@@ -112,9 +118,9 @@ showStockTickers tix = ask >>= \env ->
         True  -> liftIO $ mapM_ (putStrLn . show) tix
         False -> pure ()
 
-work :: PA.Params -> IO ()
-work params = putStrLn (show params) >> CalendarUtil.today >>= \today ->
-  let env = Env params today
+work :: PA.Params -> Connection -> IO ()
+work params conn = putStrLn (show params) >> CalendarUtil.today >>= \today ->
+  let env = Env params today conn
   in
     Stocks.tickers (PA.databaseIp params) >>= \tix -> case tix of
       Right result ->
@@ -138,4 +144,4 @@ work params = putStrLn (show params) >> CalendarUtil.today >>= \today ->
                        )
                        env
                   >> pure ()
-      Left err -> putStrLn $ show err
+      Left err -> putStrLn (show err)

@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7705ccd83f5a019168128a8f6ffa689a9e3361c21522b23c687f2fbc73c9daee
+-- hash: f4fd53336efcf0036925e26cc738576a877f476536e9e3d676de128facc78989
 
 name:                etradejanitor
-version:             1.6.0
+version:             1.6.1
 description:         Please see the README on GitHub at <https://github.com/githubuser/demo3#readme>
 homepage:            https://github.com/githubuser/demo3#readme
 bug-reports:         https://github.com/githubuser/demo3/issues
@@ -23,6 +23,7 @@ source-repository head
 
 library
   exposed-modules:
+      EtradeJanitor.AMQP.RabbitMQ
       EtradeJanitor.Common.CalendarUtil
       EtradeJanitor.Common.Html
       EtradeJanitor.Common.Misc
@@ -40,6 +41,7 @@ library
       src
   build-depends:
       aeson
+    , amqp
     , base >=4.7 && <5
     , bytestring
     , bytestring-conversion
@@ -65,10 +67,11 @@ library
     , time
     , unliftio
     , utf8-string
+    , uuid
     , vector
   default-language: Haskell2010
 
-executable etradejanitor-1.6.0
+executable etradejanitor-1.6.1
   main-is: Main.hs
   other-modules:
       Paths_etradejanitor
@@ -77,6 +80,7 @@ executable etradejanitor-1.6.0
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wcompat -Widentities -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
+    , amqp
     , base >=4.7 && <5
     , bytestring
     , bytestring-conversion
@@ -103,6 +107,7 @@ executable etradejanitor-1.6.0
     , time
     , unliftio
     , utf8-string
+    , uuid
     , vector
   default-language: Haskell2010
 
@@ -120,6 +125,7 @@ test-suite etradejanitor-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , amqp
     , base >=4.7 && <5
     , bytestring
     , bytestring-conversion
@@ -146,5 +152,6 @@ test-suite etradejanitor-test
     , time
     , unliftio
     , utf8-string
+    , uuid
     , vector
   default-language: Haskell2010

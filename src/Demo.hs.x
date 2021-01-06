@@ -4,8 +4,17 @@
 
 module Demo where
 
-import           Control.Monad.State            ( MonadState, runStateT, put, get, modify )
-import           Control.Monad.Reader           ( MonadReader, MonadIO, ask, runReaderT )
+import           Control.Monad.State            ( MonadState
+                                                , runStateT
+                                                , put
+                                                , get
+                                                , modify
+                                                )
+import           Control.Monad.Reader           ( MonadReader
+                                                , MonadIO
+                                                , ask
+                                                , runReaderT
+                                                )
 import           Control.Monad.Catch            ( MonadThrow
                                                 , MonadCatch
                                                 , MonadMask
@@ -26,7 +35,6 @@ import           EtradeJanitor.Common.Types     ( Env(..)
                                                 , REIO2
                                                 , OpeningPrice(..)
                                                 , AppState
-                                                , 
                                                 )
 import qualified EtradeJanitor.Common.Types    as T
 import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
@@ -34,15 +42,23 @@ import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
 
 import qualified EtradeJanitor.Repos.Nordnet.RedisRepos
                                                as RedisRepos -- (expiryTimes,saveOpeningPricesToRedis) where 
-                                                
-import           Control.Exception (try, SomeException, IOException)
-import           System.IO                      ( openFile 
+
+import           Control.Exception              ( try
+                                                , SomeException
+                                                , IOException
+                                                )
+import           System.IO                      ( openFile
                                                 , hSetEncoding
                                                 , hGetContents
                                                 , latin1
                                                 , IOMode(..)
                                                 )
 
+import           EtradeJanitor.AMQP.RabbitMQ    ( myConnection )
+
+
+
+{-
 exdemo :: (MonadIO m) => m Bool 
 exdemo = 
     liftIO (
@@ -70,20 +86,15 @@ exdemo2 =
 runExdemo :: IO (String, AppState)
 runExdemo = 
     runStateT exdemo2 []
+ -}
 
-{-
-exdemo2 :: (MonadIO m, MonadCatch m) => m ()
-exdemo2 = 
-    catch (liftIO $ openFile "xtack.yaml" ReadMode >>= \handle -> pure ()) 
-          (\(e :: IOException) -> pure ())
---}
 
 prms = Params.Params
   { Params.databaseIp               = "172.20.1.3"
   , Params.redisHost                = "172.20.1.2"
   , Params.redisDatabase            = "5"
   , Params.feed = "/home/rcs/opt/haskell/etradejanitor/feedtmp"
-  , Params.downloadDerivatives      = True 
+  , Params.downloadDerivatives      = True
   , Params.dbUpdateStocks           = False
   , Params.skipIfDownloadFileExists = False
   , Params.showStockTickers         = False
@@ -108,54 +119,39 @@ work2 :: IO ()
 work2 = undefined -- runReaderT (T.runApp $ Nordnet.downloadOpeningPrices tix) env
 
 riox2 :: (MonadReader Env m) => m ()
-riox2 =
-    ask >>= \x ->
-    pure ()
+riox2 = ask >>= \x -> pure ()
 
 riox1 :: (MonadState AppState m) => m ()
-riox1 =
-    modify (nhy:) >>
-    modify (sdrl:) >> 
-    pure ()
-    
+riox1 = modify (nhy :) >> modify (sdrl :) >> pure ()
+
 --rio :: (MonadState AppState m, MonadReader Env m) => m Int
 rio :: REIO2 Int
-rio = 
-    riox1 >>
-    riox2 >>
-    pure 3
+rio = riox1 >> riox2 >> pure 3
 
 
-runRio =
-    runStateT (runReaderT (T.runApp2 rio) env) []
+runRio = myConnection >>= \c ->
+  let envc = env c in runStateT (runReaderT (T.runApp2 rio) envc) []
 
 
-runOp = 
-    runStateT
-        (runReaderT
-            (T.runApp2 $ Nordnet.downloadOpeningPrices tix)
-            env
-        )
+runOp = myConnection >>= \c ->
+  let envc = env c
+  in  runStateT
+        (runReaderT (T.runApp2 $ Nordnet.downloadOpeningPrices tix) envc)
         []
 
 
-runRedis = 
-    runReaderT
-        (T.runApp $ Nordnet.openingPricesToRedis [nhy])
-        env
+runRedis = myConnection >>= \c ->
+  let envc = env c
+  in  runReaderT (T.runApp $ Nordnet.openingPricesToRedis [nhy]) envc
 
-runD = 
-    runReaderT
-        (T.runApp $ Nordnet.downloadDerivativePrices tix)
-        env
-
-
-
-
-
+runD = myConnection >>= \c ->
+  let envc = env c
+  in  runReaderT (T.runApp $ Nordnet.downloadDerivativePrices tix) envc
 
 
 {-
+
+
 data State s a = State { runState :: s -> (s, a) }
 
 fmap :: (a -> b) -> State s a -> State s b

@@ -48,6 +48,7 @@ dependencies:
 - time
 - unliftio
 - utf8-string
+- uuid
 - vector
 
 library:
