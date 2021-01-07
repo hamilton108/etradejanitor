@@ -21,3 +21,4 @@ feed2/
 feedtmp/
 docker/etradejanitor-*
 __pycache__/
+etradejanitor.cabal
