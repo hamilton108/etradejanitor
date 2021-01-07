@@ -36,6 +36,7 @@ dependencies:
 - hasql
 - hedis
 - hspec
+- http-client
 - mtl
 - optparse-applicative 
 - process

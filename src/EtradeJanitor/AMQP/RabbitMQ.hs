@@ -40,26 +40,19 @@ import           EtradeJanitor.Common.Types     ( NordnetExpiry
                                                 )
 
 data Payload =
-    PayloadStd
+    Payload
     { utcTime :: Int
     , nex :: NordnetExpiry
-    }
-    | PayloadErr
-    { utcTime :: Int
-    , nex :: NordnetExpiry
+    , msg :: Text
     }
     deriving Show
 
 
 instance ToJSON Payload where
-  toJSON (PayloadStd utcTime nex) =
-    Aeson.object ["utcTime" .= utcTime, "nx" .= nex]
-  toJSON (PayloadErr utcTime nex) =
-    Aeson.object ["utcTime" .= utcTime, "nx" .= nex]
-  toEncoding (PayloadStd utcTime nex) =
-    Aeson.pairs ("utcTime" .= utcTime <> "nx" .= nex)
-  toEncoding (PayloadErr utcTime nex) =
-    Aeson.pairs ("utcTime" .= utcTime <> "nx" .= nex)
+  toJSON (Payload utcTime nex msg) =
+    Aeson.object ["utcTime" .= utcTime, "nx" .= nex, "msg" .= msg]
+  toEncoding (Payload utcTime nex msg) =
+    Aeson.pairs ("utcTime" .= utcTime <> "nx" .= nex <> "msg" .= msg)
 
 newtype RoutingKey =
   RoutingKey Text
@@ -132,8 +125,5 @@ publish p (RoutingKey rk) = Reader.ask >>= \env ->
                             }
                )
           >>
-      --AMQP.closeConnection conn >>
-             pure ()
+            putStrLn "Done publish"
 
---publish :: IO ()
---publish = publish' $ PayloadStd 3 15 
