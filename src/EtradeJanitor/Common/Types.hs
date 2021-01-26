@@ -18,6 +18,7 @@ import qualified Data.Text                     as Tx
 import           Data.Text                      ( Text )
 import qualified Data.Vector                   as DV
 import qualified Data.Time.Calendar            as Cal
+import           Data.UUID                      ( UUID )
 import           Control.Monad.Reader           ( ReaderT )
 
 import           Network.AMQP                   ( Connection )
@@ -37,6 +38,7 @@ data Env =
   { getParams :: PA.Params
   , getDownloadDate :: Cal.Day
   , getRabbitConnection :: Connection
+  , getUUID :: UUID
   } --deriving (Show)
 
 data OpeningPrice =

@@ -87,6 +87,7 @@ import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
 --import qualified Data.Time.Calendar as Cal
 --import Text.Printf (printf)
 --import Control.Monad.IO.Class (liftIO)
+import           Data.UUID.V4                   ( nextRandom )
 import           EtradeJanitor.AMQP.RabbitMQ    ( myConnection )
 
 main :: IO ()
@@ -120,28 +121,31 @@ showStockTickers tix = ask >>= \env ->
 
 work :: PA.Params -> Connection -> IO ()
 work params conn = putStrLn (show params) >> CalendarUtil.today >>= \today ->
-  let env = Env params today conn
-  in
-    Stocks.tickers (PA.databaseIp params) >>= \tix -> case tix of
-      Right result ->
-        runReaderT (Types.runApp $ showStockTickers result) env
-          >>  execStateT
-                (runReaderT
-                  (Types.runApp2 $ Nordnet.downloadOpeningPrices result)
-                  env
-                )
-                []
-          >>= \downloadedTix ->
-                runReaderT
-                    (Types.runApp $ Nordnet.openingPricesToRedis downloadedTix)
+  nextRandom >>= \uuid ->
+    let env = Env params today conn uuid
+    in
+      Stocks.tickers (PA.databaseIp params) >>= \tix -> case tix of
+        Right result ->
+          runReaderT (Types.runApp $ showStockTickers result) env
+            >>  execStateT
+                  (runReaderT
+                    (Types.runApp2 $ Nordnet.downloadOpeningPrices result)
                     env
-                  >> runReaderT
-                       (Types.runApp $ Nordnet.downloadDerivativePrices result)
-                       env
-                  >> runReaderT
-                       ( Types.runApp
-                       $ PaperHistory.updateStockPricesTickers result
-                       )
-                       env
-                  >> pure ()
-      Left err -> putStrLn (show err)
+                  )
+                  []
+            >>= \downloadedTix ->
+                  runReaderT
+                      (Types.runApp $ Nordnet.openingPricesToRedis downloadedTix
+                      )
+                      env
+                    >> runReaderT
+                         (Types.runApp $ Nordnet.downloadDerivativePrices result
+                         )
+                         env
+                    >> runReaderT
+                         ( Types.runApp
+                         $ PaperHistory.updateStockPricesTickers result
+                         )
+                         env
+                    >> pure ()
+        Left err -> putStrLn (show err)

@@ -33,7 +33,7 @@ import           Data.Aeson                     ( ToJSON(..)
 import qualified Data.Aeson                    as Aeson
 import           Data.Text                      ( Text )
 import qualified Data.ByteString.Lazy.Char8    as BL
-import           Data.UUID.V4                   ( nextRandom )
+import           Data.UUID                      ( UUID )
 import           EtradeJanitor.Common.Types     ( NordnetExpiry
                                                 , Env
                                                 , getRabbitConnection
@@ -41,7 +41,8 @@ import           EtradeJanitor.Common.Types     ( NordnetExpiry
 
 data Payload =
     Payload
-    { utcTime :: Int
+    { msgId :: UUID
+    , utcTime :: Int
     , nex :: NordnetExpiry
     , msg :: Text
     }
@@ -49,10 +50,10 @@ data Payload =
 
 
 instance ToJSON Payload where
-  toJSON (Payload utcTime nex msg) =
-    Aeson.object ["utcTime" .= utcTime, "nx" .= nex, "msg" .= msg]
-  toEncoding (Payload utcTime nex msg) =
-    Aeson.pairs ("utcTime" .= utcTime <> "nx" .= nex <> "msg" .= msg)
+  toJSON (Payload msgId utcTime nex msg) = Aeson.object
+    ["msgid" .= msgId, "utcTime" .= utcTime, "nx" .= nex, "msg" .= msg]
+  toEncoding (Payload msgId utcTime nex msg) = Aeson.pairs
+    ("msgid" .= msgId <> "utcTime" .= utcTime <> "nx" .= nex <> "msg" .= msg)
 
 newtype RoutingKey =
   RoutingKey Text
@@ -113,9 +114,9 @@ publish p (RoutingKey rk) = Reader.ask >>= \env ->
           >> putStrLn "myExchange"
           >>
 
-      --myQueue ch >>= \(q,_,_) ->
+          --myQueue ch >>= \(q,_,_) ->
 
-      --doBindQueue ch q >>
+          --doBindQueue ch q >>
              AMQP.publishMsg
                ch
                myExchangeName
@@ -124,6 +125,5 @@ publish p (RoutingKey rk) = Reader.ask >>= \env ->
                             , AMQP.msgDeliveryMode = Just NonPersistent
                             }
                )
-          >>
-            putStrLn "Done publish"
+          >> putStrLn "Done publish"
 

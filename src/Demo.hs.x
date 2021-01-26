@@ -6,6 +6,7 @@ module Demo where
 
 import           Control.Monad.State            ( MonadState
                                                 , runStateT
+                                                , execStateT
                                                 , put
                                                 , get
                                                 , modify
@@ -54,8 +55,8 @@ import           System.IO                      ( openFile
                                                 , IOMode(..)
                                                 )
 
+import           Data.UUID.V4                   ( nextRandom )
 import           EtradeJanitor.AMQP.RabbitMQ    ( myConnection )
-
 
 
 {-
@@ -129,12 +130,15 @@ rio :: REIO2 Int
 rio = riox1 >> riox2 >> pure 3
 
 
+{-
 runRio = myConnection >>= \c ->
-  let envc = env c in runStateT (runReaderT (T.runApp2 rio) envc) []
+    nextRandom >>= \uuid ->
+        let envc = env c uuid in runStateT (runReaderT (T.runApp2 rio) envc) []
 
 
 runOp = myConnection >>= \c ->
-  let envc = env c
+    nextRandom >>= \uuid ->
+  let envc = env c uuid
   in  runStateT
         (runReaderT (T.runApp2 $ Nordnet.downloadOpeningPrices tix) envc)
         []
@@ -143,10 +147,24 @@ runOp = myConnection >>= \c ->
 runRedis = myConnection >>= \c ->
   let envc = env c
   in  runReaderT (T.runApp $ Nordnet.openingPricesToRedis [nhy]) envc
+-}
 
 runD = myConnection >>= \c ->
-  let envc = env c
+    nextRandom >>= \uuid ->
+  let envc = env c uuid
   in  runReaderT (T.runApp $ Nordnet.downloadDerivativePrices tix) envc
+
+runX = myConnection >>= \c ->
+    nextRandom >>= \uuid ->
+  let envc = env c uuid
+  in 
+  runReaderT (T.runApp $ Nordnet.downloadDerivativePrices tix) envc >>
+  execStateT 
+    (runReaderT
+        (T.runApp2 $ Nordnet.downloadOpeningPrices tix)
+        envc
+    )
+    []
 
 
 {-

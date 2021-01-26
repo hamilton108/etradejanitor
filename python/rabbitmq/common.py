@@ -1,4 +1,9 @@
 import pika
+import pymongo
+
+
+def mongoClient():
+    return pymongo.MongoClient("172.20.1.5", 27017)
 
 
 def connection():

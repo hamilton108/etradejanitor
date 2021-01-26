@@ -7,6 +7,7 @@ import           Data.List                      ( sortBy )
 import           Data.Ord                       ( Down(..)
                                                 , comparing
                                                 )
+import           Data.UUID                      ( UUID )
 import           Control.Monad.State            ( MonadState
                                                 , modify
                                                 )
@@ -57,7 +58,7 @@ import           EtradeJanitor.AMQP.RabbitMQ    ( Payload(..)
                                                 , publish
                                                 )
 import           Data.Time.Clock.POSIX          ( getPOSIXTime )
-import qualified EtradeJanitor.Common.Misc      as Misc 
+import qualified EtradeJanitor.Common.Misc     as Misc
 
 -- import           EtradeJanitor.Params           ( Params )
 
@@ -112,36 +113,47 @@ mkDir fp = liftIO (Directory.createDirectoryIfMissing True fp)
 currentPosixTime :: IO Int
 currentPosixTime = getPOSIXTime >>= \t -> pure (round t :: Int)
 
-payloadInfo :: Ticker -> NordnetExpiry -> String -> IO Payload
-payloadInfo ticker unixTime msg =
-  let 
-    tx = Text.unpack $ (T.ticker ticker)
-    msgx = Text.pack $ Printf.printf "[%s] %s" tx msg
-  in
-  currentPosixTime >>= \t -> pure $ Payload t unixTime msgx
+payloadInfo :: UUID -> Ticker -> NordnetExpiry -> String -> IO Payload
+payloadInfo uuid ticker unixTime msg =
+  let tx   = Text.unpack $ (T.ticker ticker)
+      msgx = Text.pack $ Printf.printf "[%s] %s" tx msg
+  in  currentPosixTime >>= \t -> pure $ Payload uuid t unixTime msgx
 
-payloadErr :: Ticker -> NordnetExpiry -> HttpException -> IO Payload
-payloadErr ticker unixTime httpEx =
-  currentPosixTime >>= \t -> pure $ Payload t unixTime (Misc.showHttpException httpEx) 
+payloadErr :: UUID -> Ticker -> NordnetExpiry -> HttpException -> IO Payload
+payloadErr uuid ticker unixTime httpEx = currentPosixTime
+  >>= \t -> pure $ Payload uuid t unixTime (Misc.showHttpException httpEx)
 
 unixTimesDesc :: [NordnetExpiry] -> [NordnetExpiry]
 unixTimesDesc unixTimes = sortBy (comparing Down) unixTimes
 
 tryDownloadOpeningPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m Bool
-tryDownloadOpeningPrice t = pathName (OpeningPrices t) >>= \pn ->
-  RedisRepos.expiryTimes t >>= \unixTimes ->
-    mkDir pn
-      >> let unixTime = head $ unixTimesDesc unixTimes
+tryDownloadOpeningPrice t = Reader.ask >>= \env ->
+  pathName (OpeningPrices t) >>= \pn ->
+    RedisRepos.expiryTimes t >>= \unixTimes ->
+      mkDir pn
+        >> let
+             unixTime = head $ unixTimesDesc unixTimes
              fileName = Printf.printf "%s/%s.html" pn (T.ticker t)
-             reqFn =
-               putStrLn (Printf.printf "Downloading %s" fileName)
-                 >>  R.runReq R.defaultHttpConfig (responseGET t unixTime)
-                 >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
-         in  liftIO
-             $   (try reqFn :: IO (Either HttpException ()))
-             >>= \result -> case result of
-                   Left  e -> putStrLn (show e) >> pure False
-                   Right _ -> pure True
+             uuid     = (T.getUUID env)
+             downloadWithPayload :: IO (Payload, RoutingKey, Bool)
+             downloadWithPayload =
+               let reqFn =
+                       putStrLn (Printf.printf "Downloading %s" fileName)
+                         >> R.runReq R.defaultHttpConfig (responseGET t unixTime)
+                         >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
+               in
+                 (try reqFn :: IO (Either HttpException ())) >>= \result ->
+                   case result of
+                     Left e -> payloadErr uuid t unixTime e
+                       >>= \p -> pure (p, rkError, False)
+                     Right _ ->
+                       let msg = Printf.printf "Price Downloading ok" fileName
+                       in  payloadInfo uuid t unixTime msg
+                             >>= \p -> pure (p, rkInfo, True)
+           in
+             (liftIO $ downloadWithPayload)
+               >>= \(x, y, z) -> publish x y >> pure z
+
 
 downloadOpeningPrice
   :: (MonadIO m, MonadReader Env m, MonadState AppState m) => Ticker -> m ()
@@ -172,34 +184,32 @@ download
   -> Bool
   -> NordnetExpiry
   -> m ()
-download t filePath skipIfExists unixTime =
-  let fileName = Printf.printf "%s/%d.html" filePath unixTime
-      doDownloadIO :: IO Bool
-      doDownloadIO =
-          (   Directory.doesFileExist fileName
-          >>= \fileExist -> pure $ not $ skipIfExists && fileExist
-          )
-      downloadWithPayload :: IO (Payload, RoutingKey)
-      downloadWithPayload = doDownloadIO >>= \doDownload -> case doDownload of
-        False ->
-          let 
-            --msg = (Printf.printf "Skipping download of %s" fileName) :: Text
-            msg = Printf.printf "Skipping download of %s" fileName
-          in
-          payloadInfo t unixTime msg >>= \p -> pure (p, rkError)
-        True ->
-          let reqFn =
-                    R.runReq R.defaultHttpConfig (responseGET t unixTime)
-                    >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
-          in  (try reqFn :: IO (Either HttpException ())) >>= \result ->
-                case result of
-                  Left  e -> payloadErr t unixTime e >>= \p -> pure (p, rkError)
-                  Right _ -> 
-                    let 
-                      msg = Printf.printf "Downloading %s ok" fileName
-                    in
-                    payloadInfo t unixTime msg >>= \p -> pure (p, rkInfo)
-  in  (liftIO $ downloadWithPayload) >>= \(x, y) -> publish x y
+download t filePath skipIfExists unixTime = Reader.ask >>= \env ->
+  let
+    uuid     = (T.getUUID env)
+    fileName = Printf.printf "%s/%d.html" filePath unixTime
+    doDownloadIO :: IO Bool
+    doDownloadIO =
+      (   Directory.doesFileExist fileName
+      >>= \fileExist -> pure $ not $ skipIfExists && fileExist
+      )
+    downloadWithPayload :: IO (Payload, RoutingKey)
+    downloadWithPayload = doDownloadIO >>= \doDownload -> case doDownload of
+      False ->
+        let msg = Printf.printf "Skipping download of %s" fileName
+        in  payloadInfo uuid t unixTime msg >>= \p -> pure (p, rkError)
+      True ->
+        let reqFn = R.runReq R.defaultHttpConfig (responseGET t unixTime)
+              >>= \bs -> Char8.writeFile fileName (R.responseBody bs)
+        in  (try reqFn :: IO (Either HttpException ())) >>= \result ->
+              case result of
+                Left e ->
+                  payloadErr uuid t unixTime e >>= \p -> pure (p, rkError)
+                Right _ ->
+                  let msg = Printf.printf "Downloading %s ok" fileName
+                  in  payloadInfo uuid t unixTime msg >>= \p -> pure (p, rkInfo)
+  in
+    (liftIO $ downloadWithPayload) >>= \(x, y) -> publish x y
 
 downloadDerivativePrices' :: (MonadIO m, MonadReader Env m) => Ticker -> m ()
 downloadDerivativePrices' t = Reader.ask >>= \env ->
