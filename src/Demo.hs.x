@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Demo where
 
@@ -57,6 +58,7 @@ import           System.IO                      ( openFile
 
 import           Data.UUID.V4                   ( nextRandom )
 import           EtradeJanitor.AMQP.RabbitMQ    ( myConnection )
+import qualified Data.Text                     as Text
 
 
 {-
@@ -130,6 +132,8 @@ rio :: REIO2 Int
 rio = riox1 >> riox2 >> pure 3
 
 
+what :: T.Ticker -> IO ()
+what (T.Ticker {ticker}) = (putStrLn . Text.unpack) ticker
 {-
 runRio = myConnection >>= \c ->
     nextRandom >>= \uuid ->

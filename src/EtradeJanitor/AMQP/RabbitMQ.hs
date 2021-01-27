@@ -43,6 +43,8 @@ data Payload =
     Payload
     { msgId :: UUID
     , utcTime :: Int
+    , ticker :: Text
+    , fun :: Text
     , nex :: NordnetExpiry
     , msg :: Text
     }
@@ -50,10 +52,28 @@ data Payload =
 
 
 instance ToJSON Payload where
-  toJSON (Payload msgId utcTime nex msg) = Aeson.object
-    ["msgid" .= msgId, "utcTime" .= utcTime, "nx" .= nex, "msg" .= msg]
-  toEncoding (Payload msgId utcTime nex msg) = Aeson.pairs
-    ("msgid" .= msgId <> "utcTime" .= utcTime <> "nx" .= nex <> "msg" .= msg)
+  toJSON (Payload msgId utcTime ticker method nex msg) = Aeson.object
+    [ "msgid" .= msgId
+    , "utctime" .= utcTime
+    , "ticker" .= ticker
+    , "method" .= method
+    , "nx" .= nex
+    , "msg" .= msg
+    ]
+  toEncoding (Payload msgId utcTime ticker method nex msg) = Aeson.pairs
+    (  "msgid"
+    .= msgId
+    <> "utctime"
+    .= utcTime
+    <> "ticker"
+    .= ticker
+    <> "method"
+    .= method
+    <> "nx"
+    .= nex
+    <> "msg"
+    .= msg
+    )
 
 newtype RoutingKey =
   RoutingKey Text
@@ -114,9 +134,9 @@ publish p (RoutingKey rk) = Reader.ask >>= \env ->
           >> putStrLn "myExchange"
           >>
 
-          --myQueue ch >>= \(q,_,_) ->
+                          --myQueue ch >>= \(q,_,_) ->
 
-          --doBindQueue ch q >>
+                          --doBindQueue ch q >>
              AMQP.publishMsg
                ch
                myExchangeName

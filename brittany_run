@@ -1,0 +1,11 @@
+#!/bin/bash
+
+brittany --write-mode inplace app/*.hs
+brittany --write-mode inplace src/EtradeJanitor/*.hs
+brittany --write-mode inplace src/EtradeJanitor/AMQP/*.hs
+brittany --write-mode inplace src/EtradeJanitor/Common/*.hs
+brittany --write-mode inplace src/EtradeJanitor/Repos/*.hs
+brittany --write-mode inplace src/EtradeJanitor/Repos/Nordnet/*.hs
+brittany --write-mode inplace src/EtradeJanitor/Repos/Yahoo/*.hs
+
+exit 0
