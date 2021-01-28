@@ -84,7 +84,7 @@ demoReq =
 
 responseGET :: Ticker -> NordnetExpiry -> R.Req R.BsResponse
 responseGET t unixTime =
-  let myUrl      = R.https "www.nordnet.nox" /: "market" /: "options"
+  let myUrl      = R.https "www.nordnet.no" /: "market" /: "options"
       optionName = T.ticker t
   in  R.req R.GET myUrl R.NoReqBody R.bsResponse
         $  "currency"
