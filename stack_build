@@ -6,7 +6,7 @@ DIST_PATH=".stack-work/dist/x86_64-linux-tinfo6/Cabal-3.0.1.0/build"
 
 ETRADEJANITOR_VER=
 
-FILE="src/Demo.hs.x"
+#FILE="src/Demo.hs.x"
 
 DOCKER=0
 
@@ -41,11 +41,10 @@ do
      esac
 done
 
-if [ ! -f "$FILE" ]; then
-    mv src/Demo.hs src/Demo.hs.x
-
-    hpack
-fi
+#if [ ! -f "$FILE" ]; then
+#    mv src/Demo.hs src/Demo.hs.x
+#    hpack
+#fi
 
 stack build --allow-different-user 
 

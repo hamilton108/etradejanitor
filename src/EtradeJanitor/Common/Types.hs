@@ -37,7 +37,7 @@ data Env =
   Env
   { getParams :: PA.Params
   , getDownloadDate :: Cal.Day
-  , getRabbitConnection :: Connection
+  , getRabbitConnection :: Maybe Connection
   , getUUID :: UUID
   } --deriving (Show)
 
@@ -111,3 +111,19 @@ data StockPrice =
     , cls2 :: Float
     , vol2 :: DI.Int64
     } deriving (Eq,Show)
+
+data Envx a = 
+    Envx 
+    {
+      ax :: Int
+    , bx :: a 
+    }
+
+newtype REIOX a  = 
+  REIOX
+  {
+    runAppx :: ReaderT (Envx Int) (StateT AppState IO) a
+  }
+  deriving (Functor, Applicative, Monad, MonadIO,
+                MonadThrow, MonadCatch,
+                MonadReader (Envx Int), MonadState AppState )

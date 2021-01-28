@@ -5,6 +5,10 @@
 
 module Demo where
 
+demo :: Int
+demo = 10
+
+{-
 import           Control.Monad.State            ( MonadState
                                                 , runStateT
                                                 , execStateT
@@ -40,7 +44,6 @@ import           EtradeJanitor.Common.Types     ( Env(..)
                                                 )
 import qualified EtradeJanitor.Common.Types    as T
 import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
---import qualified EtradeJanitor.Repos.Nordnet (Prices(..)) 
 
 import qualified EtradeJanitor.Repos.Nordnet.RedisRepos
                                                as RedisRepos -- (expiryTimes,saveOpeningPricesToRedis) where 
@@ -59,37 +62,6 @@ import           System.IO                      ( openFile
 import           Data.UUID.V4                   ( nextRandom )
 import           EtradeJanitor.AMQP.RabbitMQ    ( myConnection )
 import qualified Data.Text                     as Text
-
-
-{-
-exdemo :: (MonadIO m) => m Bool 
-exdemo = 
-    liftIO (
-    (try (openFile "xstack.yaml" ReadMode >>= \handle -> 
-        putStrLn "Hi") :: IO (Either IOException ())) >>= \result ->
-    case result of 
-        Left ex -> 
-            print (ex :: IOException) >>
-            pure False
-        Right ok ->
-            putStrLn "Ok" >> 
-            pure True)
-
-exdemo2 :: (MonadIO m, MonadState AppState m) => m String
-exdemo2 = 
-    exdemo >>= \b ->
-        if b == True then
-            modify (nhy :) >>
-            pure "YESSSSSS"
-        else
-            modify (sdrl :) >>
-            pure "NOPE!!!!!"
-
-
-runExdemo :: IO (String, AppState)
-runExdemo = 
-    runStateT exdemo2 []
- -}
 
 
 prms = Params.Params
@@ -127,13 +99,32 @@ riox2 = ask >>= \x -> pure ()
 riox1 :: (MonadState AppState m) => m ()
 riox1 = modify (nhy :) >> modify (sdrl :) >> pure ()
 
---rio :: (MonadState AppState m, MonadReader Env m) => m Int
 rio :: REIO2 Int
 rio = riox1 >> riox2 >> pure 3
 
 
 what :: T.Ticker -> IO ()
 what (T.Ticker {ticker}) = (putStrLn . Text.unpack) ticker
+
+runD = myConnection >>= \c ->
+    nextRandom >>= \uuid ->
+  let envc = env (Just c) uuid
+  in  runReaderT (T.runApp $ Nordnet.downloadDerivativePrices tix) envc
+
+runX = myConnection >>= \c ->
+    nextRandom >>= \uuid ->
+  let envc = env (Just c) uuid
+  in 
+  runReaderT (T.runApp $ Nordnet.downloadDerivativePrices tix) envc >>
+  execStateT 
+    (runReaderT
+        (T.runApp2 $ Nordnet.downloadOpeningPrices tix)
+        envc
+    )
+    []
+
+--}
+
 {-
 runRio = myConnection >>= \c ->
     nextRandom >>= \uuid ->
@@ -153,23 +144,34 @@ runRedis = myConnection >>= \c ->
   in  runReaderT (T.runApp $ Nordnet.openingPricesToRedis [nhy]) envc
 -}
 
-runD = myConnection >>= \c ->
-    nextRandom >>= \uuid ->
-  let envc = env c uuid
-  in  runReaderT (T.runApp $ Nordnet.downloadDerivativePrices tix) envc
+{-
+exdemo = 
+    liftIO (
+    (try (openFile "xstack.yaml" ReadMode >>= \handle -> 
+        putStrLn "Hi") :: IO (Either IOException ())) >>= \result ->
+    case result of 
+        Left ex -> 
+            print (ex :: IOException) >>
+            pure False
+        Right ok ->
+            putStrLn "Ok" >> 
+            pure True)
 
-runX = myConnection >>= \c ->
-    nextRandom >>= \uuid ->
-  let envc = env c uuid
-  in 
-  runReaderT (T.runApp $ Nordnet.downloadDerivativePrices tix) envc >>
-  execStateT 
-    (runReaderT
-        (T.runApp2 $ Nordnet.downloadOpeningPrices tix)
-        envc
-    )
-    []
+exdemo2 :: (MonadIO m, MonadState AppState m) => m String
+exdemo2 = 
+    exdemo >>= \b ->
+        if b == True then
+            modify (nhy :) >>
+            pure "YESSSSSS"
+        else
+            modify (sdrl :) >>
+            pure "NOPE!!!!!"
 
+
+runExdemo :: IO (String, AppState)
+runExdemo = 
+    runStateT exdemo2 []
+ -}
 
 {-
 

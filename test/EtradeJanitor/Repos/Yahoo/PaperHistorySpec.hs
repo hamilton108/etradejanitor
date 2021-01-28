@@ -7,6 +7,7 @@ where
 
 import           Control.Monad.Reader           ( runReaderT )
 import           Test.Hspec
+import           Data.UUID                      ( nil )
 import qualified Data.Time.Calendar            as Calendar
 import qualified System.FilePath               as FilePath
 
@@ -40,7 +41,7 @@ testDayNhy =
 -}
 
 testEnv :: Types.Env
-testEnv = Types.Env testParams testDay
+testEnv = Types.Env testParams testDay Nothing nil
 
 testTicker :: Calendar.Day -> Types.Ticker
 testTicker dx = Types.Ticker 1 "EQNR" 1 dx

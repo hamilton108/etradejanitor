@@ -8,6 +8,7 @@ where
 
 import           Control.Monad.Reader           ( runReaderT )
 import           Test.Hspec
+import           Data.UUID                      ( nil )
 import qualified Data.Time.Calendar            as Calendar
 import qualified Data.Time.Clock.POSIX         as POSIX
 import qualified Data.Vector                   as Vector
@@ -66,7 +67,7 @@ testParams = Params.Params { Params.databaseIp               = "172.17.0.2"
                            }
 
 testEnv :: Env
-testEnv = Env testParams testDay
+testEnv = Env testParams testDay Nothing nil
 
 expectedPathName :: String
 expectedPathName =

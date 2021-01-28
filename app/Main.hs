@@ -122,7 +122,7 @@ showStockTickers tix = ask >>= \env ->
 work :: PA.Params -> Connection -> IO ()
 work params conn = putStrLn (show params) >> CalendarUtil.today >>= \today ->
   nextRandom >>= \uuid ->
-    let env = Env params today conn uuid
+    let env = Env params today (Just conn) uuid
     in
       Stocks.tickers (PA.databaseIp params) >>= \tix -> case tix of
         Right result ->
