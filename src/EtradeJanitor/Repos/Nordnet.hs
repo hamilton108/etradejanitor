@@ -131,7 +131,7 @@ unixTimesDesc unixTimes = sortBy (comparing Down) unixTimes
 tryDownloadOpeningPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m Bool
 tryDownloadOpeningPrice t = Reader.ask >>= \env ->
   pathName (OpeningPrices t) >>= \pn ->
-    RedisRepos.expiryTimes t >>= \unixTimes ->
+    RedisRepos.expiryTimes2 >>= \unixTimes ->
       mkDir pn
         >> let
              unixTime = head $ unixTimesDesc unixTimes
@@ -226,7 +226,7 @@ downloadDerivativePrices' :: (MonadIO m, MonadReader Env m) => Ticker -> m ()
 downloadDerivativePrices' t = Reader.ask >>= \env ->
   let skipIfExists = (Params.skipIfDownloadFileExists . T.getParams) env
   in  pathName (DerivativePrices t) >>= \pn ->
-        RedisRepos.expiryTimes t >>= \unixTimes ->
+        RedisRepos.expiryTimes2 >>= \unixTimes ->
           mkDir pn
             >> let dlfn = download t pn skipIfExists in mapM_ dlfn unixTimes
 

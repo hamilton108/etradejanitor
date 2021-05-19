@@ -6,9 +6,11 @@
 module Demo where
 
 demo :: Int
-demo = 10
+demo = 3
+{--
+import EtradeJanitor.Repos.Nordnet.RedisRepos
 
-{-
+
 import           Control.Monad.State            ( MonadState
                                                 , runStateT
                                                 , execStateT
@@ -60,6 +62,7 @@ import           System.IO                      ( openFile
                                                 )
 
 import           Data.UUID.V4                   ( nextRandom )
+import           Data.UUID                      ( nil )
 import           EtradeJanitor.AMQP.RabbitMQ    ( myConnection )
 import qualified Data.Text                     as Text
 
@@ -73,11 +76,11 @@ prms = Params.Params
   , Params.dbUpdateStocks           = False
   , Params.skipIfDownloadFileExists = False
   , Params.showStockTickers         = False
-  , Params.openingPricesToRedis     = True
+  , Params.openingPricesToRedis     = False 
   }
 
 dx1 :: Calendar.Day
-dx1 = Calendar.fromGregorian 2020 10 26
+dx1 = Calendar.fromGregorian 2021 6 17
 
 env = Env prms dx1
 
@@ -106,10 +109,11 @@ rio = riox1 >> riox2 >> pure 3
 what :: T.Ticker -> IO ()
 what (T.Ticker {ticker}) = (putStrLn . Text.unpack) ticker
 
-runD = myConnection >>= \c ->
-    nextRandom >>= \uuid ->
-  let envc = env (Just c) uuid
-  in  runReaderT (T.runApp $ Nordnet.downloadDerivativePrices tix) envc
+
+runD = 
+  let envc = env Nothing nil 
+  -- in  runReaderT (T.runApp $ RedisRepos.fetchExpiryFromRedis2) envc
+  in  runReaderT (T.runApp $ RedisRepos.expiryTimes2) envc
 
 runX = myConnection >>= \c ->
     nextRandom >>= \uuid ->

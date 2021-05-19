@@ -4,11 +4,14 @@
 
 module EtradeJanitor.Repos.Nordnet.RedisRepos
   ( expiryTimes
+  , expiryTimes2
   , saveOpeningPricesToRedis
+  , fetchExpiryFromRedis2
   )
 where
 
 --import qualified Data.Vector as Vector
+--import Data.Typeable
 import qualified Control.Monad.Reader          as Reader
 import           Control.Monad.Reader           ( MonadReader
                                                 , MonadIO
@@ -35,6 +38,10 @@ import           EtradeJanitor.Common.Types     ( Env
                                                 )
 
 import qualified EtradeJanitor.Params          as Params
+import           EtradeJanitor.Common.CalendarUtil
+                                                ( dayToUnixTime
+                                                , unixTimeToInt
+                                                )
 
 ci :: String -> Integer -> Redis.ConnectInfo
 ci host redisDatabase = Redis.defaultConnectInfo
@@ -99,6 +106,19 @@ expiryTimes ticker = Reader.ask >>= \env ->
         in  pure $ map (\y -> Maybe.fromJust y) $ filter (\x -> x /= Nothing)
                                                          result
 
+fetchExpiryFromRedis2 :: (MonadIO m, MonadReader Env m) => m [B.ByteString]
+fetchExpiryFromRedis2 = conn >>= \c1 ->
+  liftIO $ Redis.runRedis c1 $ Redis.smembers "expiry" >>= \ex ->
+    let ex1 = fromRight [] ex in pure ex1
+
+expiryTimes2 :: (MonadIO m, MonadReader Env m) => m [NordnetExpiry]
+expiryTimes2 = Reader.ask >>= \env ->
+  fetchExpiryFromRedis2 >>= \byteStrings ->
+    let ints = map (read . BU.toString) byteStrings
+        curUnixTime =
+            1000 * ((unixTimeToInt . dayToUnixTime) (getDownloadDate env))
+    in  liftIO ((putStrLn . show) curUnixTime)
+          >> pure (filter (\x -> x > curUnixTime) ints)
 
 saveOpeningPricesToRedis'
   :: (MonadIO m, MonadReader Env m)

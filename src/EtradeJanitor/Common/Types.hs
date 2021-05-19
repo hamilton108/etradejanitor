@@ -112,14 +112,14 @@ data StockPrice =
     , vol2 :: DI.Int64
     } deriving (Eq,Show)
 
-data Envx a = 
-    Envx 
+data Envx a =
+    Envx
     {
       ax :: Int
-    , bx :: a 
+    , bx :: a
     }
 
-newtype REIOX a  = 
+newtype REIOX a  =
   REIOX
   {
     runAppx :: ReaderT (Envx Int) (StateT AppState IO) a

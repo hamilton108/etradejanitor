@@ -128,27 +128,24 @@ myQueue ch =
 publish :: (MonadIO m, MonadReader Env m) => Payload -> RoutingKey -> m ()
 publish p (RoutingKey rk) = Reader.ask >>= \env ->
   let conn = getRabbitConnection env
-  in  
-    case conn of 
-      Just conn1 ->
-        liftIO $ AMQP.openChannel conn1 >>= \ch ->
-            putStrLn "Channel opened"
-              >> myExchange ch
-              >> putStrLn "myExchange"
-              >>
+  in  case conn of
+        Just conn1 -> liftIO $ AMQP.openChannel conn1 >>= \ch ->
+          putStrLn "Channel opened"
+            >> myExchange ch
+            >> putStrLn "myExchange"
+            >>
 
-                              --myQueue ch >>= \(q,_,_) ->
+                                --myQueue ch >>= \(q,_,_) ->
 
-                              --doBindQueue ch q >>
-                AMQP.publishMsg
-                  ch
-                  myExchangeName
-                  rk
-                  (AMQP.newMsg { AMQP.msgBody         = Aeson.encode p
-                                , AMQP.msgDeliveryMode = Just NonPersistent
-                                }
-                  )
-              >> putStrLn "Done publish"
-      Nothing ->
-        liftIO $ putStrLn "No connection object set"
+                                --doBindQueue ch q >>
+               AMQP.publishMsg
+                 ch
+                 myExchangeName
+                 rk
+                 (AMQP.newMsg { AMQP.msgBody         = Aeson.encode p
+                              , AMQP.msgDeliveryMode = Just NonPersistent
+                              }
+                 )
+            >> putStrLn "Done publish"
+        Nothing -> liftIO $ putStrLn "No connection object set"
 

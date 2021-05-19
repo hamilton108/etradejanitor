@@ -32,17 +32,41 @@ dx1 :: Calendar.Day
 dx1 = Calendar.fromGregorian 2020 7 24
 
 dx2 :: Calendar.Day
-dx2 = Calendar.fromGregorian 2020 12 18
-
+dx2 = Calendar.fromGregorian 2021 6 16
+ 
 dx3 :: Calendar.Day
-dx3 = Calendar.fromGregorian 2021 6 19
+dx3 = Calendar.fromGregorian 2022 12 16
 
-nhy :: T.Ticker
-nhy = T.Ticker { T.oid = 1, T.ticker = "NHY", T.category = 1, T.date = dx1 }
+expiry1 :: [T.NordnetExpiry]
+expiry1 =
+  [ 1618524000000 -- 15.04.2021 22:00 GMT+000
+  , 1621548000000 -- 20.05.2021 22:00 GMT+000
+  , 1623967200000 -- 17.06.2021 22:00 GMT+000
+  , 1631829600000 -- 16.09.2021 22:00 GMT+000
+  , 1639695600000 -- 16.12.2021 22:00 GMT+000
+  , 1671145200000 -- 15.12.2022 22:00 GMT+000
+  ]
 
-tel :: T.Ticker
-tel = T.Ticker { T.oid = 6, T.ticker = "TEL", T.category = 1, T.date = dx1 }
+spec :: Spec
+spec = do
+  describe "OptionExpiry" $ do
+    context "when date is 2020-04-24" $ do
+      it "expiry dates should be all expirys" $ do
+        let env = T.Env prmsRdb5 dx1 Nothing nil
+        actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes2) env
+        shouldBe (sort actual) expiry1
+    context "when date is 2021-06-16" $ do
+      it "count of expiry dates should be 4" $ do
+        let env = T.Env prmsRdb5 dx2 Nothing nil
+        actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes2) env
+        shouldBe (length actual) 4 
+    context "when date is 2022-12-16" $ do
+      it "count expiry dates should be 0" $ do
+        let env = T.Env prmsRdb5 dx3 Nothing nil
+        actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes2) env
+        shouldBe actual [] 
 
+{-
 expiry1 :: [T.NordnetExpiry]
 expiry1 =
   [ 1597960800000
@@ -95,3 +119,4 @@ spec = do
         let env = T.Env prmsRdb5 dx3 Nothing nil
         actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes nhy) env
         shouldBe actual []
+-}
