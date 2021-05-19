@@ -1,5 +1,5 @@
 #!/bin/bash
 
-/etradejanitor-1.6.2 "$@"
+/etradejanitor-1.7.1 "$@"
 
 exit 0
