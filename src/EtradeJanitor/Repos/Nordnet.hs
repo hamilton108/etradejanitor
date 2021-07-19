@@ -34,6 +34,7 @@ import qualified Data.ByteString.Char8         as Char8
 import qualified Text.HTML.TagSoup             as TS
 import           Text.HTML.TagSoup              ( Tag(..)
                                                 , (~/=)
+                                                , (~==)
                                                 )
 
 import           Data.Text                      ( Text )
@@ -239,6 +240,29 @@ downloadDerivativePrices tix = Reader.ask >>= \env ->
         let dt = downloadAbleTickers tix in mapM_ downloadDerivativePrices' dt
       False -> pure ()
 
+ariaHidden :: (MonadIO m, MonadReader Env m) => Ticker -> m [[Tag String]]
+ariaHidden t = pathName (OpeningPrices t) >>= \pn ->
+  let fname = Printf.printf "%s/%s.html" pn (T.ticker t)
+  in  (liftIO $ soup fname) >>= \soupx ->
+    let 
+      rows1 = dropWhile (~/= (TagOpen ("" :: String) [("role","row")])) soupx
+      rows1b = dropWhile (~/= (TagOpen ("" :: String) [("role","row")])) $ drop 1 rows1
+      rows2 = takeWhile (~/= (TagOpen ("" :: String) [("role","row")])) $ drop 1 rows1b
+      rows2b = TS.sections (~== (TagOpen ("span" :: String) [("aria-hidden","true")])) rows2
+    in 
+    pure $ rows2b
+
+openingPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m OpeningPrice
+openingPrice t = ariaHidden t >>= \trx ->
+  let
+    aria2 = head . take 1 . drop 2 $ trx
+    txt = TS.fromTagText . head . dropWhile (~/= (TagText ("" :: String))) $ aria2
+  in
+  pure $ OpeningPrice (T.ticker t) (decimalStrToAscii txt)
+  
+
+
+{-
 tr :: (MonadIO m, MonadReader Env m) => Ticker -> m [Tag String]
 tr t = pathName (OpeningPrices t) >>= \pn ->
   let fname = Printf.printf "%s/%s.html" pn (T.ticker t)
@@ -248,10 +272,12 @@ tr t = pathName (OpeningPrices t) >>= \pn ->
         in  pure $ dropWhile (~/= ("<tr>" :: String)) tbody
 
 openingPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m OpeningPrice
-openingPrice t = tr t >>= \trx ->
+openingPrice t = ariaHidden t >>= \trx ->
   let td =
           dropWhile (~/= TagOpen ("td" :: String) [("data-title", "Siste")]) trx
       txt = (TS.fromTagText . head . drop 1) $ dropWhile
         (~/= TagOpen ("span" :: String) [("aria-hidden", "true")])
         td
   in  pure $ OpeningPrice (T.ticker t) (decimalStrToAscii txt)
+
+-}

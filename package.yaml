@@ -1,5 +1,5 @@
 name:                etradejanitor 
-version:             1.7
+version:             1.7.1
 github:              "githubuser/demo3"
 license:             BSD3
 author:              "Rolf C Stadheim"
@@ -56,7 +56,7 @@ library:
   source-dirs: src
 
 executables:
-  etradejanitor-1.7:
+  etradejanitor-1.7.1:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

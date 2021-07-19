@@ -27,9 +27,9 @@ import qualified EtradeJanitor.Common.Misc     as Misc
 
 testDay :: Calendar.Day
 testDay =
-  let year  = 2019 :: Integer
-      month = 9 :: Int
-      day   = 1 :: Int
+  let year  = 2021 :: Integer
+      month = 6 :: Int
+      day   = 18 :: Int
   in  Calendar.fromGregorian year month day
 
 {-
@@ -71,10 +71,10 @@ testEnv = Env testParams testDay Nothing nil
 
 expectedPathName :: String
 expectedPathName =
-  "/home/rcs/opt/haskell/etradejanitor/test/testfeed/2019/9/1/NHY"
+  "/home/rcs/opt/haskell/etradejanitor/test/testfeed/2021/6/18/EQNR"
 
 testTicker :: Ticker
-testTicker = Ticker 1 "NHY" 1 testDay
+testTicker = Ticker 2 "EQNR" 1 testDay
 
 testTickers :: Tickers
 testTickers =
@@ -93,7 +93,7 @@ spec = do
                 shouldBe testExpiryDates expectedExpiryDates 
     -}
   describe "Derviative Prices" $ do
-    context "when download date is 2019-09-01 and option ticker is NHY" $ do
+    context "when download date is 2021-06-18 and option ticker is EQNR" $ do
       it ("path name should be " ++ expectedPathName) $ do
         testPathName <- runReaderT
           (runApp $ Nordnet.pathName (DerivativePrices testTicker))
@@ -105,11 +105,11 @@ spec = do
         let dt = Nordnet.downloadAbleTickers testTickers
         shouldBe (length dt) 4
   describe "Opening Prices" $ do
-    context "when ticker is NHY" $ do
+    context "when ticker is EQNR" $ do
       it ("opening price should be 28.26") $ do
         openingPrice <- runReaderT (runApp $ Nordnet.openingPrice testTicker)
                                    testEnv
-        shouldBe openingPrice (OpeningPrice "NHY" "28.26")
+        shouldBe openingPrice (OpeningPrice "EQNR" "175.56")
 
 
         {-

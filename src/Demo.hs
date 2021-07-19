@@ -5,8 +5,50 @@
 
 module Demo where
 
-demo :: Int
-demo = 3
+import           Control.Monad.Reader           ( runReaderT )
+import qualified Data.Time.Calendar            as Calendar
+import qualified EtradeJanitor.Params          as Params
+import qualified EtradeJanitor.Common.Misc     as Misc
+import           EtradeJanitor.Repos.Nordnet    ( Prices(..) )
+import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
+import           Data.UUID                      ( nil )
+import           EtradeJanitor.Common.Types     ( Env(..)
+                                                , OpeningPrice(..)
+                                                , Ticker(..)
+                                                , Tickers
+                                                , runApp
+                                                )
+
+testDay :: Calendar.Day
+testDay =
+  let year  = 2021 :: Integer
+      month = 6 :: Int
+      day   = 18 :: Int
+  in  Calendar.fromGregorian year month day
+ 
+testParams :: Params.Params
+testParams = Params.Params { Params.databaseIp               = "172.17.0.2"
+                           , Params.redisHost                = "172.20.1.2"
+                           , Params.redisDatabase            = "5"
+                           , Params.feed = Misc.feedRoot ++ "/test/testfeed"
+                           , Params.downloadDerivatives      = True
+                           , Params.dbUpdateStocks           = True
+                           , Params.skipIfDownloadFileExists = True
+                           , Params.showStockTickers         = False
+                           , Params.openingPricesToRedis     = False
+                           }
+
+testEnv :: Env
+testEnv = Env testParams testDay Nothing nil
+
+testTicker :: Ticker
+testTicker = Ticker 2 "EQNR" 1 testDay
+--testTicker = Ticker 3 "YAR" 1 testDay
+
+-- demo :: Int
+demo = 
+    runReaderT (runApp $ Nordnet.openingPrice testTicker) testEnv
+
 {--
 import EtradeJanitor.Repos.Nordnet.RedisRepos
 
