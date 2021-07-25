@@ -1,6 +1,6 @@
+#!/usr/bin/python3
+
 import json
-import pika
-import sys
 import common
 
 
