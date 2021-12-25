@@ -6,7 +6,7 @@ After=multi-user.target
 WorkingDirectory=/home/rcs/
 User=rcs
 Type=simple
-Restart=always
+Restart=no
 ExecStart=/usr/bin/python3 /home/rcs/opt/haskell/etradejanitor/python/rabbitmq/etradejanitor_listener.py
 
 [Install]

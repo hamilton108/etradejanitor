@@ -26,6 +26,7 @@ data Params =
     { databaseIp :: String
     , redisHost :: String
     , redisDatabase :: String
+    , redisPort :: String
     , feed :: String
     , downloadDerivatives :: Bool
     , dbUpdateStocks :: Bool
@@ -40,6 +41,9 @@ defaultFeed = Misc.feedRoot ++ "/feed2"
 defaultRedisDatabase :: String
 defaultRedisDatabase = "0"
 
+defaultRedisPort :: String
+defaultRedisPort = "6379"
+
 mkParams :: Parser Params
 mkParams =
   Params
@@ -50,6 +54,13 @@ mkParams =
           <> short 'd'
           <> help "Redis database"
           <> value defaultRedisDatabase
+          <> showDefault
+          )
+    <*> strOption
+          (  long "redis-port"
+          <> short 'p'
+          <> help "Redis port"
+          <> value defaultRedisPort
           <> showDefault
           )
     <*> strOption

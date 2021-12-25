@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../../../ebooks/manning/haskell/haskell_in_depth/hid-examples-master"
+		},
+		{
+			"path": "../../../java/harborview2/purescript"
 		}
 	]
 }

@@ -50,6 +50,19 @@ data OpeningPrice =
 
 type AppState = [Ticker]
 
+newtype RedisHost = RedisHost String 
+
+newtype RedisPort = RedisPort String 
+
+getRedisHost :: PA.Params -> RedisHost
+getRedisHost p = 
+    RedisHost $ PA.redisHost p
+
+getRedisPort :: PA.Params -> RedisPort
+getRedisPort p = 
+    RedisPort $ PA.redisPort p
+
+
 newtype REIO a =
   REIO
   {

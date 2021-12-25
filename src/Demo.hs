@@ -17,7 +17,21 @@ import           EtradeJanitor.Common.Types     ( Env(..)
                                                 , Ticker(..)
                                                 , Tickers
                                                 , runApp
+                                                , getRedisHost
+                                                , getRedisPort
                                                 )
+
+import           EtradeJanitor.AMQP.RabbitMQ    ( Payload(..)
+                                                , RoutingKey
+                                                , rkInfo
+                                                , rkError
+                                                , publish
+                                                , myConnection
+                                                )
+
+import           Network.AMQP                   ( Connection )
+import           Data.UUID.V4                   ( nextRandom )
+import           EtradeJanitor.Repos.Nordnet    ( openingPrice )
 
 testDay :: Calendar.Day
 testDay =
@@ -27,9 +41,10 @@ testDay =
   in  Calendar.fromGregorian year month day
  
 testParams :: Params.Params
-testParams = Params.Params { Params.databaseIp               = "172.17.0.2"
-                           , Params.redisHost                = "172.20.1.2"
+testParams = Params.Params { Params.databaseIp               = "172.20.1.3"
+                           , Params.redisHost                = "172.20.1.4"
                            , Params.redisDatabase            = "5"
+                           , Params.redisPort                = "15672"
                            , Params.feed = Misc.feedRoot ++ "/test/testfeed"
                            , Params.downloadDerivatives      = True
                            , Params.dbUpdateStocks           = True
@@ -38,18 +53,52 @@ testParams = Params.Params { Params.databaseIp               = "172.17.0.2"
                            , Params.openingPricesToRedis     = False
                            }
 
-testEnv :: Env
-testEnv = Env testParams testDay Nothing nil
+testEnv :: Maybe Connection -> Env
+testEnv conn = Env testParams testDay conn nil
 
-testTicker :: Ticker
-testTicker = Ticker 2 "EQNR" 1 testDay
---testTicker = Ticker 3 "YAR" 1 testDay
+eqnr :: Ticker
+eqnr = Ticker 2 "EQNR" 1 testDay
 
--- demo :: Int
+nhy :: Ticker
+nhy = Ticker 1 "NHY" 1 testDay
+
+demo = 
+    let 
+        host = getRedisHost testParams
+        port = getRedisPort testParams 
+    in
+    nextRandom >>= \uuid ->
+        myConnection host >>= \conn ->
+            let 
+                env = testEnv (Just conn)
+                payload = Payload uuid 0 "EQNR" "demo" 10 "demo run"
+            in
+            runReaderT (publish payload rkInfo) env 
+
+data Nest2 = Nest2
+    { x :: Int 
+    , y :: Int
+    } deriving Show
+
+data Nest = Nest 
+    { a :: Int
+    , b :: Nest2 
+    } deriving Show 
+
+demo2 = 
+    let 
+        nest2 = Nest2 1 2
+        nest = Nest 3 nest2
+    in 
+    nest 
+    -- runReaderT (openingPrice nhy) (testEnv Nothing) 
+
+
+
+{--
 demo = 
     runReaderT (runApp $ Nordnet.openingPrice testTicker) testEnv
 
-{--
 import EtradeJanitor.Repos.Nordnet.RedisRepos
 
 

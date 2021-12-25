@@ -38,6 +38,7 @@ dependencies:
 - hspec
 - http-client
 - mtl
+- network
 - optparse-applicative 
 - process
 - regex-tdfa

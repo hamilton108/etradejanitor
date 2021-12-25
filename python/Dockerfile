@@ -1,4 +1,4 @@
-FROM rcs/yfinance:1.0
+ FROM rcs/yfinance:0.1.67
 
 # COPY yahoo.py /etradejanitor/
 

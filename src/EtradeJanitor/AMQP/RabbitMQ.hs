@@ -21,6 +21,8 @@ import           Network.AMQP                   ( Ack
                                                 , Envelope
                                                 , Message
                                                 )
+import           Network.Socket                 ( PortNumber
+                                                )
 import           Control.Monad.Reader           ( MonadReader
                                                 , MonadIO
                                                 )
@@ -36,6 +38,8 @@ import qualified Data.ByteString.Lazy.Char8    as BL
 import           Data.UUID                      ( UUID )
 import           EtradeJanitor.Common.Types     ( NordnetExpiry
                                                 , Env
+                                                , RedisHost(..)
+                                                , RedisPort(..)
                                                 , getRabbitConnection
                                                 )
 
@@ -91,11 +95,24 @@ myExchangeName = "etrade"
 myQueueName :: Text
 myQueueName = "hello"
 
-myConnection :: IO Connection
-myConnection = AMQP.openConnection "172.20.1.4"
-                                   "etradejanitor_vhost"
-                                   "etradejanitor"
-                                   "VhCHeUJ40"
+myConnection' :: RedisHost -> RedisPort -> IO Connection
+myConnection' (RedisHost host) (RedisPort port) = 
+    let 
+        portI = read port :: Integer
+        portR = fromIntegral portI :: PortNumber
+    in
+    AMQP.openConnection' host
+                         portR
+                         "etradejanitor_vhost"
+                         "etradejanitor"
+                         "VhCHeUJ40"
+
+myConnection :: RedisHost -> IO Connection
+myConnection (RedisHost host) = 
+    AMQP.openConnection  host
+                         "etradejanitor_vhost"
+                         "etradejanitor"
+                         "VhCHeUJ40"
 
 myExchange :: Channel -> IO ()
 myExchange ch = AMQP.declareExchange

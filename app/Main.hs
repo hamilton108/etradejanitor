@@ -67,6 +67,8 @@ import           Network.AMQP                   ( Connection
 
 import           EtradeJanitor.Common.Types     ( Tickers
                                                 , Env(..)
+                                                , RedisHost(..)
+                                                , RedisPort(..)
                                                 )
 import qualified EtradeJanitor.Common.Types    as Types
 import qualified EtradeJanitor.Common.CalendarUtil
@@ -92,7 +94,8 @@ import           EtradeJanitor.AMQP.RabbitMQ    ( myConnection )
 
 main :: IO ()
 main = PA.cmdLineParser
-  >>= \prm -> myConnection >>= \conn -> work prm conn >> closeConnection conn
+  >>= \prm -> 
+      work prm 
 
 
 {-
@@ -119,33 +122,39 @@ showStockTickers tix = ask >>= \env ->
         True  -> liftIO $ mapM_ (putStrLn . show) tix
         False -> pure ()
 
-work :: PA.Params -> Connection -> IO ()
-work params conn = putStrLn (show params) >> CalendarUtil.today >>= \today ->
+work :: PA.Params -> IO ()
+work params = putStrLn (show params) >> CalendarUtil.today >>= \today ->
   nextRandom >>= \uuid ->
-    let env = Env params today (Just conn) uuid
+    let
+        host = RedisHost $ PA.redisHost params
+        port = RedisPort $ PA.redisPort params
     in
-      Stocks.tickers (PA.databaseIp params) >>= \tix -> case tix of
-        Right result ->
-          runReaderT (Types.runApp $ showStockTickers result) env
-            >>  execStateT
-                  (runReaderT
-                    (Types.runApp2 $ Nordnet.downloadOpeningPrices result)
-                    env
-                  )
-                  []
-            >>= \downloadedTix ->
-                  runReaderT
-                      (Types.runApp $ Nordnet.openingPricesToRedis downloadedTix
-                      )
-                      env
-                    >> runReaderT
-                         (Types.runApp $ Nordnet.downloadDerivativePrices result
-                         )
-                         env
-                    >> runReaderT
-                         ( Types.runApp
-                         $ PaperHistory.updateStockPricesTickers result
-                         )
-                         env
-                    >> pure ()
-        Left err -> putStrLn (show err)
+    myConnection host port >>= \conn ->
+        let env = Env params today (Just conn) uuid
+        in
+        Stocks.tickers (PA.databaseIp params) >>= \tix -> case tix of
+            Right result ->
+                runReaderT (Types.runApp $ showStockTickers result) env
+                    >>  execStateT
+                        (runReaderT
+                            (Types.runApp2 $ Nordnet.downloadOpeningPrices result)
+                            env
+                        )
+                        []<
+                    >>= \downloadedTix ->
+                        runReaderT
+                            (Types.runApp $ Nordnet.openingPricesToRedis downloadedTix
+                            )
+                            env
+                            >> runReaderT
+                                (Types.runApp $ Nordnet.downloadDerivativePrices result
+                                )
+                                env
+                            >> runReaderT
+                                ( Types.runApp
+                                $ PaperHistory.updateStockPricesTickers result
+                                )
+                                env
+                            >> pure ()
+            Left err -> putStrLn (show err)
+    >> closeConnection conn
