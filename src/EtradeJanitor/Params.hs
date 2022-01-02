@@ -25,8 +25,10 @@ data Params =
     Params
     { databaseIp :: String
     , redisHost :: String
-    , redisDatabase :: String
     , redisPort :: String
+    , redisDatabase :: String
+    , rabbitHost :: String
+    , rabbitPort :: String
     , feed :: String
     , downloadDerivatives :: Bool
     , dbUpdateStocks :: Bool
@@ -44,11 +46,22 @@ defaultRedisDatabase = "0"
 defaultRedisPort :: String
 defaultRedisPort = "6379"
 
+defaultRabbitPort :: String
+defaultRabbitPort = "5672"
+
 mkParams :: Parser Params
 mkParams =
   Params
     <$> strArgument (metavar "IP" <> help "Database ip address")
     <*> strArgument (metavar "REDIS" <> help "Redis ip address")
+    <*> strArgument (metavar "RABBIT" <> help "RabbitMQ ip address")
+    <*> strOption
+          (  long "redis-port"
+          <> short 'p'
+          <> help "Redis port"
+          <> value defaultRedisPort
+          <> showDefault
+          )
     <*> strOption
           (  long "redis-database"
           <> short 'd'
@@ -57,10 +70,10 @@ mkParams =
           <> showDefault
           )
     <*> strOption
-          (  long "redis-port"
-          <> short 'p'
-          <> help "Redis port"
-          <> value defaultRedisPort
+          (  long "rabbit-port"
+          <> short 'l'
+          <> help "RabbitMQ port"
+          <> value defaultRabbitPort
           <> showDefault
           )
     <*> strOption

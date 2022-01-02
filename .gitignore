@@ -1,4 +1,6 @@
 *.swp
+*.lock
+*.pyc
 Sample.hs
 tmp/
 src/demo
@@ -22,3 +24,9 @@ feedtmp/
 docker/etradejanitor-*
 __pycache__/
 etradejanitor.cabal
+python/rabbitmq/demo1.py
+python/rabbitmq/demo2.py
+python/rabbitmq/emit_log_topic.py
+python/rabbitmq/listen.py
+python/rabbitmq/publish.py
+

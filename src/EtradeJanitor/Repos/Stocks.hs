@@ -41,10 +41,9 @@ stockTickerDecoder =
 selectStockTickers :: HST.Statement () Tickers
 selectStockTickers = HST.Statement sql encoder decoder False
  where
-  sql
-    =
-    -- "select t.oid,t.ticker,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 and t.oid = 1 group by t.oid,t.ticker order by t.ticker"
-      "select t.oid,t.ticker,t.ticker_category,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 group by t.oid,t.ticker order by t.oid"
+  sql =
+    "select t.oid,t.ticker,t.ticker_category,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 and t.oid = 3 group by t.oid,t.ticker order by t.oid"
+    --"select t.oid,t.ticker,t.ticker_category,max(s.dx) from stockmarket.stocktickers t join stockmarket.stockprice s on s.ticker_id=t.oid where t.status = 1 group by t.oid,t.ticker order by t.oid"
   encoder = HE.noParams
   decoder = HD.rowVector stockTickerDecoder
 

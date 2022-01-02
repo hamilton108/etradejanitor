@@ -67,8 +67,8 @@ import           Network.AMQP                   ( Connection
 
 import           EtradeJanitor.Common.Types     ( Tickers
                                                 , Env(..)
-                                                , RedisHost(..)
-                                                , RedisPort(..)
+                                                , RabbitHost(..)
+                                                , RabbitHost(..)
                                                 )
 import qualified EtradeJanitor.Common.Types    as Types
 import qualified EtradeJanitor.Common.CalendarUtil
@@ -99,19 +99,23 @@ main = PA.cmdLineParser
 
 
 {-
+testParams :: PA.Params
+testParams = PA.Params { PA.databaseIp               = "172.20.1.3"
+                           , PA.redisHost                = "172.20.1.2"
+                           , PA.redisPort                = "6379"
+                           , PA.redisDatabase            = "5"
+                           , PA.rabbitHost               = "172.20.1.4"
+                           , PA.rabbitPort               = "5672"
+                           , PA.feed                     = "/home/rcs/etradejanitor/test/testfeed"
+                           , PA.downloadDerivatives      = False
+                           , PA.dbUpdateStocks           = False 
+                           , PA.skipIfDownloadFileExists = True
+                           , PA.showStockTickers         = False
+                           , PA.openingPricesToRedis     = True
+                           }
 main2 :: IO ()
 main2 = 
-    let
-        p = PA.Params { 
-              PA.databaseIp = "172.17.0.2"
-            --, PA.feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
-            , PA.feed = "/home/rcs/opt/haskell/etradejanitor/python"
-            , PA.skipDownloadDerivatives = True 
-            , PA.skipDbUpdateStocks = False
-            , PA.skipIfDownloadFileExists = True
-            , PA.showStockTickers = True
-        }
-    in work p
+    work testParams
 -}
 
 showStockTickers :: (MonadIO m, MonadReader Env m) => Tickers -> m ()
@@ -126,10 +130,10 @@ work :: PA.Params -> IO ()
 work params = putStrLn (show params) >> CalendarUtil.today >>= \today ->
   nextRandom >>= \uuid ->
     let
-        host = RedisHost $ PA.redisHost params
-        port = RedisPort $ PA.redisPort params
+        host = Types.getRabbitHost params
+        port = Types.getRabbitPort params
     in
-    myConnection host port >>= \conn ->
+    myConnection host >>= \conn ->
         let env = Env params today (Just conn) uuid
         in
         Stocks.tickers (PA.databaseIp params) >>= \tix -> case tix of
@@ -140,7 +144,7 @@ work params = putStrLn (show params) >> CalendarUtil.today >>= \today ->
                             (Types.runApp2 $ Nordnet.downloadOpeningPrices result)
                             env
                         )
-                        []<
+                        []
                     >>= \downloadedTix ->
                         runReaderT
                             (Types.runApp $ Nordnet.openingPricesToRedis downloadedTix

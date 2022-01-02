@@ -2,7 +2,7 @@
 
 HOME="/home/rcs/opt/haskell/etradejanitor"
 
-JANITOR_VER="0.9.0"
+JANITOR_VER="${janitorVersion}"
 
 PG="172.20.1.3"
 

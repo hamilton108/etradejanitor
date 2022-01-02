@@ -10,6 +10,7 @@ module EtradeJanitor.AMQP.RabbitMQ
   , rkInfo
   , rkError
   , myConnection
+  , myConnection'
   )
 where
 
@@ -30,6 +31,7 @@ import qualified Control.Monad.Reader          as Reader
 import           Control.Monad.IO.Class         ( liftIO )
 import           Data.Aeson                     ( ToJSON(..)
                                                 , FromJSON(..)
+                                                , Value(..)
                                                 , (.=)
                                                 )
 import qualified Data.Aeson                    as Aeson
@@ -38,15 +40,17 @@ import qualified Data.ByteString.Lazy.Char8    as BL
 import           Data.UUID                      ( UUID )
 import           EtradeJanitor.Common.Types     ( NordnetExpiry
                                                 , Env
-                                                , RedisHost(..)
-                                                , RedisPort(..)
+                                                , RabbitHost(..)
+                                                , RabbitPort(..)
                                                 , getRabbitConnection
                                                 )
 
+
 data Payload =
-    Payload
+    NordnetPayload
     { msgId :: UUID
     , utcTime :: Int
+    , iso8601 :: String
     , ticker :: Text
     , fun :: Text
     , nex :: NordnetExpiry
@@ -56,19 +60,22 @@ data Payload =
 
 
 instance ToJSON Payload where
-  toJSON (Payload msgId utcTime ticker method nex msg) = Aeson.object
+  toJSON (NordnetPayload msgId utcTime iso8601 ticker method nex msg) = Aeson.object
     [ "msgid" .= msgId
     , "utctime" .= utcTime
+    , "iso8601" .= iso8601
     , "ticker" .= ticker
     , "method" .= method
     , "nx" .= nex
     , "msg" .= msg
     ]
-  toEncoding (Payload msgId utcTime ticker method nex msg) = Aeson.pairs
+  toEncoding (NordnetPayload msgId utcTime iso8601 ticker method nex msg) = Aeson.pairs
     (  "msgid"
     .= msgId
     <> "utctime"
     .= utcTime
+    <> "iso8601" 
+    .= iso8601
     <> "ticker"
     .= ticker
     <> "method"
@@ -78,6 +85,42 @@ instance ToJSON Payload where
     <> "msg"
     .= msg
     )
+
+{-
+data Pay1 = Pay1
+    { p1x :: Int 
+    } deriving Show
+
+instance ToJSON Pay1 where 
+  toJSON (Pay1 p1x) = Aeson.object
+    [ "p1x" .= p1x
+    ]
+
+data Pay2 = Pay2
+    { p2x :: Int
+    , p :: Pay1
+    } deriving Show
+
+toObject :: ToJSON a => a -> Object
+toObject a = case toJSON a of
+  Object o -> o
+  _        -> error "toObject: value isn't an Object"
+
+instance ToJSON Pay2 where 
+  toJSON (Pay2 p2x p) = Aeson.object
+    [ "p2x" .= p2x
+    , toJSON p
+    ]
+
+payx = 
+    let 
+        pay1 = Pay1 12
+        pay2 = Pay2 15 pay1
+    in
+    Aeson.encode pay2
+    -- Pay2 14 pay1
+-}
+
 
 newtype RoutingKey =
   RoutingKey Text
@@ -92,11 +135,11 @@ myExchangeName :: Text
 myExchangeName = "etrade"
 
 
-myQueueName :: Text
-myQueueName = "hello"
+--myQueueName :: Text
+--myQueueName = "hello"
 
-myConnection' :: RedisHost -> RedisPort -> IO Connection
-myConnection' (RedisHost host) (RedisPort port) = 
+myConnection' :: RabbitHost -> RabbitPort -> IO Connection
+myConnection' (RabbitHost host) (RabbitPort port) = 
     let 
         portI = read port :: Integer
         portR = fromIntegral portI :: PortNumber
@@ -107,8 +150,8 @@ myConnection' (RedisHost host) (RedisPort port) =
                          "etradejanitor"
                          "VhCHeUJ40"
 
-myConnection :: RedisHost -> IO Connection
-myConnection (RedisHost host) = 
+myConnection :: RabbitHost -> IO Connection
+myConnection (RabbitHost host) = 
     AMQP.openConnection  host
                          "etradejanitor_vhost"
                          "etradejanitor"

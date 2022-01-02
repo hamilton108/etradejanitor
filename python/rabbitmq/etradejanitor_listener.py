@@ -51,19 +51,27 @@ def callback(ch, method, properties, body):
     coll.insert_one(bytes_to_json(body))
 
 
+"""
+def callback_debug(ch, method, properties, body):
+    print(method.routing_key)
+    print(body)
+"""
+
+
 def consume():
     channel.basic_consume(
         queue=queue_name, on_message_callback=callback, auto_ack=True)
     channel.start_consuming()
 
 
+"""
 def demo():
     bytes = b'{"utcTime":1610387394,"nx":1608246000000,"msg":"Network.Socket.getAddrInfo (called with preferred socket type/protocol: AddrInfo {addrFlags = [AI_ADDRCONFIG], addrFamily = AF_UNSPEC, addrSocketType = Stream, addrProtocol = 0, addrAddress = <assumed to be undefined>, addrCanonName = <assumed to be undefined>}, host name: Just \\"www.nordnet.nox\\", service name: Just \\"443\\"): does not exist (Name or service not known)"}'
     coll = mongoCollection("etrade.error")
     coll.insert_one(bytes_to_json(bytes))
+"""
 
 
 if __name__ == "__main__":
     print(" [*] Waiting for logs. To exit press CTRL+C")
-    # demo()
     consume()
