@@ -5,31 +5,34 @@
 
 module Demo where
 
+import           Control.Monad.State            ( execStateT )
 import           Control.Monad.Reader           ( runReaderT )
 import qualified Data.Time.Calendar            as Calendar
 import qualified EtradeJanitor.Params          as Params
 import qualified EtradeJanitor.Common.Misc     as Misc
+import qualified EtradeJanitor.Repos.Nordnet.RedisRepos   
+                                               as RedisRepos   
 import           EtradeJanitor.Repos.Nordnet    ( Prices(..) )
 import qualified EtradeJanitor.Repos.Nordnet   as Nordnet
-import           Data.UUID                      ( nil )
+import qualified Data.Vector                   as Vector
+import           Data.UUID                      ( UUID
+                                                , nil 
+                                                )
 import           EtradeJanitor.Common.Types     ( Env(..)
                                                 , OpeningPrice(..)
                                                 , Ticker(..)
                                                 , Tickers
-                                                , runApp
-                                                , getRedisHost
-                                                , getRedisPort
+                                                , NordnetExpiry
                                                 )
 
+import qualified EtradeJanitor.Common.Types     as T
 import           EtradeJanitor.AMQP.RabbitMQ    ( Payload(..)
                                                 , RoutingKey
-                                                , rkInfo
-                                                , rkError
-                                                , publish
-                                                , myConnection
                                                 )
+import qualified EtradeJanitor.AMQP.RabbitMQ    as Rabbit
 
 import           Network.AMQP                   ( Connection )
+import qualified Network.AMQP                   as AMQP
 import           Data.UUID.V4                   ( nextRandom )
 import           EtradeJanitor.Repos.Nordnet    ( openingPrice )
 
@@ -42,19 +45,21 @@ testDay =
  
 testParams :: Params.Params
 testParams = Params.Params { Params.databaseIp               = "172.20.1.3"
-                           , Params.redisHost                = "172.20.1.4"
+                           , Params.redisHost                = "172.20.1.2"
+                           , Params.redisPort                = "6379"
                            , Params.redisDatabase            = "5"
-                           , Params.redisPort                = "15672"
-                           , Params.feed = Misc.feedRoot ++ "/test/testfeed"
+                           , Params.rabbitHost               = "172.20.1.4"
+                           , Params.rabbitPort               = "5672"
+                           , Params.feed                     = "/home/rcs/opt/haskell/etradejanitor/test/testfeed"
                            , Params.downloadDerivatives      = True
                            , Params.dbUpdateStocks           = True
                            , Params.skipIfDownloadFileExists = True
                            , Params.showStockTickers         = False
-                           , Params.openingPricesToRedis     = False
+                           , Params.openingPricesToRedis     = True
                            }
 
-testEnv :: Maybe Connection -> Env
-testEnv conn = Env testParams testDay conn nil
+testEnv :: Maybe Connection -> UUID -> Env
+testEnv conn uuid = Env testParams testDay conn uuid
 
 eqnr :: Ticker
 eqnr = Ticker 2 "EQNR" 1 testDay
@@ -62,36 +67,60 @@ eqnr = Ticker 2 "EQNR" 1 testDay
 nhy :: Ticker
 nhy = Ticker 1 "NHY" 1 testDay
 
+demo :: IO ()
 demo = 
     let 
-        host = getRedisHost testParams
-        port = getRedisPort testParams 
+        host = T.getRabbitHost testParams
+        port = T.getRabbitPort testParams 
     in
     nextRandom >>= \uuid ->
-        myConnection host >>= \conn ->
+        Rabbit.myConnection' host port >>= \conn ->
             let 
-                env = testEnv (Just conn)
-                payload = Payload uuid 0 "EQNR" "demo" 10 "demo run"
+                env = testEnv (Just conn) nil
+                payload = NordnetPayload uuid 0 "iso8601" "EQNR" "demo" 10 "demo run"
             in
-            runReaderT (publish payload rkInfo) env 
+            runReaderT (Rabbit.publish payload Rabbit.rkInfo) env >>
+            AMQP.closeConnection conn 
 
-data Nest2 = Nest2
-    { x :: Int 
-    , y :: Int
-    } deriving Show
-
-data Nest = Nest 
-    { a :: Int
-    , b :: Nest2 
-    } deriving Show 
-
+--demo2 :: IO [NordnetExpiry]
 demo2 = 
     let 
-        nest2 = Nest2 1 2
-        nest = Nest 3 nest2
-    in 
-    nest 
-    -- runReaderT (openingPrice nhy) (testEnv Nothing) 
+        host = T.getRabbitHost testParams
+        port = T.getRabbitPort testParams 
+    in
+    nextRandom >>= \uuid ->
+        Rabbit.myConnection' host port >>= \conn ->
+            let
+                env = testEnv (Just conn) uuid
+            in
+            runReaderT 
+                            --RedisRepos.expiryTimes2
+                            --(Nordnet.openingPricesToRedis [nhy])
+                            --(Nordnet.openingPrice nhy)
+                            (Nordnet.tryDownloadOpeningPrice eqnr)
+                            env >>= \result ->
+            putStrLn (show result) >>
+            AMQP.closeConnection conn >>
+            pure result 
+
+demo3 = 
+    let 
+        host = T.getRabbitHost testParams
+        port = T.getRabbitPort testParams 
+    in
+    nextRandom >>= \uuid ->
+        Rabbit.myConnection' host port >>= \conn ->
+            let 
+                env = testEnv (Just conn) uuid
+                tix = Vector.singleton eqnr
+            in
+            execStateT
+                (runReaderT
+                    (T.runApp2 $ Nordnet.downloadOpeningPrices tix)
+                    env
+                )
+                [] >>= \result ->
+                    putStrLn (show result) 
 
 
 

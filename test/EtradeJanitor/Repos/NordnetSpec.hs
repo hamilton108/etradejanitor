@@ -55,9 +55,12 @@ expectedExpiryDates =
 -}
 
 testParams :: Params.Params
-testParams = Params.Params { Params.databaseIp               = "172.17.0.2"
+testParams = Params.Params { Params.databaseIp               = "172.20.1.3"
                            , Params.redisHost                = "172.20.1.2"
+                           , Params.redisPort                = "6379"
                            , Params.redisDatabase            = "5"
+                           , Params.rabbitHost               = "172.20.1.4"
+                           , Params.rabbitPort               = "5672"
                            , Params.feed = Misc.feedRoot ++ "/test/testfeed"
                            , Params.downloadDerivatives      = True
                            , Params.dbUpdateStocks           = True
@@ -109,7 +112,7 @@ spec = do
       it ("opening price should be 28.26") $ do
         openingPrice <- runReaderT (runApp $ Nordnet.openingPrice testTicker)
                                    testEnv
-        shouldBe openingPrice (OpeningPrice "EQNR" "175.56")
+        shouldBe openingPrice (OpeningPrice "EQNR" "235.90")
 
 
         {-

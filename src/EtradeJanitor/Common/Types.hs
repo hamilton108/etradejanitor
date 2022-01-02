@@ -50,17 +50,26 @@ data OpeningPrice =
 
 type AppState = [Ticker]
 
-newtype RedisHost = RedisHost String 
+newtype PosixTimeInt = PosixTimeInt Int deriving Show
 
-newtype RedisPort = RedisPort String 
+newtype Iso8601 = Iso8601 String deriving Show
 
-getRedisHost :: PA.Params -> RedisHost
-getRedisHost p = 
-    RedisHost $ PA.redisHost p
+data TimeInfo = TimeInfo
+  { posixTimeInt :: PosixTimeInt
+  , iso8601 :: Iso8601
+  } deriving Show
 
-getRedisPort :: PA.Params -> RedisPort
-getRedisPort p = 
-    RedisPort $ PA.redisPort p
+newtype RabbitHost = RabbitHost String 
+
+newtype RabbitPort = RabbitPort String 
+
+getRabbitHost :: PA.Params -> RabbitHost 
+getRabbitHost p = 
+    RabbitHost $ PA.rabbitHost p
+
+getRabbitPort :: PA.Params -> RabbitPort 
+getRabbitPort p = 
+    RabbitPort $ PA.rabbitPort p
 
 
 newtype REIO a =
