@@ -39,13 +39,16 @@ dx3 = Calendar.fromGregorian 2022 12 16
 
 expiry1 :: [T.NordnetExpiry]
 expiry1 =
-  [ 1618524000000 -- 15.04.2021 22:00 GMT+000
-  , 1621548000000 -- 20.05.2021 22:00 GMT+000
-  , 1623967200000 -- 17.06.2021 22:00 GMT+000
-  , 1631829600000 -- 16.09.2021 22:00 GMT+000
-  , 1639695600000 -- 16.12.2021 22:00 GMT+000
-  , 1671145200000 -- 15.12.2022 22:00 GMT+000
-  ]
+  [ 1618524000000
+  , 1621548000000
+  , 1623967200000
+  , 1631829600000
+  , 1639695600000
+  , 1645138800000
+  , 1647558000000
+  , 1655416800000
+  , 1663279200000
+  , 1671145200000]
 
 spec :: Spec
 spec = do
@@ -56,10 +59,10 @@ spec = do
         actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes2) env
         shouldBe (sort actual) expiry1
     context "when date is 2021-06-16" $ do
-      it "count of expiry dates should be 4" $ do
+      it "count of expiry dates should be 8" $ do
         let env = T.Env prmsRdb5 dx2 Nothing nil
         actual <- runReaderT (T.runApp $ RedisRepos.expiryTimes2) env
-        shouldBe (length actual) 4 
+        shouldBe (length actual) 8
     context "when date is 2022-12-16" $ do
       it "count expiry dates should be 0" $ do
         let env = T.Env prmsRdb5 dx3 Nothing nil
