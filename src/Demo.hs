@@ -97,9 +97,10 @@ demo2 =
                             --RedisRepos.expiryTimes2
                             --(Nordnet.openingPricesToRedis [nhy])
                             --(Nordnet.openingPrice nhy)
-                            (Nordnet.tryDownloadOpeningPrice eqnr)
+                            --(Nordnet.tryDownloadOpeningPrice eqnr)
+                            RedisRepos.expiryTimes2 
                             env >>= \result ->
-            putStrLn (show result) >>
+            --putStrLn (show result) >>
             AMQP.closeConnection conn >>
             pure result 
 

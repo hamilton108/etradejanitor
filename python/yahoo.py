@@ -2,7 +2,7 @@
 import yfinance as y
 
 TICKERS = [
-    "AKERBP",
+    #"AKERBP",
     "AKSO",
     "BAKKA",
     "BWLPG",
@@ -11,13 +11,13 @@ TICKERS = [
     "EQNR",
     "GJF",
     "GOGL",
-    # "MHG",
+    #"MHG",
     "NAS",
     "NHY",
     "OBX",
     "ORK",
     "PGS",
-    "REC",
+    #"REC",
     "SDRL",
     "STB",
     "SUBC",
@@ -35,13 +35,16 @@ PERIOD = "1d"
 
 def save_to_cvs():
     for t in TICKERS:
-        print("%s" % t)
-        f = open("/etradejanitor/feed/%s.csv" % t, "w")
-        t = y.Ticker("%s.OL" % t)
-        h = t.history(period=PERIOD)
-        csv = h.to_csv()
-        f.write(csv)
-        f.close()
+        try:
+            print("%s" % t)
+            f = open("/etradejanitor/feed/%s.csv" % t, "w")
+            t = y.Ticker("%s.OL" % t)
+            h = t.history(period=PERIOD)
+            csv = h.to_csv()
+            f.write(csv)
+            f.close()
+        except:
+            print("Could not download: %s" % t)
 
 
 if __name__ == '__main__':

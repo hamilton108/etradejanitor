@@ -25,9 +25,9 @@ data Params =
     Params
     { databaseIp :: String
     , redisHost :: String
+    , rabbitHost :: String
     , redisPort :: String
     , redisDatabase :: String
-    , rabbitHost :: String
     , rabbitPort :: String
     , feed :: String
     , downloadDerivatives :: Bool

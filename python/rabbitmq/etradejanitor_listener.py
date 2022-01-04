@@ -51,11 +51,9 @@ def callback(ch, method, properties, body):
     coll.insert_one(bytes_to_json(body))
 
 
-"""
 def callback_debug(ch, method, properties, body):
     print(method.routing_key)
     print(body)
-"""
 
 
 def consume():
