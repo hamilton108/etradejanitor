@@ -1,5 +1,6 @@
 import sys
 import subprocess
+import argparse
 from mako.template import Template
 
 TPL_DIR="python/templates"
@@ -27,20 +28,52 @@ def git_add(msg):
     subprocess.run(["git", "add", "docker/dockerbuild"])
     subprocess.run(["git", "add", "docker/Dockerfile"])
     subprocess.run(["git", "add", "docker/main.sh"])
-    subprocess.run(["git", "add", "runMain.sh"])
+    subprocess.run(["git", "add", "runMain"])
     subprocess.run(["git", "commit", "-m", msg])
 
 if __name__ == '__main__':
-    janitorVersion = sys.argv[1]
-    if (len(sys.argv) >= 3):
-        gitmsg = sys.argv[2]
-    else:
-        gitmsg = None
+    parser = argparse.ArgumentParser(description="Mako")
 
-    render_all(janitorVersion)
+    parser.add_argument("--git-tag", dest="is_git_tag", action="store_true",
+                        default=False, help="If set, will create Git tag. default: false")
 
-    if gitmsg != None: 
-        git_add(msg)
-        add_git_tag(janitorVersion,gitmsg)
+    parser.add_argument("--git-commit", dest="is_git_commit", action="store_true",
+                        default=False, help="If set, will Git commit. default: false")
+
+    parser.add_argument("--render", dest="is_render", action="store_true",
+                        default=False, help="If set, will render Mako templates. default: false")
+
+    parser.add_argument("--version", dest="version", 
+                        help="Janitor version")
+
+    parser.add_argument("--msg", dest="msg", 
+                        help="Git message. Must be set if --git is set")
+
+    args = parser.parse_args()
+
+    if args.version == None:
+        print("Version must be set")
+        sys.exit() 
+
+    if args.msg == None:
+        if args.is_git_tag == True or args.is_git_commit == True:
+            print("Message --msg must be set if --git-tag or --git-commit is set")
+            sys.exit() 
+
+    if args.is_git_tag == False and args.is_git_commit == True:
+        print("If --git-commit is set then --git-tag must be set")
+        sys.exit() 
+
+    print (args)
+
+    if args.is_render == True:
+        render_all(args.version)
+
+    if args.is_git_commit == True:
+        git_add(args.msg)
+
+    if args.is_git_tag == True:
+        add_git_tag(args.version,args.msg)
+
 
 
