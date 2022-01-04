@@ -1,0 +1,18 @@
+#!/bin/bash
+
+YAHOO_VER="0.1.67"
+
+HOME="/home/rcs/opt/haskell/etradejanitor"
+
+ETRADEJANITOR="/etradejanitor"
+
+CONTAINER_FEED="$ETRADEJANITOR/feed"
+
+FEED="$HOME/feed2"
+
+YAHOO_PATH="$HOME/python" 
+
+/usr/bin/docker run --user $(id -u):$(id -g)  -i --rm -v $FEED:$CONTAINER_FEED -v $YAHOO_PATH:$ETRADEJANITOR rcs/yahoo:$YAHOO_VER 
+
+exit 0
+
