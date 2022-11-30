@@ -1,5 +1,5 @@
 
-FROM rcs/haskell-pg:8.10.1
+FROM rcs/haskell-pg:9.4.3-slim
 
 COPY main.sh /
 

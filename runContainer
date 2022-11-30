@@ -1,6 +1,10 @@
 #!/bin/bash 
 
-IMG="rcs/haskell-pg:8.10.1"
+# IMG="haskell:9.4.3-slim"
+
+# IMG="rcs/haskell-pg:9.4.3"
+
+IMG="rcs/haskell-pg:9.4.3-slim"
 
 HOME="/home/rcs/opt/haskell/etradejanitor"
 
@@ -8,7 +12,9 @@ NETWORK="pgutil_lofsrud"
 
 # docker run --user $(id -u):$(id -g) -it --rm -v $(pwd):/home/rcs/etradejanitor $IMG 
 
-docker run -it --rm --network $NETWORK -v $(pwd):$HOME -v /home/rcs/opt/.stack:/root/.stack -w $HOME $IMG 
+docker run -it --rm --network $NETWORK -v $(pwd):$HOME -v /home/rcs/opt/.stack:/root/.stack -w $HOME $IMG
+
+#docker run -it --rm --network $NETWORK $IMG /bin/bash/bin/bash
 
 exit 0
 

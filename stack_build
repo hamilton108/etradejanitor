@@ -2,13 +2,16 @@
 
 # stack build --allow-different-user --system-ghc
 
-DIST_PATH=".stack-work/dist/x86_64-linux-tinfo6/Cabal-3.0.1.0/build"
+# DIST_PATH=".stack-work/dist/x86_64-linux-tinfo6/Cabal-3.0.1.0/build"
+
+DIST_PATH=".stack-work/install/x86_64-linux-tinfo6/1d8798d62814362c8eb5f52ac4eff735f4edb4dce0c15285ff9f99f0302387a2/9.2.5/bin"
 
 ETRADEJANITOR_VER=
 
 #FILE="src/Demo.hs.x"
 
 DOCKER=0
+DO_BUILD=0
 
 usage()
 {
@@ -17,16 +20,20 @@ usage: $0 options
 
 OPTIONS:
    -h      Show this message
+   -b      Build bin file 
    -d      Copy bin file to docker 
    -v      bin file version (e.g. 1.5.0)
 EOF
 }
-while getopts “hdv:” OPTION
+while getopts “hbdv:” OPTION
 do
      case $OPTION in
          h)
              usage
              exit 1
+             ;;
+         b)
+             DO_BUILD=1
              ;;
          d)
              DOCKER=1
@@ -46,10 +53,12 @@ done
 #    hpack
 #fi
 
-stack build --allow-different-user 
+if [[ $DO_BUILD -eq 1 ]]; then
+    stack build --allow-different-user 
+fi
 
 if [[ $DOCKER -eq 1 ]]; then
-    SRC="$DIST_PATH/etradejanitor-$ETRADEJANITOR_VER/etradejanitor-$ETRADEJANITOR_VER"
+    SRC="$DIST_PATH/etradejanitor-$ETRADEJANITOR_VER"
     cp $SRC docker/
 fi
 
