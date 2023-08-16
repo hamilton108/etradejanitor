@@ -1,41 +1,43 @@
 module EtradeJanitor.Params where
 
-import           Options.Applicative            ( Parser
-                                                , info
-                                                , helper
-                                                , showDefault
-                                                , fullDesc
-                                                , progDesc
-                                                , (<**>)
-                                                )
-import           Options.Applicative.Builder    ( strArgument
-                                                , strOption
-                                                , switch
-                                                , metavar
-                                                , long
-                                                , short
-                                                , value
-                                                , help
-                                                )
-import           Options.Applicative.Extra      ( execParser )
+import Options.Applicative
+  ( Parser
+  , fullDesc
+  , helper
+  , info
+  , progDesc
+  , showDefault
+  , (<**>)
+  )
+import Options.Applicative.Builder
+  ( help
+  , long
+  , metavar
+  , short
+  , strArgument
+  , strOption
+  , switch
+  , value
+  )
+import Options.Applicative.Extra (execParser)
 
-import qualified EtradeJanitor.Common.Misc     as Misc
+import qualified EtradeJanitor.Common.Misc as Misc
 
-data Params =
-    Params
-    { databaseIp :: String
-    , redisHost :: String
-    , rabbitHost :: String
-    , redisPort :: String
-    , redisDatabase :: String
-    , rabbitPort :: String
-    , feed :: String
-    , downloadDerivatives :: Bool
-    , dbUpdateStocks :: Bool
-    , skipIfDownloadFileExists :: Bool
-    , showStockTickers :: Bool
-    , openingPricesToRedis :: Bool
-    } deriving (Show)
+data Params = Params
+  { databaseIp :: String
+  , redisHost :: String
+  , rabbitHost :: String
+  , redisPort :: String
+  , redisDatabase :: String
+  , rabbitPort :: String
+  , feed :: String
+  , downloadDerivatives :: Bool
+  , dbUpdateStocks :: Bool
+  , skipIfDownloadFileExists :: Bool
+  , showStockTickers :: Bool
+  , openingPricesToRedis :: Bool
+  }
+  deriving (Show)
 
 defaultFeed :: String
 defaultFeed = Misc.feedRoot ++ "/feed2"
@@ -56,53 +58,64 @@ mkParams =
     <*> strArgument (metavar "REDIS" <> help "Redis ip address")
     <*> strArgument (metavar "RABBIT" <> help "RabbitMQ ip address")
     <*> strOption
-          (  long "redis-port"
+      ( long "redis-port"
           <> short 'p'
           <> help "Redis port"
           <> value defaultRedisPort
           <> showDefault
-          )
+      )
     <*> strOption
-          (  long "redis-database"
+      ( long "redis-database"
           <> short 'd'
           <> help "Redis database"
           <> value defaultRedisDatabase
           <> showDefault
-          )
+      )
     <*> strOption
-          (  long "rabbit-port"
+      ( long "rabbit-port"
           <> short 'l'
           <> help "RabbitMQ port"
           <> value defaultRabbitPort
           <> showDefault
-          )
+      )
     <*> strOption
-          (  long "feed"
+      ( long "feed"
           <> short 'f'
           <> help "Feed path"
           <> value defaultFeed
           <> showDefault
-          )
+      )
     <*> switch
-          (long "download-derivatives" <> short 'q' <> help
+      ( long "download-derivatives"
+          <> short 'q'
+          <> help
             "Download derivatives from Nordnet"
-          )
+      )
     <*> switch
-          (long "db-update-stocks" <> short 'r' <> help
+      ( long "db-update-stocks"
+          <> short 'r'
+          <> help
             "Update database stock prices"
-          )
+      )
     <*> switch
-          (long "skip-if-download-exists" <> short 'x' <> help
+      ( long "skip-if-download-exists"
+          <> short 'x'
+          <> help
             "Do not download if file exists"
-          )
+      )
     <*> switch
-          (long "show-stock-tickers" <> short 't' <> help
+      ( long "show-stock-tickers"
+          <> short 't'
+          <> help
             "Show current stock tickers"
-          )
+      )
     <*> switch
-          (long "opening-prices-to-redis" <> short 'o' <> help
+      ( long "opening-prices-to-redis"
+          <> short 'o'
+          <> help
             "Download and save opening prices to Redis"
-          )
+      )
+
 {-
 data Params = Params {
     databaseIp :: String
@@ -124,5 +137,7 @@ mkParams =
 
 cmdLineParser :: IO Params
 cmdLineParser =
-  let opts = info (mkParams <**> helper) (fullDesc <> progDesc "EtradeJanitor")
-  in  execParser opts
+  let
+    opts = info (mkParams <**> helper) (fullDesc <> progDesc "EtradeJanitor")
+  in
+    execParser opts

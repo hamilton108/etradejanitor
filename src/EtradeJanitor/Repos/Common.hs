@@ -4,34 +4,34 @@ module EtradeJanitor.Repos.Common
   ( conn
   , plain
   , session
-  , SessionError(..)
+  , SessionError (..)
   )
 where
 
-import           Control.Monad.Except           ( lift
-                                                , runExceptT
-                                                , ExceptT(..)
-                                                )
-import           Data.Either.Combinators        ( mapLeft )
-import qualified Data.ByteString.Char8         as B
+import Control.Monad.Except
+  ( ExceptT (..)
+  , lift
+  , runExceptT
+  )
+import qualified Data.ByteString.Char8 as B
+import Data.Either.Combinators (mapLeft)
 
 -- Hasql
-import qualified Hasql.Connection              as HC
-import qualified Hasql.Session                 as HS
-import qualified Hasql.Statement               as HQ
-import qualified Hasql.Decoders                as HD
+import qualified Hasql.Connection as HC
+import qualified Hasql.Decoders as HD
+import qualified Hasql.Session as HS
+import qualified Hasql.Statement as HQ
 
 -- Local
 
 conn :: B.ByteString -> HC.Settings
 conn dbIp = HC.settings dbIp 5432 "trader" "ok" "trader"
 
-data SessionError =
-  ConnErr HC.ConnectionError
+data SessionError
+  = ConnErr HC.ConnectionError
   | SessionError HS.QueryError
   | NoOp
   deriving (Show, Eq)
-
 
 plain :: B.ByteString -> HQ.Statement () ()
 plain sql = HQ.Statement sql mempty HD.noResult False
