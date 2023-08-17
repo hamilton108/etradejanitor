@@ -58,7 +58,7 @@ conn =
   Reader.ask >>= \env ->
     let
       redisHost = (Params.redisHost . getParams) env
-      redisDatabase = (read . Params.redisDatabase . getParams) env
+      redisDatabase = (Params.redisDatabase . getParams) env
     in
       liftIO $ Redis.checkedConnect $ ci redisHost redisDatabase
 

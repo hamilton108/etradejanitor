@@ -49,8 +49,6 @@ import qualified EtradeJanitor.Repos.Nordnet.RedisRepos as RedisRepos
 
 import EtradeJanitor.Common.Html (soup)
 import EtradeJanitor.Common.Misc (decimalStrToAscii)
-
-import qualified Data.Time.Clock.POSIX as POSIX
 import EtradeJanitor.AMQP.RabbitMQ
   ( Payload (..)
   , RoutingKey

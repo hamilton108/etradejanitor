@@ -52,10 +52,11 @@ testParams =
   Params.Params
     { Params.databaseIp = "172.20.1.3"
     , Params.redisHost = "172.20.1.2"
-    , Params.redisPort = "6379"
-    , Params.redisDatabase = "5"
+    , Params.redisPort = 6379
+    , Params.redisDatabase = 5
     , Params.rabbitHost = "172.20.1.4"
-    , Params.rabbitPort = "5672"
+    , Params.rabbitPort = 5672
+    , Params.nordnetPort = 8082
     , Params.feed = "/home/rcs/opt/haskell/etradejanitor/test/testfeed"
     , Params.downloadDerivatives = True
     , Params.dbUpdateStocks = True

@@ -2,9 +2,9 @@
 
 # IMG="haskell:9.4.3-slim"
 
-# IMG="rcs/haskell-pg:9.4.3"
+IMG="rcs/haskell-pg:9.4.3"
 
-IMG="rcs/haskell-pg:9.4.3-slim"
+# IMG="rcs/haskell-pg:9.4.3-slim"
 
 HOME="/home/rcs/opt/haskell/etradejanitor"
 

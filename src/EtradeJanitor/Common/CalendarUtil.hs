@@ -14,7 +14,7 @@ import Data.Time.Format
   ( defaultTimeLocale
   , formatTime
   )
-import Rapanui.Common
+import EtradeJanitor.Common.Types
   ( Iso8601 (..)
   , PosixTimeInt (..)
   , TimeInfo (..)

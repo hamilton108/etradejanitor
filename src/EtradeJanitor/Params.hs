@@ -18,6 +18,8 @@ import Options.Applicative.Builder
   , strOption
   , switch
   , value
+  , option
+  , auto
   )
 import Options.Applicative.Extra (execParser)
 
@@ -27,29 +29,35 @@ data Params = Params
   { databaseIp :: String
   , redisHost :: String
   , rabbitHost :: String
-  , redisPort :: String
-  , redisDatabase :: String
-  , rabbitPort :: String
+  , nordnetHost :: String
+  , redisPort :: Int
+  , redisDatabase :: Integer
+  , rabbitPort :: Integer
+  , nordnetPort :: Int
   , feed :: String
   , downloadDerivatives :: Bool
   , dbUpdateStocks :: Bool
   , skipIfDownloadFileExists :: Bool
   , showStockTickers :: Bool
   , openingPricesToRedis :: Bool
+  --, nordnetServiceHost :: String
   }
   deriving (Show)
 
 defaultFeed :: String
 defaultFeed = Misc.feedRoot ++ "/feed2"
 
-defaultRedisDatabase :: String
-defaultRedisDatabase = "0"
+defaultRedisDatabase :: Integer
+defaultRedisDatabase = 0
 
-defaultRedisPort :: String
-defaultRedisPort = "6379"
+defaultRedisPort :: Int 
+defaultRedisPort = 6379
 
-defaultRabbitPort :: String
-defaultRabbitPort = "5672"
+defaultRabbitPort :: Integer
+defaultRabbitPort = 5672
+
+defaultNordnetPort :: Int
+defaultNordnetPort = 8082
 
 mkParams :: Parser Params
 mkParams =
@@ -57,25 +65,33 @@ mkParams =
     <$> strArgument (metavar "IP" <> help "Database ip address")
     <*> strArgument (metavar "REDIS" <> help "Redis ip address")
     <*> strArgument (metavar "RABBIT" <> help "RabbitMQ ip address")
-    <*> strOption
+    <*> strArgument (metavar "NORDNET" <> help "Nordnet Service ip address")
+    <*> option auto 
       ( long "redis-port"
           <> short 'p'
           <> help "Redis port"
           <> value defaultRedisPort
           <> showDefault
       )
-    <*> strOption
+    <*> option auto 
       ( long "redis-database"
           <> short 'd'
           <> help "Redis database"
           <> value defaultRedisDatabase
           <> showDefault
       )
-    <*> strOption
+    <*> option auto 
       ( long "rabbit-port"
           <> short 'l'
           <> help "RabbitMQ port"
           <> value defaultRabbitPort
+          <> showDefault
+      )
+    <*> option auto
+      ( long "nordnet-port"
+          <> short 'm'
+          <> help "Nordnet Service port"
+          <> value defaultNordnetPort
           <> showDefault
       )
     <*> strOption

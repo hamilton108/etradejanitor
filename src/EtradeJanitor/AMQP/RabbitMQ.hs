@@ -21,13 +21,11 @@ import Control.Monad.Reader
   )
 import qualified Control.Monad.Reader as Reader
 import Data.Aeson
-  ( FromJSON (..)
-  , ToJSON (..)
+  ( ToJSON (..)
   , Value (..)
   , (.=)
   )
 import qualified Data.Aeson as Aeson
-import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Text (Text)
 import Data.UUID (UUID)
 import EtradeJanitor.Common.Types
@@ -38,12 +36,9 @@ import EtradeJanitor.Common.Types
   , getRabbitConnection
   )
 import Network.AMQP
-  ( Ack
-  , Channel
+  ( Channel
   , Connection
   , DeliveryMode (..)
-  , Envelope
-  , Message
   )
 import qualified Network.AMQP as AMQP
 import Network.Socket
@@ -143,12 +138,13 @@ myExchangeName = "etrade"
 myConnection' :: RabbitHost -> RabbitPort -> IO Connection
 myConnection' (RabbitHost host) (RabbitPort port) =
   let
-    portI = read port :: Integer
-    portR = fromIntegral portI :: PortNumber
+    pn = fromIntegral port :: PortNumber 
+    --portI = port :: Integer
+    --portR = fromIntegral portI :: PortNumber
   in
     AMQP.openConnection'
       host
-      portR
+      pn
       "etradejanitor_vhost"
       "etradejanitor"
       "VhCHeUJ40"

@@ -59,15 +59,12 @@ import           Control.Monad.Reader           ( runReaderT
                                                 )
 import           Control.Monad.IO.Class         ( liftIO )
 
-import           Network.AMQP                   ( Connection
-                                                , closeConnection
-                                                )
+import           Network.AMQP                   ( closeConnection )
 --import qualified System.Directory as Dir
 --import qualified Data.Vector as V
 
 import           EtradeJanitor.Common.Types     ( Tickers
                                                 , Env(..)
-                                                , RabbitHost(..)
                                                 , RabbitHost(..)
                                                 )
 import qualified EtradeJanitor.Common.Types    as Types
@@ -131,7 +128,7 @@ work params = putStrLn (show params) >> CalendarUtil.today >>= \today ->
   nextRandom >>= \uuid ->
     let
         host = Types.getRabbitHost params
-        port = Types.getRabbitPort params
+        -- port = Types.getRabbitPort params
     in
     myConnection host >>= \conn ->
         let env = Env params today (Just conn) uuid

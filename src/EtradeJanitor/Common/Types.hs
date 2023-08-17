@@ -61,7 +61,7 @@ data TimeInfo = TimeInfo
 
 newtype RabbitHost = RabbitHost String
 
-newtype RabbitPort = RabbitPort String
+newtype RabbitPort = RabbitPort Integer
 
 getRabbitHost :: PA.Params -> RabbitHost
 getRabbitHost p =
