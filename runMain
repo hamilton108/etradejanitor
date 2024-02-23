@@ -10,9 +10,11 @@ REDIS="172.20.1.2"
 
 AMQP="172.20.1.4"
 
+NORDNET="172.20.1.5"
+
 NETWORK="pgutil_lofsrud"
 
-/usr/bin/docker run --network $NETWORK --user $(id -u):$(id -g)  -i --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER $PG $REDIS $AMQP "$@"
+/usr/bin/docker run --network $NETWORK --user $(id -u):$(id -g)  -i --rm -v $HOME:$HOME rcs/etradejanitor:$JANITOR_VER $PG $REDIS $AMQP $NORDNET "$@"
 
 exit 0
 

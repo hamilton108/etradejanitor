@@ -1,4 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module EtradeJanitor.Common.Types where
 
@@ -22,9 +23,12 @@ import Data.UUID (UUID)
 import qualified Data.Vector as DV
 import qualified Text.Printf as TP
 
-import qualified EtradeJanitor.Params as PA
+--import Data.Aeson (FromJSON (..))
+--import GHC.Generics (Generic)
+
 import Network.AMQP (Connection)
 
+import qualified EtradeJanitor.Params as PA
 -- feed :: FilePath
 -- feed = "/home/rcs/opt/haskell/etradejanitor/feed2"
 
@@ -41,11 +45,6 @@ data Env = Env
   , getUUID :: UUID
   } -- deriving (Show)
 
-data OpeningPrice = OpeningPrice
-  { opTicker :: Text
-  , price :: String
-  }
-  deriving (Eq, Show)
 
 type AppState = [Ticker]
 
@@ -142,6 +141,27 @@ data StockPrice = StockPrice
   , vol2 :: DI.Int64
   }
   deriving (Eq, Show)
+
+{-
+data Spot = Spot
+  { o :: Float 
+  , h :: Float 
+  , l :: Float 
+  , c :: Float 
+  , unixtime :: Float 
+  }
+  deriving (Eq, Show, Generic)
+
+instance FromJSON Spot 
+-}
+
+-- data OpeningPrice = OpeningPrice
+--   { stockticker :: String -- Text
+--   , price :: Float
+--   }
+--   deriving (Eq, Show, Generic)
+
+-- instance FromJSON OpeningPrice 
 
 data Envx a = Envx
   { ax :: Int

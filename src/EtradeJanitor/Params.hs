@@ -22,14 +22,16 @@ import Options.Applicative.Builder
   , auto
   )
 import Options.Applicative.Extra (execParser)
+import Data.Text (Text)
 
 import qualified EtradeJanitor.Common.Misc as Misc
+
 
 data Params = Params
   { databaseIp :: String
   , redisHost :: String
   , rabbitHost :: String
-  , nordnetHost :: String
+  , nordnetHost :: Text -- String
   , redisPort :: Int
   , redisDatabase :: Integer
   , rabbitPort :: Integer
@@ -40,7 +42,6 @@ data Params = Params
   , skipIfDownloadFileExists :: Bool
   , showStockTickers :: Bool
   , openingPricesToRedis :: Bool
-  --, nordnetServiceHost :: String
   }
   deriving (Show)
 

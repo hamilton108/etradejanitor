@@ -22,8 +22,8 @@ import Control.Monad.Reader
 import qualified Control.Monad.Reader as Reader
 import Data.Aeson
   ( ToJSON (..)
-  , Value (..)
   , (.=)
+  -- , Value (..)
   )
 import qualified Data.Aeson as Aeson
 import Data.Text (Text)

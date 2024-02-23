@@ -30,7 +30,7 @@ TICKERS = [
 # use "period" instead of start/end
 # valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
 
-PERIOD = "1d"
+PERIOD = "6mo"
 
 
 def save_to_cvs():

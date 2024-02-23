@@ -30,14 +30,19 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Conversion as BC
 import qualified Data.ByteString.UTF8 as BU
 import qualified Database.Redis as Redis
+--import qualified Data.Vector as DV 
+--import Data.Vector (Vector(..))
 
 import EtradeJanitor.Common.Types
   ( Env
   , NordnetExpiry
-  , OpeningPrice (..)
   , Ticker (..)
   , getDownloadDate
   , getParams
+  )
+
+import EtradeJanitor.Domain.OpeningPrice 
+  ( OpeningPrice(..)
   )
 
 import EtradeJanitor.Common.CalendarUtil
@@ -160,7 +165,9 @@ saveOpeningPricesToRedis' prices =
 
 openingPriceToRedisFormat :: OpeningPrice -> (B.ByteString, B.ByteString)
 openingPriceToRedisFormat (OpeningPrice ticker price) =
-  (TE.encodeUtf8 ticker, BC.toByteString' price)
+  (BC.toByteString' ticker, BC.toByteString' price)
+
+-- (TE.encodeUtf8 ticker, BC.toByteString' price)
 
 saveOpeningPricesToRedis ::
   (MonadIO m, MonadReader Env m) => [OpeningPrice] -> m ()

@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module EtradeJanitor.Adapter.NordnetAdapter where
 
@@ -19,6 +18,38 @@ import Network.HTTP.Req
   -- HttpException (..)
   )
 import qualified Network.HTTP.Req as R
+import EtradeJanitor.Common.Types 
+  ( Ticker(..)
+  , Env
+  , getParams
+  )
+import EtradeJanitor.Domain.OpeningPrice 
+  ( OpeningPrice
+  )
+import qualified Data.Text as T
+
+import qualified EtradeJanitor.Params as Params
+
+openingPriceGET :: (MonadReader Env m) => Ticker -> m (R.Req R.BsResponse)
+openingPriceGET (Ticker {oid}) =
+  Reader.ask >>= \env ->
+    let
+      prm = getParams env 
+      host = Params.nordnetHost prm
+      port = Params.nordnetPort prm
+      myUrl = R.http host /: "nordnet" /: "openingprice" /: T.pack (show oid)
+    in
+    pure $ R.req R.GET myUrl R.NoReqBody R.bsResponse $ R.port port
+
+parsePriceJson :: BL.ByteString -> Maybe OpeningPrice
+parsePriceJson s =
+  maybe Nothing id $ Aeson.decodeStrict s
+
+fetchOpeningPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m (Maybe OpeningPrice)
+fetchOpeningPrice ticker =
+  openingPriceGET ticker >>= \s ->
+    R.runReq R.defaultHttpConfig s >>= \response ->
+      pure $ parsePriceJson $ R.responseBody response
 
 {- import Rapanui.Common
   ( CritterType (..)
@@ -51,6 +82,3 @@ import Rapanui.StockOption (StockOption)
 --   stockOptionGET ticker >>= \s ->
 --     R.runReq R.defaultHttpConfig s >>= \response ->
 --       pure $ parseStockOptionJson $ R.responseBody response
-
-x :: Int
-x = 3

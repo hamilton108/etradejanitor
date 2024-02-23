@@ -34,18 +34,20 @@ import Network.HTTP.Req
   , (=:)
   )
 import qualified Network.HTTP.Req as R
+import Data.Aeson (FromJSON (..))
 
-import Text.HTML.TagSoup
-  ( Tag (..)
-  , (~/=)
-  , (~==)
-  )
-import qualified Text.HTML.TagSoup as TS
+-- import Text.HTML.TagSoup
+--   ( Tag (..)
+--   , (~/=)
+--   , (~==)
+--   )
+-- import qualified Text.HTML.TagSoup as TS
 
 import Data.Text (Text)
 import qualified EtradeJanitor.Common.Types as T
 import qualified EtradeJanitor.Params as Params
 import qualified EtradeJanitor.Repos.Nordnet.RedisRepos as RedisRepos
+import qualified EtradeJanitor.Adapter.NordnetAdapter as NordnetAdapter 
 
 import EtradeJanitor.Common.Html (soup)
 import EtradeJanitor.Common.Misc (decimalStrToAscii)
@@ -61,11 +63,11 @@ import EtradeJanitor.Common.Types
   , Env
   , Iso8601 (..)
   , NordnetExpiry
-  , OpeningPrice (..)
   , PosixTimeInt (..)
   , Ticker (..)
   , Tickers
   )
+import EtradeJanitor.Domain.OpeningPrice (OpeningPrice(..))
 
 -- import           EtradeJanitor.Params           ( Params )
 
@@ -152,6 +154,7 @@ payloadErr uuid (Ticker{T.ticker}) fun unixTime httpEx =
 unixTimesDesc :: [NordnetExpiry] -> [NordnetExpiry]
 unixTimesDesc unixTimes = sortBy (comparing Down) unixTimes
 
+{-
 tryDownloadOpeningPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m Bool
 tryDownloadOpeningPrice t =
   Reader.ask >>= \env ->
@@ -213,8 +216,20 @@ downloadOpeningPrices tix =
         True ->
           let dt = downloadAbleTickers tix in mapM_ downloadOpeningPrice dt
         False -> pure ()
+-}
 
-openingPricesToRedis :: (MonadIO m, MonadReader Env m) => [Ticker] -> m ()
+openingPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m OpeningPrice
+openingPrice t =
+  NordnetAdapter.fetchOpeningPrice t >>= \op ->
+    case op of 
+      Nothing -> 
+        pure $ OpeningPrice 0 0.0
+      Just opx -> 
+        pure $ opx
+
+
+--openingPricesToRedis :: (MonadIO m, MonadReader Env m) => [Ticker] -> m ()
+openingPricesToRedis :: (MonadIO m, MonadReader Env m) => Tickers -> m ()
 openingPricesToRedis tix =
   Reader.ask >>= \env ->
     let
@@ -223,7 +238,7 @@ openingPricesToRedis tix =
       if opr == True
         then
           mapM openingPrice tix
-            >>= \tixx -> RedisRepos.saveOpeningPricesToRedis tixx
+            >>= \tixx -> RedisRepos.saveOpeningPricesToRedis $ Vector.toList tixx
         else pure ()
 
 download ::
@@ -294,29 +309,29 @@ downloadDerivativePrices tix =
           let dt = downloadAbleTickers tix in mapM_ downloadDerivativePrices' dt
         False -> pure ()
 
-ariaHidden :: (MonadIO m, MonadReader Env m) => Ticker -> m [[Tag String]]
-ariaHidden t =
-  pathName (OpeningPrices t) >>= \pn ->
-    let
-      fname = Printf.printf "%s/%s.html" pn (T.ticker t)
-    in
-      (liftIO $ soup fname) >>= \soupx ->
-        let
-          rows1 = dropWhile (~/= (TagOpen ("" :: String) [("role", "row")])) soupx
-          rows1b = dropWhile (~/= (TagOpen ("" :: String) [("role", "row")])) $ drop 1 rows1
-          rows2 = takeWhile (~/= (TagOpen ("" :: String) [("role", "row")])) $ drop 1 rows1b
-          rows2b = TS.sections (~== (TagOpen ("span" :: String) [("aria-hidden", "true")])) rows2
-        in
-          pure $ rows2b
+-- ariaHidden :: (MonadIO m, MonadReader Env m) => Ticker -> m [[Tag String]]
+-- ariaHidden t =
+--   pathName (OpeningPrices t) >>= \pn ->
+--     let
+--       fname = Printf.printf "%s/%s.html" pn (T.ticker t)
+--     in
+--       (liftIO $ soup fname) >>= \soupx ->
+--         let
+--           rows1 = dropWhile (~/= (TagOpen ("" :: String) [("role", "row")])) soupx
+--           rows1b = dropWhile (~/= (TagOpen ("" :: String) [("role", "row")])) $ drop 1 rows1
+--           rows2 = takeWhile (~/= (TagOpen ("" :: String) [("role", "row")])) $ drop 1 rows1b
+--           rows2b = TS.sections (~== (TagOpen ("span" :: String) [("aria-hidden", "true")])) rows2
+--         in
+--           pure $ rows2b
 
-openingPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m OpeningPrice
-openingPrice t =
-  ariaHidden t >>= \trx ->
-    let
-      aria2 = head . take 1 . drop 2 $ trx
-      txt = TS.fromTagText . head . dropWhile (~/= (TagText ("" :: String))) $ aria2
-    in
-      pure $ OpeningPrice (T.ticker t) (decimalStrToAscii txt)
+-- openingPrice :: (MonadIO m, MonadReader Env m) => Ticker -> m OpeningPrice
+-- openingPrice t =
+  -- ariaHidden t >>= \trx ->
+  --   let
+  --     aria2 = head . take 1 . drop 2 $ trx
+  --     txt = TS.fromTagText . head . dropWhile (~/= (TagText ("" :: String))) $ aria2
+  --   in
+  --     pure $ OpeningPrice (T.ticker t) (decimalStrToAscii txt)
 
 {-
 tr :: (MonadIO m, MonadReader Env m) => Ticker -> m [Tag String]

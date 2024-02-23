@@ -136,15 +136,16 @@ work params = putStrLn (show params) >> CalendarUtil.today >>= \today ->
         Stocks.tickers (PA.databaseIp params) >>= \tix -> case tix of
             Right result ->
                 runReaderT (Types.runApp $ showStockTickers result) env
-                    >>  execStateT
-                        (runReaderT
-                            (Types.runApp2 $ Nordnet.downloadOpeningPrices result)
-                            env
-                        )
-                        []
-                    >>= \downloadedTix ->
+                    -- >>  execStateT
+                    --     (runReaderT
+                    --         (Types.runApp2 $ Nordnet.downloadOpeningPrices result)
+                    --         env
+                    --     )
+                    --     []
+                    -- >>= \downloadedTix ->
+                    >>
                         runReaderT
-                            (Types.runApp $ Nordnet.openingPricesToRedis downloadedTix
+                            (Types.runApp $ Nordnet.openingPricesToRedis result -- downloadedTix
                             )
                             env
                             >> runReaderT

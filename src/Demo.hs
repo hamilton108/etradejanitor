@@ -6,35 +6,33 @@
 module Demo where
 
 import Control.Monad.Reader (runReaderT)
-import Control.Monad.State (execStateT)
+--import Control.Monad.State (execStateT)
 import qualified Data.Time.Calendar as Calendar
 import Data.UUID
   ( UUID
   , nil
   )
-import qualified Data.Vector as Vector
 import qualified EtradeJanitor.Common.Misc as Misc
 import EtradeJanitor.Common.Types
   ( Env (..)
   , NordnetExpiry
-  , OpeningPrice (..)
-  , Ticker (..)
+  , Ticker(..)
   , Tickers
   )
 import qualified EtradeJanitor.Params as Params
-import EtradeJanitor.Repos.Nordnet (Prices (..))
-import qualified EtradeJanitor.Repos.Nordnet as Nordnet
+--import EtradeJanitor.Repos.Nordnet (Prices (..))
+--import qualified EtradeJanitor.Repos.Nordnet as Nordnet
 import qualified EtradeJanitor.Repos.Nordnet.RedisRepos as RedisRepos
 
 import EtradeJanitor.AMQP.RabbitMQ
   ( Payload (..)
-  , RoutingKey
   )
 import qualified EtradeJanitor.AMQP.RabbitMQ as Rabbit
 import qualified EtradeJanitor.Common.Types as T
+import qualified EtradeJanitor.Adapter.NordnetAdapter as NordnetAdapter
 
 import Data.UUID.V4 (nextRandom)
-import EtradeJanitor.Repos.Nordnet (openingPrice)
+--import EtradeJanitor.Repos.Nordnet (openingPrice)
 import Network.AMQP (Connection)
 import qualified Network.AMQP as AMQP
 
@@ -52,14 +50,15 @@ testParams =
   Params.Params
     { Params.databaseIp = "172.20.1.3"
     , Params.redisHost = "172.20.1.2"
+    , Params.rabbitHost = "172.20.1.4"
+    , Params.nordnetHost = "172.20.1.5"
     , Params.redisPort = 6379
     , Params.redisDatabase = 5
-    , Params.rabbitHost = "172.20.1.4"
     , Params.rabbitPort = 5672
     , Params.nordnetPort = 8082
     , Params.feed = "/home/rcs/opt/haskell/etradejanitor/test/testfeed"
-    , Params.downloadDerivatives = True
-    , Params.dbUpdateStocks = True
+    , Params.downloadDerivatives = False
+    , Params.dbUpdateStocks = False
     , Params.skipIfDownloadFileExists = True
     , Params.showStockTickers = False
     , Params.openingPricesToRedis = True
@@ -74,6 +73,16 @@ eqnr = Ticker 2 "EQNR" 1 testDay
 nhy :: Ticker
 nhy = Ticker 1 "NHY" 1 testDay
 
+yar :: Ticker
+yar = Ticker 3 "YAR" 1 testDay
+
+-- demo4 :: IO (Maybe T.Spot)
+-- demo4 = 
+--   let
+--     env4 = Env testParams testDay Nothing nil
+--   in 
+--   runReaderT (Nordnet.fetchSpot yar) env4
+    
 demo :: IO ()
 demo =
   let
@@ -89,7 +98,7 @@ demo =
           runReaderT (Rabbit.publish payload Rabbit.rkInfo) env
             >> AMQP.closeConnection conn
 
--- demo2 :: IO [NordnetExpiry]
+demo2 :: IO [NordnetExpiry]
 demo2 =
   let
     host = T.getRabbitHost testParams
@@ -112,6 +121,19 @@ demo2 =
               AMQP.closeConnection conn
                 >> pure result
 
+demo3 :: IO () -- (Maybe T.OpeningPrice)
+demo3 =
+  let 
+    env = testEnv Nothing nil
+  in
+  runReaderT (NordnetAdapter.fetchOpeningPrice eqnr) env >>= \op -> 
+    case op of 
+      Nothing -> pure ()
+      Just op1 -> 
+        runReaderT (RedisRepos.saveOpeningPricesToRedis [op1]) env 
+
+{- 
+demo3 :: IO ()
 demo3 =
   let
     host = T.getRabbitHost testParams
@@ -131,7 +153,7 @@ demo3 =
             []
             >>= \result ->
               putStrLn (show result)
-
+ -}
 {--
 demo =
     runReaderT (runApp $ Nordnet.openingPrice testTicker) testEnv
